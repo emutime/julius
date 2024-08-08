@@ -1,13 +1,31 @@
-// 引入必要的模块
-import { building, BUILDING_CHARIOT_MAKER, BUILDING_CLAY_PIT, BUILDING_DOCK, BUILDING_ENGINEERS_POST, BUILDING_FOUNTAIN, BUILDING_GLADIATOR_SCHOOL, BUILDING_GRANARY, BUILDING_HIPPODROME, BUILDING_IRON_MINE, building_is_workshop, BUILDING_MARBLE_QUARRY, BUILDING_MARKET, BUILDING_PREFECTURE, BUILDING_RESERVOIR, BUILDING_THEATER, BUILDING_TIMBER_YARD, BUILDING_WAREHOUSE, BUILDING_WINE_WORKSHOP } from './building';
-import { model_get_building } from './building/model';
-import { calc_percentage } from './core/calc';
-import { image, image_get } from './core/image';
-import { game_animation_should_advance } from './game/animation';
-import { map_sprite_animation_at, map_sprite_animation_set } from './map/sprite';
+import { calc_percentage } from 'core/calc';
+import { image, image_get } from 'core/image';
+import { game_animation_should_advance } from 'game/animation';
+import { map_sprite_animation_at, map_sprite_animation_set } from "map/sprite";
+import { building } from "./building";
+import { building_is_workshop } from './industry';
+import { model_get_building } from "./model";
+import { building_type } from './type';
+import BUILDING_THEATER = building_type.BUILDING_THEATER;
+import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;
+import BUILDING_GLADIATOR_SCHOOL = building_type.BUILDING_GLADIATOR_SCHOOL;
+import BUILDING_CHARIOT_MAKER = building_type.BUILDING_CHARIOT_MAKER;
+import BUILDING_PREFECTURE = building_type.BUILDING_PREFECTURE;
+import BUILDING_MARKET = building_type.BUILDING_MARKET;
+import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
+import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
+import BUILDING_DOCK = building_type.BUILDING_DOCK;
+import BUILDING_ENGINEERS_POST = building_type.BUILDING_ENGINEERS_POST;
+import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
+import BUILDING_FOUNTAIN = building_type.BUILDING_FOUNTAIN;
+import BUILDING_MARBLE_QUARRY = building_type.BUILDING_MARBLE_QUARRY;
+import BUILDING_IRON_MINE = building_type.BUILDING_IRON_MINE;
+import BUILDING_TIMBER_YARD = building_type.BUILDING_TIMBER_YARD;
+import BUILDING_CLAY_PIT = building_type.BUILDING_CLAY_PIT;
+import BUILDING_WINE_WORKSHOP = building_type.BUILDING_WINE_WORKSHOP;
 
 // 定义建筑动画偏移函数
-function building_animation_offset(b: building, image_id: number, grid_offset: number): number {
+export function building_animation_offset(b: building, image_id: number, grid_offset: number): number {
     // 检查建筑类型和条件，决定是否返回0
     if (b.type === BUILDING_FOUNTAIN && (b.num_workers <= 0 || !b.has_water_access)) {
         return 0;
