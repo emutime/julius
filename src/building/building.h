@@ -136,7 +136,7 @@ typedef struct {
         signed char house_happiness;
         signed char native_anger;
     } sentiment;
-    unsigned char show_on_problem_overlay;
+    unsigned char ;
 } building;
 
 building *building_get(int id);
