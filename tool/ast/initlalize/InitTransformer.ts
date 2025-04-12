@@ -1,0 +1,5 @@
+import { TransformerMgr } from "../core/Manager/TransformerMgr";
+import { SynxType } from "../core/SynxType";
+import { TransformerEnumDecl } from "../core/Transformers/TransformerEnumDecl";
+
+TransformerMgr.instance.regTransformer(SynxType.EnumDecl, new TransformerEnumDecl());
