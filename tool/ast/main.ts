@@ -1,50 +1,71 @@
-import { execFileSync } from 'child_process';
+import { execFile } from 'child_process';
 import * as path from 'path';
 import * as tsMorph from 'ts-morph';
-import "./initlalize";
+import "./initialize";
 
 import { SourceFile } from './core/CAstNode/SourceFile';
 import { TransformerMgr } from './core/Manager/TransformerMgr';
 
 const args = ['-Xclang', '-ast-dump=json', '-fsyntax-only', '-I./src'];
 
-const files = ["./src/building/type.h"];
-const sourceFiles = files.map(filePath => {
-    const stdout = execFileSync("clang", [...args, filePath], { encoding: 'utf8' });
-    const ast = JSON.parse(stdout);
+const files = ["./src/building/clone.c", "./src/building/clone.h"];
 
-    return new SourceFile(ast, path.resolve(process.cwd(), filePath));
-});
+function clangParseAst(args: string[]) {
+    return new Promise<string>((resolve, reject) => {
+        execFile("clang", args, { encoding: 'utf8', maxBuffer: 1024 * 1024 * 1024 }, (error, stdout, stderr) => {
+            if (error) {
+                reject(error);
+            } else if (stderr) {
+                reject(new Error(stderr));
+            } else {
+                resolve(stdout);
+            }
+        });
+    });
+}
 
-const sourceFilesPair = new Map<string, { header?: SourceFile, source?: SourceFile }>();
+function parseAllFiles() {
+    return Promise.all(files.map(async filePath => {
+        const stdout = await clangParseAst([...args, filePath]);
+        const ast = JSON.parse(stdout);
+        return new SourceFile(ast, path.resolve(process.cwd(), filePath));
+    }));
+}
 
-sourceFiles.forEach(sourceFile => {
-    const extname = path.extname(sourceFile.filePath);
-    const baseName = path.basename(sourceFile.filePath, extname);
-    const dirname = path.dirname(sourceFile.filePath);
-    const filePathKey = path.resolve(dirname, baseName);
+async function main() {
+    const sourceFiles = await parseAllFiles();
+    const sourceFilesPair = new Map<string, { header?: SourceFile, source?: SourceFile }>();
 
-    let filePathValue = sourceFilesPair.get(filePathKey);
-    if (!filePathValue) {
-        filePathValue = { header: undefined, source: undefined };
-        sourceFilesPair.set(filePathKey, filePathValue);
-    }
-    if (extname === ".h") {
-        filePathValue.header = sourceFile;
-    } else if (extname === ".c") {
-        filePathValue.source = sourceFile;
-    };
-});
+    sourceFiles.forEach(sourceFile => {
+        const extname = path.extname(sourceFile.filePath);
+        const baseName = path.basename(sourceFile.filePath, extname);
+        const dirname = path.dirname(sourceFile.filePath);
+        const filePathKey = path.resolve(dirname, baseName);
 
-const project = new tsMorph.Project();
+        let filePathValue = sourceFilesPair.get(filePathKey);
+        if (!filePathValue) {
+            filePathValue = { header: undefined, source: undefined };
+            sourceFilesPair.set(filePathKey, filePathValue);
+        }
+        if (extname === ".h") {
+            filePathValue.header = sourceFile;
+        } else if (extname === ".c") {
+            filePathValue.source = sourceFile;
+        };
+    });
 
-sourceFilesPair.forEach((pair, key) => {
-    const tsFilePath = `${key}.ts`;
-    const sourceFile = project.createSourceFile(tsFilePath, undefined, { overwrite: true });
+    const project = new tsMorph.Project();
 
-    pair.header && TransformerMgr.instance.transform(pair.header, sourceFile);
-    pair.source && TransformerMgr.instance.transform(pair.source, sourceFile);
+    sourceFilesPair.forEach((pair, key) => {
+        const tsFilePath = `${key}.ts`;
+        const sourceFile = project.createSourceFile(tsFilePath, undefined, { overwrite: true });
 
-    sourceFile.saveSync();
-});
+        pair.header && TransformerMgr.instance.transform(pair.header, sourceFile);
+        pair.source && TransformerMgr.instance.transform(pair.source, sourceFile);
+
+        sourceFile.saveSync();
+    });
+}
+
+main();
 
