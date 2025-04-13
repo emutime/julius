@@ -12,11 +12,16 @@ export class NodeFactoryMgr {
         this.m_factory.set(kind, ctor);
     }
 
-    public createNode(kind: SynxType, node: Record<string, any>): ASTNode {
-        const astNode = new (this.m_factory.get(kind) || ASTNode)(node);
-        if (!astNode) {
-            this.m_nodeMap.set(node.id, astNode);
+    public createNode(kind: SynxType, node: Record<string, any>, parent?: ASTNode): ASTNode {
+        let astNode = this.m_nodeMap.get(node.id);
+        if (astNode) {
+            return astNode;
         }
+
+        astNode = new (this.m_factory.get(kind) || ASTNode)(node);
+        astNode.parent = parent;
+        this.m_nodeMap.set(node.id, astNode);
+
         return astNode;
     }
 

@@ -20,3 +20,8 @@ export function convertType(type: string): string {
     console.log(`Unknown type to map: ${type}`);
     return type;
 }
+
+export function convertStatement(statement: string): string {
+    statement = statement.replace(/->/g, ".");
+    return statement;
+}

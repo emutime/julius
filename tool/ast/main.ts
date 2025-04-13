@@ -55,14 +55,19 @@ async function main() {
     });
 
     const project = new tsMorph.Project();
+    TransformerMgr.instance.setTmpSrcFileTS(project.createSourceFile("temp.ts", undefined, { overwrite: true }));
 
     sourceFilesPair.forEach((pair, key) => {
         const tsFilePath = `${key}.ts`;
         const sourceFile = project.createSourceFile(tsFilePath, undefined, { overwrite: true });
 
-        pair.header && TransformerMgr.instance.transform(pair.header, sourceFile);
-        pair.source && TransformerMgr.instance.transform(pair.source, sourceFile);
+        if (pair.source) {
+            TransformerMgr.instance.transform(pair.source, sourceFile);
+            sourceFile.saveSync();
+            return;
+        }
 
+        pair.header && TransformerMgr.instance.transform(pair.header, sourceFile);
         sourceFile.saveSync();
     });
 }

@@ -3,5 +3,5 @@ import type { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
 
 export abstract class TransformerBase {
-    public abstract transform(node: ASTNode, sourceFile: SourceFile, sourceFileTS: SourceFileTS): void;
+    public abstract transform(node: ASTNode, sourceFile: SourceFile | null, sourceFileTS: SourceFileTS): void;
 } 

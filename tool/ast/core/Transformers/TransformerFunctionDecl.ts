@@ -2,7 +2,8 @@ import path from 'path';
 import type { SourceFile as SourceFileTS } from 'ts-morph';
 import { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
-import { convertType } from '../Helper';
+import { convertStatement, convertType } from '../Helper';
+import { TransformerMgr } from '../Manager/TransformerMgr';
 import { SynxType } from "../SynxType";
 import { TransformerBase } from './TransformerBase';
 
@@ -27,7 +28,7 @@ export class TransformerFunctionDecl extends TransformerBase {
 
             sourceFileTS.addImportDeclaration({
                 moduleSpecifier: importPath,
-                defaultImport: node.name,
+                namedImports: [node.name!],
             });
 
             return;
@@ -36,15 +37,15 @@ export class TransformerFunctionDecl extends TransformerBase {
         if (node.compoundStmt === undefined) {
             return;
         }
-        const parameters = node.getParmVarDecl().map(p => { return { name: p.name!, type: convertType(p.type) } });
 
+        const parameters = node.getParmVarDecl().map(p => { return { name: p.name!, type: convertType(p.type) } });
+        const statements = node.compoundStmt.body.map(n => convertStatement(TransformerMgr.instance.transformSynx(n, sourceFile))).join('\n');
         const functionDecl = sourceFileTS.addFunction({
             name: node.name!,
             isExported: node.storageClass !== 'static',
             parameters: parameters,
             returnType: convertType(node.getReturnType()),
-            statements: [],
+            statements: statements,
         });
-
     }
 } 

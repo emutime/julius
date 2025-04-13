@@ -1,12 +1,14 @@
 import { ASTNode } from "../core/CAstNode/ASTNode";
 import { CompoundStmt } from "../core/CAstNode/CompoundStmt";
 import { ConstantExpr } from "../core/CAstNode/ConstantExpr";
+import { DeclStmt } from "../core/CAstNode/DeclStmt";
 import { ElaboratedType } from "../core/CAstNode/ElaboratedType";
 import { EnumConstantDecl } from "../core/CAstNode/EnumConstantDecl";
 import { EnumDecl } from "../core/CAstNode/EnumDecl";
 import { FunctionDecl } from "../core/CAstNode/FunctionDecl";
 import { ParmVarDecl } from "../core/CAstNode/ParmVarDecl";
 import { TypedefDecl } from "../core/CAstNode/TypedefDecl";
+import { VarDecl } from "../core/CAstNode/VarDecl";
 import { NodeFactoryMgr } from "../core/Manager/NodeFactoryMgr";
 import { SynxType } from "../core/SynxType";
 
@@ -18,4 +20,7 @@ NodeFactoryMgr.instance.regCreator(SynxType.ConstantExpr, ConstantExpr);
 NodeFactoryMgr.instance.regCreator(SynxType.ElaboratedType, ElaboratedType);
 NodeFactoryMgr.instance.regCreator(SynxType.FunctionDecl, FunctionDecl);
 NodeFactoryMgr.instance.regCreator(SynxType.ParmVarDecl, ParmVarDecl);
+NodeFactoryMgr.instance.regCreator(SynxType.DeclStmt, DeclStmt);
+NodeFactoryMgr.instance.regCreator(SynxType.VarDecl, VarDecl);
 NodeFactoryMgr.instance.regCreator(SynxType.CompoundStmt, CompoundStmt);
+
