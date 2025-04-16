@@ -5,6 +5,7 @@ import "./initialize";
 
 import { SourceFile } from './core/CAstNode/SourceFile';
 import { TransformerMgr } from './core/Manager/TransformerMgr';
+import { TransPrinterMgr } from './core/Manager/TransPrinterMgr';
 
 const args = ['-Xclang', '-ast-dump=json', '-fsyntax-only', '-I./src'];
 
@@ -55,20 +56,23 @@ async function main() {
     });
 
     const project = new tsMorph.Project();
-    TransformerMgr.instance.setTmpSrcFileTS(project.createSourceFile("temp.ts", undefined, { overwrite: true }));
 
     sourceFilesPair.forEach((pair, key) => {
         const tsFilePath = `${key}.ts`;
         const sourceFile = project.createSourceFile(tsFilePath, undefined, { overwrite: true });
 
         if (pair.source) {
-            TransformerMgr.instance.transform(pair.source, sourceFile);
+            TransformerMgr.instance.transform(pair.source, TransPrinterMgr.instance);
+            sourceFile.replaceWithText(TransPrinterMgr.instance.getContent());
             sourceFile.saveSync();
             return;
         }
 
-        pair.header && TransformerMgr.instance.transform(pair.header, sourceFile);
-        sourceFile.saveSync();
+        if (pair.header) {
+            TransformerMgr.instance.transform(pair.header, TransPrinterMgr.instance);
+            sourceFile.replaceWithText(TransPrinterMgr.instance.getContent());
+            sourceFile.saveSync();
+        }
     });
 }
 

@@ -1,17 +1,14 @@
-import { SourceFile as TSSourceFile } from "ts-morph";
 import { ASTNode } from "../CAstNode/ASTNode";
 import { SourceFile } from "../CAstNode/SourceFile";
+import { convertAccess } from "../Helper";
 import { TransformerBase } from "../Transformers/TransformerBase";
+import { TransPrinterMgr } from './TransPrinterMgr';
+
 
 export class TransformerMgr {
     public static instance: TransformerMgr = new TransformerMgr();
 
-    private m_tmpSrcFileTS: TSSourceFile | null = null;
     private m_transformers = new Map<string, TransformerBase>();
-
-    public setTmpSrcFileTS(tmpSrcFileTS: TSSourceFile): void {
-        this.m_tmpSrcFileTS = tmpSrcFileTS;
-    }
 
     public regTransformer(kind: string, transformer: TransformerBase) {
         this.m_transformers.set(kind, transformer);
@@ -21,26 +18,25 @@ export class TransformerMgr {
         return this.m_transformers.get(kind);
     }
 
-    public transform(node: SourceFile, sourceFile: TSSourceFile) {
+    public transform(node: SourceFile, printer: TransPrinterMgr) {
         node.children.forEach(child => {
             const transformer = this.getTransformer(child.kind);
             if (transformer) {
-                transformer.transform(child, node, sourceFile);
+                transformer.transform(child, node, printer);
             }
         });
     }
 
-    public transformSynx(node: ASTNode, sourceFile: SourceFile): string {
-        if (this.m_tmpSrcFileTS === null) {
-            return "";
-        }
-        this.m_tmpSrcFileTS.replaceWithText("");
+    public transformSynx(node: ASTNode, sourceFile: SourceFile, printer: TransPrinterMgr): void {
         const transformer = this.getTransformer(node.kind);
         if (transformer) {
-            transformer.transform(node, sourceFile, this.m_tmpSrcFileTS);
-            return this.m_tmpSrcFileTS.getFullText();
+            transformer.transform(node, sourceFile, printer);
         } else {
-            return node.getText();
+            printer.print(convertAccess(node.getText()));
         }
+    }
+
+    public transformSynxs(nodes: ASTNode[], sourceFile: SourceFile, printer: TransPrinterMgr): void {
+        nodes.map(node => this.transformSynx(node, sourceFile, printer));
     }
 }

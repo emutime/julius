@@ -1,12 +1,12 @@
 import path from 'path';
-import { type SourceFile as SourceFileTS } from 'ts-morph';
 import { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
+import { TransPrinterMgr } from '../Manager/TransPrinterMgr';
 import { SynxType } from "../SynxType";
 import { TransformerBase } from './TransformerBase';
 
 export class TransformerEnumDecl extends TransformerBase {
-    public override transform(node: ASTNode, sourceFile: SourceFile, sourceFileTS: SourceFileTS) {
+    public override transform(node: ASTNode, sourceFile: SourceFile, printer: TransPrinterMgr) {
         if (!node.isKind(SynxType.EnumDecl)) {
             return;
         }
@@ -32,13 +32,11 @@ export class TransformerEnumDecl extends TransformerBase {
             let removedExt = node.locFile.substring(0, node.locFile.length - path.extname(node.locFile).length);
             let importPath = path.relative(baseDir, removedExt).replace(/\\/g, '/');
 
-            sourceFileTS.addImportDeclaration({
-                moduleSpecifier: importPath,
-                namedImports: [node.name!],
-            });
+            printer.println(`import { ${node.name} } from '${importPath}';`);
+
 
             // 生成 import constant = enum.constant;
-            sourceFileTS.addStatements(referenced.map(item => `import ${item.getName()} = ${node.name!}.${item.getName()};`));
+            referenced.map(item => printer.println(`import ${item.getName()} = ${node.name!}.${item.getName()};`));
             return;
         }
 
@@ -47,21 +45,15 @@ export class TransformerEnumDecl extends TransformerBase {
             return;
         }
 
-        if (node.locFile !== sourceFileTS.getFilePath()) {
-            return;
-        }
-
-        const enumElem = sourceFileTS.addEnum({
-            name: node.name!,
-            isExported: true,
-            isConst: true,
-        })
-
+        // if (node.locFile !== sourceFile.getFilePath()) {
+        //     return;
+        // }
+        printer.println(`export const enum ${node.name} {`);
+        printer.addAdvance(1);
         for (const item of node.getConstants()) {
-            enumElem.addMember({
-                name: item.getName(),
-                initializer: item.getValue()
-            });
+            printer.println(`${item.getName()} = ${item.getValue()},`);
         }
+        printer.subAdvance(1);
+        printer.println(`}`);
     }
 } 

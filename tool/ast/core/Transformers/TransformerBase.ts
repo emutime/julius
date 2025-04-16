@@ -1,7 +1,7 @@
-import type { SourceFile as SourceFileTS } from 'ts-morph';
 import type { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
+import { TransPrinterMgr } from '../Manager/TransPrinterMgr';
 
 export abstract class TransformerBase {
-    public abstract transform(node: ASTNode, sourceFile: SourceFile | null, sourceFileTS: SourceFileTS): void;
+    public abstract transform(node: ASTNode, sourceFile: SourceFile | null, printer: TransPrinterMgr): void;
 } 

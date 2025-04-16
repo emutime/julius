@@ -21,7 +21,7 @@ export function convertType(type: string): string {
     return type;
 }
 
-export function convertStatement(statement: string): string {
+export function convertAccess(statement: string): string {
     statement = statement.replace(/->/g, ".");
     return statement;
 }

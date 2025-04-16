@@ -1,12 +1,12 @@
 import path from 'path';
-import type { SourceFile as SourceFileTS } from 'ts-morph';
 import { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
+import { TransPrinterMgr } from '../Manager/TransPrinterMgr';
 import { SynxType } from "../SynxType";
 import { TransformerBase } from './TransformerBase';
 
 export class TransformerTypedefDecl extends TransformerBase {
-    public override transform(node: ASTNode, sourceFile: SourceFile, sourceFileTS: SourceFileTS) {
+    public override transform(node: ASTNode, sourceFile: SourceFile, printer: TransPrinterMgr) {
         if (!node.isKind(SynxType.TypedefDecl)) {
             return;
         }
@@ -48,11 +48,7 @@ export class TransformerTypedefDecl extends TransformerBase {
                 console.assert(false, "TypedefDecl without location");
             }
 
-            sourceFileTS.addImportDeclaration({
-                moduleSpecifier: importPath,
-                namedImports: [node.name!],
-            });
-
+            printer.println(`import { ${node.name} } from '${importPath}';`);
             return;
         }
     }

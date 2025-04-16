@@ -1,14 +1,14 @@
 import path from 'path';
-import type { SourceFile as SourceFileTS } from 'ts-morph';
 import { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
-import { convertStatement, convertType } from '../Helper';
+import { convertType } from '../Helper';
 import { TransformerMgr } from '../Manager/TransformerMgr';
+import { TransPrinterMgr } from '../Manager/TransPrinterMgr';
 import { SynxType } from "../SynxType";
 import { TransformerBase } from './TransformerBase';
 
 export class TransformerFunctionDecl extends TransformerBase {
-    public override transform(node: ASTNode, sourceFile: SourceFile, sourceFileTS: SourceFileTS) {
+    public override transform(node: ASTNode, sourceFile: SourceFile, printer: TransPrinterMgr) {
         if (!node.isKind(SynxType.FunctionDecl)) {
             return;
         }
@@ -26,11 +26,7 @@ export class TransformerFunctionDecl extends TransformerBase {
                 console.assert(false, "FunctionDecl without location");
             }
 
-            sourceFileTS.addImportDeclaration({
-                moduleSpecifier: importPath,
-                namedImports: [node.name!],
-            });
-
+            printer.println(`import { ${node.name} } from '${importPath}';`);
             return;
         }
 
@@ -38,14 +34,17 @@ export class TransformerFunctionDecl extends TransformerBase {
             return;
         }
 
+        const returnType = convertType(node.getReturnType());
+        const exportWord = node.storageClass !== 'static' ? 'export ' : '';
         const parameters = node.getParmVarDecl().map(p => { return { name: p.name!, type: convertType(p.type) } });
-        const statements = node.compoundStmt.body.map(n => convertStatement(TransformerMgr.instance.transformSynx(n, sourceFile))).join('\n');
-        const functionDecl = sourceFileTS.addFunction({
-            name: node.name!,
-            isExported: node.storageClass !== 'static',
-            parameters: parameters,
-            returnType: convertType(node.getReturnType()),
-            statements: statements,
-        });
+
+        // fuction declaration
+        printer.println(`${exportWord}function ${node.name} (${parameters.map(p => `${p.name}: ${p.type}`).join(', ')}) : ${returnType} {`);
+
+        // function body
+        printer.addAdvance(1);
+        TransformerMgr.instance.transformSynxs(node.compoundStmt.body, sourceFile, printer); // node.compoundStmt.body.map(n => convertStatement()).join('\n');
+        printer.subAdvance(1);
+        printer.println(`}`);
     }
 } 
