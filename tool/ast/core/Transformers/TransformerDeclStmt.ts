@@ -12,7 +12,7 @@ export class TransformerDeclStmt extends TransformerBase {
         }
 
         node.varDecls.forEach(varDecl => {
-            const initializer = varDecl.children.length > 0 ? `= ${varDecl.children[0].getText()}` : "";
+            const initializer = varDecl.children.length > 0 ? ` = ${varDecl.children[0].getText()}` : "";
             printer.println(`let ${varDecl.name}: ${convertType(varDecl.type)}${convertAccess(initializer)};`)
         })
     }

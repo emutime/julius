@@ -7,8 +7,12 @@ export class EnumDecl extends ASTNode {
     public constructor(node: Record<string, any>) {
         super(node);
         this.enumConstants = this.children.filter(child => child.isKind(SynxType.EnumConstantDecl)) || [];
-        if (!this.name && this.enumConstants.length >= 2) {
-            this.name = this.getCommonPrefix(this.enumConstants[0].name!, this.enumConstants[1].name!);
+        if (!this.name) {
+            if (this.enumConstants.length >= 2) {
+                this.name = this.getCommonPrefix(this.enumConstants[0].name!, this.enumConstants[1].name!);
+            } else if (this.enumConstants.length === 1) {
+                this.name = this.enumConstants[0].name;
+            }
         }
 
         console.assert(this.name, "EnumDecl must have a name");

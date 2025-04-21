@@ -9,7 +9,7 @@ import { TransPrinterMgr } from './core/Manager/TransPrinterMgr';
 
 const args = ['-Xclang', '-ast-dump=json', '-fsyntax-only', '-I./src'];
 
-const files = ["./src/building/clone.c", "./src/building/clone.h"];
+const files = ["./src/building/barracks.c", "./src/building/barracks.h"];
 
 function clangParseAst(args: string[]) {
     return new Promise<string>((resolve, reject) => {
@@ -64,6 +64,7 @@ async function main() {
         if (pair.source) {
             TransformerMgr.instance.transform(pair.source, TransPrinterMgr.instance);
             sourceFile.replaceWithText(TransPrinterMgr.instance.getContent());
+            sourceFile.formatText();
             sourceFile.saveSync();
             return;
         }
@@ -71,6 +72,7 @@ async function main() {
         if (pair.header) {
             TransformerMgr.instance.transform(pair.header, TransPrinterMgr.instance);
             sourceFile.replaceWithText(TransPrinterMgr.instance.getContent());
+            sourceFile.formatText();
             sourceFile.saveSync();
         }
     });

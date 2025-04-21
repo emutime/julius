@@ -12,6 +12,7 @@ const typeMap = new Map<string, string>([
 
 export function convertType(type: string): string {
     type = type.split("*")[0].trim();
+    type = type.split("const").reverse()[0].trim();
 
     const mappedType = typeMap.get(type);
     if (mappedType) {

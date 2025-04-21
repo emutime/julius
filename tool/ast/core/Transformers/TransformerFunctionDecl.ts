@@ -39,7 +39,7 @@ export class TransformerFunctionDecl extends TransformerBase {
         const parameters = node.getParmVarDecl().map(p => { return { name: p.name!, type: convertType(p.type) } });
 
         // fuction declaration
-        printer.println(`${exportWord}function ${node.name} (${parameters.map(p => `${p.name}: ${p.type}`).join(', ')}) : ${returnType} {`);
+        printer.println(`${exportWord}function ${node.name}(${parameters.map(p => `${p.name}: ${p.type}`).join(', ')}): ${returnType} {`);
 
         // function body
         printer.addAdvance(1);
