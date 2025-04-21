@@ -8,6 +8,7 @@ import { EnumConstantDecl } from "../core/CAstNode/EnumConstantDecl";
 import { EnumDecl } from "../core/CAstNode/EnumDecl";
 import { FunctionDecl } from "../core/CAstNode/FunctionDecl";
 import { IfStmt } from "../core/CAstNode/IfStmt";
+import { IntegerLiteral } from "../core/CAstNode/IntegerLiteral";
 import { ParmVarDecl } from "../core/CAstNode/ParmVarDecl";
 import { SwitchStmt } from "../core/CAstNode/SwitchStmt";
 import { TypedefDecl } from "../core/CAstNode/TypedefDecl";
@@ -29,4 +30,5 @@ NodeFactoryMgr.instance.regCreator(SynxType.SwitchStmt, SwitchStmt);
 NodeFactoryMgr.instance.regCreator(SynxType.CaseStmt, CaseStmt);
 NodeFactoryMgr.instance.regCreator(SynxType.VarDecl, VarDecl);
 NodeFactoryMgr.instance.regCreator(SynxType.CompoundStmt, CompoundStmt);
+NodeFactoryMgr.instance.regCreator(SynxType.IntegerLiteral, IntegerLiteral);
 

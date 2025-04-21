@@ -8,6 +8,7 @@ import type { EnumConstantDecl } from "./CAstNode/EnumConstantDecl";
 import type { EnumDecl } from "./CAstNode/EnumDecl";
 import type { FunctionDecl } from "./CAstNode/FunctionDecl";
 import { IfStmt } from "./CAstNode/IfStmt";
+import { IntegerLiteral } from "./CAstNode/IntegerLiteral";
 import { ParmVarDecl } from "./CAstNode/ParmVarDecl";
 import { SourceFile } from "./CAstNode/SourceFile";
 import { SwitchStmt } from "./CAstNode/SwitchStmt";
@@ -29,6 +30,7 @@ export const enum SynxType {
     SwitchStmt = "SwitchStmt",
     CaseStmt = "CaseStmt",
     VarDecl = "VarDecl",
+    IntegerLiteral = "IntegerLiteral",
     SourceFile = "TranslationUnitDecl",
 }
 
@@ -48,6 +50,6 @@ export type KindToNodeMappings = {
     [SynxType.SwitchStmt]: SwitchStmt,
     [SynxType.CaseStmt]: CaseStmt,
     [SynxType.VarDecl]: VarDecl,
-
+    [SynxType.IntegerLiteral]: IntegerLiteral,
 }
 
