@@ -1,7 +1,6 @@
 
 
-export class TransPrinterMgr {
-    public static instance: TransPrinterMgr = new TransPrinterMgr();
+export default class TransPrinter {
     public m_advance: number = 0;
     public m_content: string[] = [];
 
@@ -24,6 +23,10 @@ export class TransPrinterMgr {
     }
 
     public println(line: string): void {
+        this.m_content.push(' '.repeat(4 * this.m_advance) + line);
+    }
+
+    public printTmp(line: string): void {
         this.m_content.push(' '.repeat(4 * this.m_advance) + line);
     }
 

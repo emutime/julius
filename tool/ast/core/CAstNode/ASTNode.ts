@@ -42,8 +42,15 @@ export class ASTNode {
         if (this.node["range"] === undefined) {
             return "";
         }
-        const begin = this.node["range"]["begin"]["offset"];
-        const end = this.node["range"]["end"]["offset"] + this.node["range"]["end"]["tokLen"];
-        return sourceFileText.substring(begin, end);
+        const begLoc = this.getTokenLoc(this.node["range"]["begin"]);
+        const endLoc = this.getTokenLoc(this.node["range"]["end"]);
+
+        return sourceFileText.substring(begLoc["offset"], endLoc["offset"] + endLoc["tokLen"]);
+    }
+    public getTokenLoc(node: Record<string, any>): Record<string, any> {
+        if (node["expansionLoc"] !== undefined) {
+            return node["expansionLoc"];
+        }
+        return node;
     }
 }

@@ -1,12 +1,12 @@
 import type { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
 import { convertAccess, convertType } from '../Helper';
-import { TransPrinterMgr } from '../Manager/TransPrinterMgr';
+import TransPrinter from '../Printer/TransPrinter';
 import { SynxType } from '../SynxType';
 import { TransformerBase } from './TransformerBase';
 
 export class TransformerDeclStmt extends TransformerBase {
-    public transform(node: ASTNode, sourceFile: SourceFile, printer: TransPrinterMgr): void {
+    public transform(node: ASTNode, sourceFile: SourceFile, printer: TransPrinter): void {
         if (!node.isKind(SynxType.DeclStmt)) {
             return;
         }

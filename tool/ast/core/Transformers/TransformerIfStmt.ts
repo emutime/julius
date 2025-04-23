@@ -3,12 +3,12 @@ import { IfStmt } from '../CAstNode/IfStmt';
 import type { SourceFile } from '../CAstNode/SourceFile';
 import { convertAccess } from '../Helper';
 import { TransformerMgr } from '../Manager/TransformerMgr';
-import { TransPrinterMgr } from '../Manager/TransPrinterMgr';
+import TransPrinter from '../Printer/TransPrinter';
 import { SynxType } from '../SynxType';
 import { TransformerBase } from './TransformerBase';
 
 export class TransformerIfStmt extends TransformerBase {
-    public transform(node: ASTNode, sourceFile: SourceFile, printer: TransPrinterMgr): void {
+    public transform(node: ASTNode, sourceFile: SourceFile, printer: TransPrinter): void {
         if (!node.isKind(SynxType.IfStmt)) {
             return;
         }
@@ -16,7 +16,7 @@ export class TransformerIfStmt extends TransformerBase {
         this.transformIfStmt(node as IfStmt, sourceFile, false, printer);
     }
 
-    public transformIfStmt(node: IfStmt, sourceFile: SourceFile, prevHasElse: boolean = false, printer: TransPrinterMgr): void {
+    public transformIfStmt(node: IfStmt, sourceFile: SourceFile, prevHasElse: boolean = false, printer: TransPrinter): void {
         const exprText = convertAccess(node.expr.getText());
         if (prevHasElse) {
             printer.println(`} else if (${exprText}) {`);

@@ -3,6 +3,7 @@ import { SynxType } from "../core/SynxType";
 import { TransformerCaseStmt } from "../core/Transformers/TransformerCaseStmt";
 import { TransformerDeclStmt } from "../core/Transformers/TransformerDeclStmt";
 import { TransformerEnumDecl } from "../core/Transformers/TransformerEnumDecl";
+import { TransformerForStmt } from "../core/Transformers/TransformerForStmt";
 import { TransformerFunctionDecl } from "../core/Transformers/TransformerFunctionDecl";
 import { TransformerIfStmt } from "../core/Transformers/TransformerIfStmt";
 import { TransformerSwitchStmt } from "../core/Transformers/TransformerSwitchStmt";
@@ -15,4 +16,5 @@ TransformerMgr.instance.regTransformer(SynxType.DeclStmt, new TransformerDeclStm
 TransformerMgr.instance.regTransformer(SynxType.IfStmt, new TransformerIfStmt());
 TransformerMgr.instance.regTransformer(SynxType.SwitchStmt, new TransformerSwitchStmt());
 TransformerMgr.instance.regTransformer(SynxType.CaseStmt, new TransformerCaseStmt());
+TransformerMgr.instance.regTransformer(SynxType.ForStmt, new TransformerForStmt());
 

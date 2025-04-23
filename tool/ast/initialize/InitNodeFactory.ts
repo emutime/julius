@@ -6,6 +6,7 @@ import { DeclStmt } from "../core/CAstNode/DeclStmt";
 import { ElaboratedType } from "../core/CAstNode/ElaboratedType";
 import { EnumConstantDecl } from "../core/CAstNode/EnumConstantDecl";
 import { EnumDecl } from "../core/CAstNode/EnumDecl";
+import { ForStmt } from "../core/CAstNode/ForStmt";
 import { FunctionDecl } from "../core/CAstNode/FunctionDecl";
 import { IfStmt } from "../core/CAstNode/IfStmt";
 import { IntegerLiteral } from "../core/CAstNode/IntegerLiteral";
@@ -31,4 +32,5 @@ NodeFactoryMgr.instance.regCreator(SynxType.CaseStmt, CaseStmt);
 NodeFactoryMgr.instance.regCreator(SynxType.VarDecl, VarDecl);
 NodeFactoryMgr.instance.regCreator(SynxType.CompoundStmt, CompoundStmt);
 NodeFactoryMgr.instance.regCreator(SynxType.IntegerLiteral, IntegerLiteral);
+NodeFactoryMgr.instance.regCreator(SynxType.ForStmt, ForStmt);
 

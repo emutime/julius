@@ -3,12 +3,12 @@ import { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
 import { convertType } from '../Helper';
 import { TransformerMgr } from '../Manager/TransformerMgr';
-import { TransPrinterMgr } from '../Manager/TransPrinterMgr';
+import TransPrinter from '../Printer/TransPrinter';
 import { SynxType } from "../SynxType";
 import { TransformerBase } from './TransformerBase';
 
 export class TransformerFunctionDecl extends TransformerBase {
-    public override transform(node: ASTNode, sourceFile: SourceFile, printer: TransPrinterMgr) {
+    public override transform(node: ASTNode, sourceFile: SourceFile, printer: TransPrinter) {
         if (!node.isKind(SynxType.FunctionDecl)) {
             return;
         }

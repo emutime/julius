@@ -1,8 +1,8 @@
 import { ASTNode } from "../CAstNode/ASTNode";
 import { SourceFile } from "../CAstNode/SourceFile";
 import { convertAccess } from "../Helper";
+import TransPrinter from '../Printer/TransPrinter';
 import { TransformerBase } from "../Transformers/TransformerBase";
-import { TransPrinterMgr } from './TransPrinterMgr';
 
 
 export class TransformerMgr {
@@ -18,7 +18,7 @@ export class TransformerMgr {
         return this.m_transformers.get(kind);
     }
 
-    public transform(node: SourceFile, printer: TransPrinterMgr) {
+    public transform(node: SourceFile, printer: TransPrinter) {
         node.children.forEach(child => {
             const transformer = this.getTransformer(child.kind);
             if (transformer) {
@@ -27,7 +27,7 @@ export class TransformerMgr {
         });
     }
 
-    public transformSynx(node: ASTNode, sourceFile: SourceFile, printer: TransPrinterMgr): void {
+    public transformSynx(node: ASTNode, sourceFile: SourceFile, printer: TransPrinter): void {
         const transformer = this.getTransformer(node.kind);
         if (transformer) {
             transformer.transform(node, sourceFile, printer);
@@ -36,7 +36,7 @@ export class TransformerMgr {
         }
     }
 
-    public transformSynxs(nodes: ASTNode[], sourceFile: SourceFile, printer: TransPrinterMgr): void {
+    public transformSynxs(nodes: ASTNode[], sourceFile: SourceFile, printer: TransPrinter): void {
         nodes.map(node => this.transformSynx(node, sourceFile, printer));
     }
 }

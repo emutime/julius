@@ -5,7 +5,7 @@ import "./initialize";
 
 import { SourceFile } from './core/CAstNode/SourceFile';
 import { TransformerMgr } from './core/Manager/TransformerMgr';
-import { TransPrinterMgr } from './core/Manager/TransPrinterMgr';
+import TransPrinter from './core/Printer/TransPrinter';
 
 const args = ['-Xclang', '-ast-dump=json', '-fsyntax-only', '-I./src'];
 
@@ -60,18 +60,19 @@ async function main() {
     sourceFilesPair.forEach((pair, key) => {
         const tsFilePath = `${key}.ts`;
         const sourceFile = project.createSourceFile(tsFilePath, undefined, { overwrite: true });
+        const printer = new TransPrinter();
 
         if (pair.source) {
-            TransformerMgr.instance.transform(pair.source, TransPrinterMgr.instance);
-            sourceFile.replaceWithText(TransPrinterMgr.instance.getContent());
+            TransformerMgr.instance.transform(pair.source, printer);
+            sourceFile.replaceWithText(printer.getContent());
             sourceFile.formatText();
             sourceFile.saveSync();
             return;
         }
 
         if (pair.header) {
-            TransformerMgr.instance.transform(pair.header, TransPrinterMgr.instance);
-            sourceFile.replaceWithText(TransPrinterMgr.instance.getContent());
+            TransformerMgr.instance.transform(pair.header, printer);
+            sourceFile.replaceWithText(printer.getContent());
             sourceFile.formatText();
             sourceFile.saveSync();
         }
