@@ -24,5 +24,6 @@ export function convertType(type: string): string {
 
 export function convertAccess(statement: string): string {
     statement = statement.replace(/->/g, ".");
+    statement = statement.replace(/&([\w]+)/g, "$1");
     return statement;
 }

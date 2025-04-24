@@ -36,6 +36,14 @@ export class TransformerIfStmt extends TransformerBase {
                 this.transformIfStmt(node.elseStmt, sourceFile, true, printer);
             } else {
                 printer.println(`} else {`);
+                printer.addAdvance(1);
+                if (node.elseStmt.isKind(SynxType.CompoundStmt)) {
+                    TransformerMgr.instance.transformSynxs(node.elseStmt.body, sourceFile, printer);
+                } else {
+                    TransformerMgr.instance.transformSynx(node.elseStmt, sourceFile, printer);
+                }
+                printer.subAdvance(1);
+                printer.println(`}`);
             }
         } else {
             printer.println(`}`);
