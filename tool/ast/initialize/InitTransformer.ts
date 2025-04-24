@@ -8,6 +8,7 @@ import { TransformerFunctionDecl } from "../core/Transformers/TransformerFunctio
 import { TransformerIfStmt } from "../core/Transformers/TransformerIfStmt";
 import { TransformerSwitchStmt } from "../core/Transformers/TransformerSwitchStmt";
 import { TransformerTypedefDecl } from "../core/Transformers/TransformerTypeDecl";
+import { TransformerVarDecl } from "../core/Transformers/TransformerVarDecl";
 
 TransformerMgr.instance.regTransformer(SynxType.EnumDecl, new TransformerEnumDecl());
 TransformerMgr.instance.regTransformer(SynxType.FunctionDecl, new TransformerFunctionDecl());
@@ -17,4 +18,5 @@ TransformerMgr.instance.regTransformer(SynxType.IfStmt, new TransformerIfStmt())
 TransformerMgr.instance.regTransformer(SynxType.SwitchStmt, new TransformerSwitchStmt());
 TransformerMgr.instance.regTransformer(SynxType.CaseStmt, new TransformerCaseStmt());
 TransformerMgr.instance.regTransformer(SynxType.ForStmt, new TransformerForStmt());
+TransformerMgr.instance.regTransformer(SynxType.VarDecl, new TransformerVarDecl());
 
