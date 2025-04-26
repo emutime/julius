@@ -35,12 +35,12 @@ export function convertAccess(statement: string): string {
 }
 
 export function genDefineDeclaration(node: IntegerLiteral, currentFile: string): string {
-    if (node.node["range"]["begin"]["expansionLoc"] === undefined) {
+    if (node.node["range"]["begin"]["spellingLoc"] === undefined) {
         return "";
     }
 
     const baseDir = path.resolve(process.cwd() + '\\src');
-    const locFile = node.node["range"]["begin"]["expansionLoc"]["file"];
+    const locFile = node.node["range"]["begin"]["spellingLoc"]["file"];
 
     if (locFile && path.isAbsolute(locFile) && !locFile.startsWith(baseDir)) {
         throw new Error("Invalid file path: " + locFile);

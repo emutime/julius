@@ -71,7 +71,7 @@ async function main() {
             traverse(pair.source,
                 (node, parent) => {
                     if (node.isKind(SynxType.IntegerLiteral)) {
-                        if (node.node["range"]["begin"]["expansionLoc"] !== undefined) {
+                        if (node.node["range"]["begin"]["spellingLoc"] !== undefined) {
                             if (defines.has(node.getText())) {
                                 return;
                             }
