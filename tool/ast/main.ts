@@ -87,6 +87,7 @@ async function main() {
         if (pair.source) {
             TransformerMgr.instance.transform(pair.source, printer);
             sourceFile.replaceWithText([...defines.values()].join("\n") + "\n" + printer.getContent());
+            sourceFile.organizeImports();
             sourceFile.formatText();
             sourceFile.saveSync();
             return;
@@ -95,6 +96,7 @@ async function main() {
         if (pair.header) {
             TransformerMgr.instance.transform(pair.header, printer);
             sourceFile.replaceWithText([...defines.values()].join("\n") + "\n" + printer.getContent());
+            sourceFile.organizeImports();
             sourceFile.formatText();
             sourceFile.saveSync();
         }

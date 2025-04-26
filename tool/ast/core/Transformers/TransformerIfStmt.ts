@@ -26,9 +26,9 @@ export class TransformerIfStmt extends TransformerBase {
 
         printer.addAdvance(1);
         if (node.stmt.isKind(SynxType.CompoundStmt)) {
-            TransformerMgr.instance.transformSynxs(node.stmt.body, sourceFile, printer);
+            TransformerMgr.instance.transformStmts(node.stmt.body, sourceFile, printer);
         } else {
-            TransformerMgr.instance.transformSynx(node.stmt, sourceFile, printer);
+            TransformerMgr.instance.transformStmt(node.stmt, sourceFile, printer);
         }
         printer.subAdvance(1);
         if (node.elseStmt) {
@@ -38,9 +38,9 @@ export class TransformerIfStmt extends TransformerBase {
                 printer.println(`} else {`);
                 printer.addAdvance(1);
                 if (node.elseStmt.isKind(SynxType.CompoundStmt)) {
-                    TransformerMgr.instance.transformSynxs(node.elseStmt.body, sourceFile, printer);
+                    TransformerMgr.instance.transformStmts(node.elseStmt.body, sourceFile, printer);
                 } else {
-                    TransformerMgr.instance.transformSynx(node.elseStmt, sourceFile, printer);
+                    TransformerMgr.instance.transformStmt(node.elseStmt, sourceFile, printer);
                 }
                 printer.subAdvance(1);
                 printer.println(`}`);

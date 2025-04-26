@@ -19,4 +19,5 @@ TransformerMgr.instance.regTransformer(SynxType.SwitchStmt, new TransformerSwitc
 TransformerMgr.instance.regTransformer(SynxType.CaseStmt, new TransformerCaseStmt());
 TransformerMgr.instance.regTransformer(SynxType.ForStmt, new TransformerForStmt());
 TransformerMgr.instance.regTransformer(SynxType.VarDecl, new TransformerVarDecl());
-
+// TransformerMgr.instance.regTransformer(SynxType.ReturnStmt, new TransformerReturnStmt());
+// TransformerMgr.instance.regTransformer(SynxType.BinaryOperator, new TransformerBinaryOperator());

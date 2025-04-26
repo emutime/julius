@@ -26,8 +26,11 @@ export default class TransPrinter {
         this.m_content.push(' '.repeat(4 * this.m_advance) + line);
     }
 
-    public printTmp(line: string): void {
-        this.m_content.push(' '.repeat(4 * this.m_advance) + line);
+    public printStr(str: string): void {
+        if (this.m_content.length === 0) {
+            this.m_content.push(' '.repeat(4 * this.m_advance));
+        }
+        this.m_content[this.m_content.length - 1] += str;
     }
 
     public getContent(): string {

@@ -10,14 +10,17 @@ export class TransformerForStmt extends TransformerBase {
         if (!node.isKind(SynxType.ForStmt)) {
             return;
         }
-        const inforPrit = new TransPrinter();
-        TransformerMgr.instance.transformSynxs(node.inforStmt.filter(n => n.kind !== undefined), sourceFile, inforPrit);
-        const inforStmt = inforPrit.getContent().split('\n').map(line => line.split(";").join("")).join('; ');
+
+        const inforStmt = node.inforStmt.filter(n => n.kind !== undefined).map(n => {
+            const inforPrit = new TransPrinter();
+            TransformerMgr.instance.transformSynx(n, sourceFile, inforPrit);
+            return inforPrit.getContent();
+        }).join('; ');
 
         printer.println(`for (${inforStmt}) {`);
         if (node.compoundStmt) {
             printer.addAdvance(1);
-            TransformerMgr.instance.transformSynxs(node.compoundStmt.body, sourceFile, printer);
+            TransformerMgr.instance.transformStmts(node.compoundStmt.body, sourceFile, printer);
             printer.subAdvance(1);
         }
         printer.println(`}`);

@@ -1,4 +1,5 @@
 import type { ASTNode } from "./CAstNode/ASTNode";
+import { BinaryOperator } from "./CAstNode/BinaryOperator";
 import { CaseStmt } from "./CAstNode/CaseStmt";
 import { CompoundStmt } from "./CAstNode/CompoundStmt";
 import type { ConstantExpr } from "./CAstNode/ConstantExpr";
@@ -11,6 +12,7 @@ import type { FunctionDecl } from "./CAstNode/FunctionDecl";
 import { IfStmt } from "./CAstNode/IfStmt";
 import { IntegerLiteral } from "./CAstNode/IntegerLiteral";
 import { ParmVarDecl } from "./CAstNode/ParmVarDecl";
+import { ReturnStmt } from "./CAstNode/ReturnStmt";
 import { SourceFile } from "./CAstNode/SourceFile";
 import { SwitchStmt } from "./CAstNode/SwitchStmt";
 import { TypedefDecl } from "./CAstNode/TypedefDecl";
@@ -27,17 +29,20 @@ export const enum SynxType {
     ParmVarDecl = "ParmVarDecl",
     CompoundStmt = "CompoundStmt",
     DeclStmt = "DeclStmt",
+    BinaryOperator = "BinaryOperator",
     IfStmt = "IfStmt",
     SwitchStmt = "SwitchStmt",
     CaseStmt = "CaseStmt",
     VarDecl = "VarDecl",
     IntegerLiteral = "IntegerLiteral",
     ForStmt = "ForStmt",
+    ReturnStmt = "ReturnStmt",
+    CallExpr = "CallExpr",
     SourceFile = "TranslationUnitDecl",
+    UnaryOperator = "UnaryOperator",
 }
-
-export type KindToNodeMappings = {
-    [SynxType.Unknown]: ASTNode,
+export interface KindToNodeMappings {
+    [kind: string]: ASTNode;
     [SynxType.EnumDecl]: EnumDecl,
     [SynxType.EnumConstantDecl]: EnumConstantDecl,
     [SynxType.TypedefDecl]: TypedefDecl,
@@ -53,6 +58,8 @@ export type KindToNodeMappings = {
     [SynxType.CaseStmt]: CaseStmt,
     [SynxType.VarDecl]: VarDecl,
     [SynxType.ForStmt]: ForStmt,
+    [SynxType.ReturnStmt]: ReturnStmt,
     [SynxType.IntegerLiteral]: IntegerLiteral,
+    [SynxType.BinaryOperator]: BinaryOperator,
 }
 

@@ -13,7 +13,7 @@ export class TransformerCaseStmt extends TransformerBase {
 
         printer.println(`case ${node.expr.getText()}:`);
         printer.addAdvance(1);
-        TransformerMgr.instance.transformSynxs(node.stmts, sourceFile, printer);
+        TransformerMgr.instance.transformStmts(node.stmts, sourceFile, printer);
         printer.subAdvance(1);
     }
 } 

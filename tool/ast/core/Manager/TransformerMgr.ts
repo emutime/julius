@@ -2,6 +2,7 @@ import { ASTNode } from "../CAstNode/ASTNode";
 import { SourceFile } from "../CAstNode/SourceFile";
 import { convertAccess } from "../Helper";
 import TransPrinter from '../Printer/TransPrinter';
+import { SynxType } from "../SynxType";
 import { TransformerBase } from "../Transformers/TransformerBase";
 
 
@@ -36,7 +37,20 @@ export class TransformerMgr {
         }
     }
 
-    public transformSynxs(nodes: ASTNode[], sourceFile: SourceFile, printer: TransPrinter): void {
-        nodes.map(node => this.transformSynx(node, sourceFile, printer));
+    public transformStmt(node: ASTNode, sourceFile: SourceFile, printer: TransPrinter): void {
+        this.transformSynx(node, sourceFile, printer);
+        if (node.kind === SynxType.VarDecl ||
+            node.kind === SynxType.CallExpr ||
+            node.kind === SynxType.DeclStmt ||
+            node.kind === SynxType.BinaryOperator ||
+            node.kind === SynxType.ReturnStmt ||
+            node.kind === SynxType.UnaryOperator
+        ) {
+            printer.printStr(";");
+        }
+    }
+
+    public transformStmts(nodes: ASTNode[], sourceFile: SourceFile, printer: TransPrinter): void {
+        nodes.map(node => this.transformStmt(node, sourceFile, printer));
     }
 }

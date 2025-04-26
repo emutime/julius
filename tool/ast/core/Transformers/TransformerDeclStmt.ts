@@ -18,7 +18,7 @@ export class TransformerDeclStmt extends TransformerBase {
             }
 
             let initializerStr = initializer !== "" ? ` = ${initializer}` : "";
-            printer.println(`let ${varDecl.name}: ${convertType(varDecl.type)}${convertAccess(initializerStr)};`)
+            printer.println(`let ${varDecl.name}: ${convertType(varDecl.type)}${convertAccess(initializerStr)}`)
         })
     }
 } 

@@ -13,6 +13,6 @@ export class TransformerVarDecl extends TransformerBase {
 
         const initializer = node.children.length > 0 ? ` = ${node.children[0].getText()}` : "";
         const exportWord = node.parent?.kind === "TranslationUnitDecl" && node.storageClass !== 'static' ? 'export ' : '';
-        printer.println(`${exportWord}let ${node.name}: ${convertType(node.type)}${convertAccess(initializer)};`)
+        printer.println(`${exportWord}let ${node.name}: ${convertType(node.type)}${convertAccess(initializer)}`)
     }
 } 

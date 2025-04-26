@@ -1,4 +1,5 @@
 import { ASTNode } from "../core/CAstNode/ASTNode";
+import { BinaryOperator } from "../core/CAstNode/BinaryOperator";
 import { CaseStmt } from "../core/CAstNode/CaseStmt";
 import { CompoundStmt } from "../core/CAstNode/CompoundStmt";
 import { ConstantExpr } from "../core/CAstNode/ConstantExpr";
@@ -11,6 +12,7 @@ import { FunctionDecl } from "../core/CAstNode/FunctionDecl";
 import { IfStmt } from "../core/CAstNode/IfStmt";
 import { IntegerLiteral } from "../core/CAstNode/IntegerLiteral";
 import { ParmVarDecl } from "../core/CAstNode/ParmVarDecl";
+import { ReturnStmt } from "../core/CAstNode/ReturnStmt";
 import { SwitchStmt } from "../core/CAstNode/SwitchStmt";
 import { TypedefDecl } from "../core/CAstNode/TypedefDecl";
 import { VarDecl } from "../core/CAstNode/VarDecl";
@@ -33,4 +35,5 @@ NodeFactoryMgr.instance.regCreator(SynxType.VarDecl, VarDecl);
 NodeFactoryMgr.instance.regCreator(SynxType.CompoundStmt, CompoundStmt);
 NodeFactoryMgr.instance.regCreator(SynxType.IntegerLiteral, IntegerLiteral);
 NodeFactoryMgr.instance.regCreator(SynxType.ForStmt, ForStmt);
-
+NodeFactoryMgr.instance.regCreator(SynxType.ReturnStmt, ReturnStmt);
+NodeFactoryMgr.instance.regCreator(SynxType.BinaryOperator, BinaryOperator);

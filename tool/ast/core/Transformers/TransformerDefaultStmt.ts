@@ -14,7 +14,7 @@ export class TransformerSwitchStmt extends TransformerBase {
 
         printer.println(`switch (${convertAccess(node.expr.getText())}) {`);
         printer.addAdvance(1);
-        TransformerMgr.instance.transformSynxs(node.compoundStmt.body, sourceFile, printer); // node.compoundStmt.body.map(n => convertStatement()).join('\n');
+        TransformerMgr.instance.transformStmts(node.compoundStmt.body, sourceFile, printer); // node.compoundStmt.body.map(n => convertStatement()).join('\n');
         printer.subAdvance(1);
         printer.println(`}`);
     }

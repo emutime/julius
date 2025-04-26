@@ -12,6 +12,10 @@ const typeMap = new Map<string, string>([
     ["bool", "boolean"],
 ]);
 
+export function getPathWithoutExt(filePath: string): string {
+    return filePath.substring(0, filePath.length - path.extname(filePath).length);
+}
+
 export function convertType(type: string): string {
     type = type.split("*")[0].trim();
     type = type.split("const").reverse()[0].trim();
@@ -22,10 +26,6 @@ export function convertType(type: string): string {
     }
     console.log(`Unknown type to map: ${type}`);
     return type;
-}
-
-export function getPathWithoutExt(filePath: string): string {
-    return filePath.substring(0, filePath.length - path.extname(filePath).length);
 }
 
 export function convertAccess(statement: string): string {
