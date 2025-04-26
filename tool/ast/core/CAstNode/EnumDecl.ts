@@ -11,7 +11,7 @@ export class EnumDecl extends ASTNode {
             if (this.enumConstants.length >= 2) {
                 this.name = this.getCommonPrefix(this.enumConstants[0].name!, this.enumConstants[1].name!);
             } else if (this.enumConstants.length === 1) {
-                this.name = this.enumConstants[0].name;
+                this.name = this.getFirstWordPrefix(this.enumConstants[0].name!);
             }
         }
 
@@ -38,6 +38,16 @@ export class EnumDecl extends ASTNode {
             word = word.toLowerCase();
             return word.charAt(0).toUpperCase() + word.slice(1);
         }).join("");
+    }
+
+    private getFirstWordPrefix(str: string) {
+        const words = str.split("_");
+        if (words.length == 1) {
+            return words[0];
+        } else {
+            words.pop();
+            return words.join("_");
+        }
     }
 
     public getConstants(): EnumConstantDecl[] {

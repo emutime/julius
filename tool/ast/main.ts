@@ -4,8 +4,11 @@ import * as tsMorph from 'ts-morph';
 import "./initialize";
 
 import { SourceFile } from './core/CAstNode/SourceFile';
+import { genDefineDeclaration } from './core/Helper';
 import { TransformerMgr } from './core/Manager/TransformerMgr';
 import TransPrinter from './core/Printer/TransPrinter';
+import { SynxType } from './core/SynxType';
+import { traverse } from './core/Traverse';
 
 const args = ['-Xclang', '-ast-dump=json', '-fsyntax-only', '-I./src'];
 
@@ -62,9 +65,28 @@ async function main() {
         const sourceFile = project.createSourceFile(tsFilePath, undefined, { overwrite: true });
         const printer = new TransPrinter();
 
+        const defines: Map<string, string> = new Map<string, string>();
+
+        if (pair.source) {
+            traverse(pair.source,
+                (node, parent) => {
+                    if (node.isKind(SynxType.IntegerLiteral)) {
+                        if (node.node["range"]["begin"]["expansionLoc"] !== undefined) {
+                            if (defines.has(node.getText())) {
+                                return;
+                            }
+                            defines.set(node.getText(), genDefineDeclaration(node, tsFilePath));
+                        }
+                    }
+                },
+                (node, parent) => { }
+            );
+        }
+
+
         if (pair.source) {
             TransformerMgr.instance.transform(pair.source, printer);
-            sourceFile.replaceWithText(printer.getContent());
+            sourceFile.replaceWithText([...defines.values()].join("\n") + "\n" + printer.getContent());
             sourceFile.formatText();
             sourceFile.saveSync();
             return;
@@ -72,7 +94,7 @@ async function main() {
 
         if (pair.header) {
             TransformerMgr.instance.transform(pair.header, printer);
-            sourceFile.replaceWithText(printer.getContent());
+            sourceFile.replaceWithText([...defines.values()].join("\n") + "\n" + printer.getContent());
             sourceFile.formatText();
             sourceFile.saveSync();
         }
