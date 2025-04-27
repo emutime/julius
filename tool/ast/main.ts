@@ -12,7 +12,7 @@ import { traverse } from './core/Traverse';
 
 const args = ['-Xclang', '-ast-dump=json', '-fsyntax-only', '-I./src'];
 
-const files = ["./src/building/barracks.c", "./src/building/barracks.h"];
+const files = ["./src/building/construction_building.c", "./src/building/construction_building.h"];
 
 function clangParseAst(args: string[]) {
     return new Promise<string>((resolve, reject) => {
