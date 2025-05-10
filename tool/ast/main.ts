@@ -5,6 +5,7 @@ import "./initialize";
 
 import { SourceFile } from './core/CAstNode/SourceFile';
 import { genDefineDeclaration } from './core/Helper';
+import { SourceFileMgr } from './core/Manager/SourceFileMgr';
 import { TransformerMgr } from './core/Manager/TransformerMgr';
 import TransPrinter from './core/Printer/TransPrinter';
 import { SynxType } from './core/SynxType';
@@ -48,6 +49,7 @@ async function main() {
     const sourceFilesPair = new Map<string, { header?: SourceFile, source?: SourceFile }>();
 
     sourceFiles.forEach(sourceFile => {
+        SourceFileMgr.instance.addSourceFile(sourceFile.filePath, sourceFile);
         const extname = path.extname(sourceFile.filePath);
         const baseName = path.basename(sourceFile.filePath, extname);
         const dirname = path.dirname(sourceFile.filePath);

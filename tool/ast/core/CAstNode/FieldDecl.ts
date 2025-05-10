@@ -5,6 +5,6 @@ export class FieldDecl extends ASTNode {
     public readonly type: TypeNode;
     public constructor(node: Record<string, any>) {
         super(node);
-        this.type = new TypeNode(this.node["type"]);
+        this.type = new TypeNode(this.node["type"], this);
     }
 }

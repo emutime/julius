@@ -1,6 +1,8 @@
 import path from "path";
 import { NodeFactoryMgr } from "../Manager/NodeFactoryMgr";
+import { SourceFileMgr } from "../Manager/SourceFileMgr";
 import { KindToNodeMappings, SynxType } from "../SynxType";
+
 export class ASTNode {
     public id: string = "";
     public name: string;
@@ -29,16 +31,30 @@ export class ASTNode {
     public isKind<TKind extends SynxType>(kind: TKind): this is KindToNodeMappings[TKind] {
         return this.kind === kind;
     }
-    public getSourceFileText(): string {
-        let parent = this.parent;
-        while (parent && !parent.isKind(SynxType.SourceFile)) {
-            parent = parent.parent;
+    public getLocFile(): string {
+        let locFile = this.locFile;
+        if (!locFile) {
+            let parent = this.parent;
+            while (parent && !parent.locFile) {
+                parent = parent.parent;
+            }
+            locFile = parent?.locFile;
         }
 
-        return parent?.getSourceFileText() || "";
+        return locFile;
     }
     public getText(): string {
-        const sourceFileText = this.getSourceFileText();
+        const locFile = this.getLocFile();
+        if (!locFile) {
+            return "";
+        }
+
+        const sourceFile = SourceFileMgr.instance.getSourceFile(locFile);
+        if (!sourceFile) {
+            return "";
+        }
+
+        const sourceFileText = sourceFile.getText();
         if (this.node["range"] === undefined) {
             return "";
         }

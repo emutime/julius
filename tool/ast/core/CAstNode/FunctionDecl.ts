@@ -11,7 +11,7 @@ export class FunctionDecl extends ASTNode {
     public constructor(node: Record<string, any>) {
         super(node);
         this.storageClass = this.node["storageClass"];
-        this.returnType = new TypeNode(this.node["type"]);
+        this.returnType = new TypeNode(this.node["type"], this);
         this.parmVarDecl = this.children.filter(child => child.isKind(SynxType.ParmVarDecl));
         this.compoundStmt = this.children.find(child => child.isKind(SynxType.CompoundStmt));
     }

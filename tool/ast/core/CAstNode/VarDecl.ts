@@ -9,7 +9,7 @@ export class VarDecl extends ASTNode {
 
     public constructor(node: Record<string, any>) {
         super(node);
-        this.type = new TypeNode(this.node["type"]); //this.node["type"]["qualType"].split("(")[0].trim();
+        this.type = new TypeNode(this.node["type"], this); //this.node["type"]["qualType"].split("(")[0].trim();
         this.storageClass = this.node["storageClass"];
     }
 }    

@@ -22,9 +22,6 @@ export class SourceFile extends ASTNode {
             this.children.push(childNode);
         });
     }
-    public getSourceFileText(): string {
-        return this.fileText;
-    }
     public getText(): string {
         return this.fileText;
     }

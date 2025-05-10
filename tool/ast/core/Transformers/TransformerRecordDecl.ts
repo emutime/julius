@@ -1,5 +1,8 @@
+import path from 'path';
 import { ASTNode } from '../CAstNode/ASTNode';
+import { RecordDecl } from '../CAstNode/RecordDecl';
 import type { SourceFile } from '../CAstNode/SourceFile';
+import { getTSFilePath } from '../Helper';
 import TransPrinter from '../Printer/TransPrinter';
 import { SynxType } from "../SynxType";
 import { TransformerBase } from './TransformerBase';
@@ -15,20 +18,34 @@ export class TransformerRecordDecl extends TransformerBase {
         }
 
         if (node.includedFrom) {
-            if (!node.isUsed) {
+            const baseDir = path.resolve(process.cwd() + '\\src');
+            if (!node.locFile) {
+                return;
+            }
+
+            if (!node.locFile.startsWith(baseDir)) {
+                return;
+            }
+
+            if (getTSFilePath(node.locFile) !== getTSFilePath(sourceFile.filePath)) {
+                // generate code for import record decls
                 return;
             }
         }
 
-        // TODO: generate code for dependent record decls
-        // node.fields.forEach(field => TransformerMgr.instance.transformSynx(field, sourceFile, printer));
-        const className = node.name || `unnamed${node.node.loc.line}_${node.node.loc.col}`
+        this.transformInners(node, sourceFile, printer);
+    }
+
+    private transformInners(node: RecordDecl, sourceFile: SourceFile, printer: TransPrinter) {
+        node.nestedRecords.forEach(recordDecl => this.transformInners(recordDecl, sourceFile, printer));
+
+        const className = node.name;
         printer.println(`export class ${className} {`);
         printer.addAdvance(1);
 
         // generate code for fields
         node.fields.forEach(field => {
-            printer.println(`public ${field.name}: ${field.type.typeDesc} = ${field.type.getDefaultValue()};`);
+            printer.println(`public ${field.name}: ${field.type.typeDesc} = ${field.type.getDefaultInitializer()};`);
         });
 
         // generate constructor
