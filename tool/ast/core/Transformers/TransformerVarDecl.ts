@@ -7,8 +7,16 @@ import { TransformerBase } from './TransformerBase';
 
 export class TransformerVarDecl extends TransformerBase {
     public transform(node: ASTNode, sourceFile: SourceFile, printer: TransPrinter): void {
-        if (!node.isKind(SynxType.VarDecl)) {
+        if (!node.isKind(SynxType.VarDecl
+
+        )) {
             return;
+        }
+
+        if (node.includedFrom) {
+            if (!node.isUsed) {
+                return;
+            }
         }
 
         const initializer = node.children.length > 0 ? ` = ${node.children[0].getText()}` : "";
