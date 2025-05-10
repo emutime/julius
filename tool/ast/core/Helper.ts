@@ -16,6 +16,16 @@ export function getPathWithoutExt(filePath: string): string {
     return filePath.substring(0, filePath.length - path.extname(filePath).length);
 }
 
+export function getTSFilePath(filePath: string): string {
+    if (path.isAbsolute(filePath)) {
+        return getPathWithoutExt(filePath) + ".ts";
+    } else {
+        const baseDir = path.resolve(process.cwd());
+        const absPath = path.resolve(baseDir, filePath);
+        return getPathWithoutExt(absPath) + ".ts";
+    }
+}
+
 export function convertType(type: string): string {
     type = type.split("*")[0].trim();
     type = type.split("const").reverse()[0].trim();
@@ -43,10 +53,10 @@ export function genDefineDeclaration(node: IntegerLiteral, currentFile: string):
     const locFile = node.node["range"]["begin"]["spellingLoc"]["file"];
 
     if (locFile && path.isAbsolute(locFile) && !locFile.startsWith(baseDir)) {
-        throw new Error("Invalid file path: " + locFile);
+        return "";
     }
 
-    if (!locFile) {
+    if (!locFile || getTSFilePath(locFile) === currentFile) {
         // 生成变量定义
         return `export const ${node.getText()} = ${node.node["value"]};`;
     } else {
