@@ -1,14 +1,15 @@
+
+import { TypeNode } from "../HelpNode/TypeNode";
 import { ASTNode } from "./ASTNode";
 
 export class VarDecl extends ASTNode {
-    public readonly type: string = "";
+    public readonly type: TypeNode;
     public readonly isPointer: boolean = false;
     public readonly storageClass: string | undefined;
 
     public constructor(node: Record<string, any>) {
         super(node);
-        this.type = this.node["type"]["qualType"].split("(")[0].trim();
-        this.isPointer = this.node["type"]["qualType"].includes("*");
+        this.type = new TypeNode(this.node["type"]); //this.node["type"]["qualType"].split("(")[0].trim();
         this.storageClass = this.node["storageClass"];
     }
 }    

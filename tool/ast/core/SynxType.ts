@@ -7,11 +7,13 @@ import { DeclStmt } from "./CAstNode/DeclStmt";
 import type { ElaboratedType } from "./CAstNode/ElaboratedType";
 import type { EnumConstantDecl } from "./CAstNode/EnumConstantDecl";
 import type { EnumDecl } from "./CAstNode/EnumDecl";
+import { FieldDecl } from "./CAstNode/FieldDecl";
 import { ForStmt } from "./CAstNode/ForStmt";
 import type { FunctionDecl } from "./CAstNode/FunctionDecl";
 import { IfStmt } from "./CAstNode/IfStmt";
 import { IntegerLiteral } from "./CAstNode/IntegerLiteral";
 import { ParmVarDecl } from "./CAstNode/ParmVarDecl";
+import { RecordDecl } from "./CAstNode/RecordDecl";
 import { ReturnStmt } from "./CAstNode/ReturnStmt";
 import { SourceFile } from "./CAstNode/SourceFile";
 import { SwitchStmt } from "./CAstNode/SwitchStmt";
@@ -40,6 +42,8 @@ export const enum SynxType {
     CallExpr = "CallExpr",
     SourceFile = "TranslationUnitDecl",
     UnaryOperator = "UnaryOperator",
+    RecordDecl = "RecordDecl",
+    FieldDecl = "FieldDecl",
 }
 export interface KindToNodeMappings {
     [kind: string]: ASTNode;
@@ -61,5 +65,7 @@ export interface KindToNodeMappings {
     [SynxType.ReturnStmt]: ReturnStmt,
     [SynxType.IntegerLiteral]: IntegerLiteral,
     [SynxType.BinaryOperator]: BinaryOperator,
+    [SynxType.RecordDecl]: RecordDecl,
+    [SynxType.FieldDecl]: FieldDecl,
 }
 

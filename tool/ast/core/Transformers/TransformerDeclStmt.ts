@@ -1,6 +1,6 @@
 import type { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
-import { convertAccess, convertType } from '../Helper';
+import { convertAccess } from '../Helper';
 import TransPrinter from '../Printer/TransPrinter';
 import { SynxType } from '../SynxType';
 import { TransformerBase } from './TransformerBase';
@@ -18,7 +18,7 @@ export class TransformerDeclStmt extends TransformerBase {
             }
 
             let initializerStr = initializer !== "" ? ` = ${initializer}` : "";
-            printer.println(`let ${varDecl.name}: ${convertType(varDecl.type)}${convertAccess(initializerStr)}`)
+            printer.println(`let ${varDecl.name}: ${varDecl.type.typeDesc}${convertAccess(initializerStr)}`)
         })
     }
 } 

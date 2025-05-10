@@ -1,7 +1,6 @@
 import path from 'path';
 import { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
-import { convertType } from '../Helper';
 import { TransformerMgr } from '../Manager/TransformerMgr';
 import TransPrinter from '../Printer/TransPrinter';
 import { SynxType } from "../SynxType";
@@ -34,9 +33,9 @@ export class TransformerFunctionDecl extends TransformerBase {
             return;
         }
 
-        const returnType = convertType(node.getReturnType());
+        const returnType = node.getReturnType().typeDesc;
         const exportWord = node.storageClass !== 'static' ? 'export ' : '';
-        const parameters = node.getParmVarDecl().map(p => { return { name: p.name!, type: convertType(p.type) } });
+        const parameters = node.getParmVarDecl().map(p => { return { name: p.name!, type: p.type.typeDesc } });
 
         // fuction declaration
         printer.println(`${exportWord}function ${node.name}(${parameters.map(p => `${p.name}: ${p.type}`).join(', ')}) {`);

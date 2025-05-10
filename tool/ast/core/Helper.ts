@@ -1,17 +1,6 @@
 import path from "path";
 import { IntegerLiteral } from "./CAstNode/IntegerLiteral";
 
-const typeMap = new Map<string, string>([
-    ["int", "number"],
-    ["double", "number"],
-    ["long", "bigint"],
-    ["unsigned int", "number"],
-    ["unsigned long", "bigint"],
-    ["float", "number"],
-    ["string", "string"],
-    ["bool", "boolean"],
-]);
-
 export function getPathWithoutExt(filePath: string): string {
     return filePath.substring(0, filePath.length - path.extname(filePath).length);
 }
@@ -26,16 +15,8 @@ export function getTSFilePath(filePath: string): string {
     }
 }
 
-export function convertType(type: string): string {
-    type = type.split("*")[0].trim();
-    type = type.split("const").reverse()[0].trim();
-
-    const mappedType = typeMap.get(type);
-    if (mappedType) {
-        return mappedType;
-    }
-    console.log(`Unknown type to map: ${type}`);
-    return type;
+export function getArrayLengthExp(text: string): string {
+    return text.match(/[^\[]+\[([^\]]+)\]/)[1];
 }
 
 export function convertAccess(statement: string): string {
