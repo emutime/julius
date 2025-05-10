@@ -19,20 +19,11 @@ export class TransformerMgr {
         return this.m_transformers.get(kind);
     }
 
-    public transform(node: SourceFile, printer: TransPrinter) {
-        node.children.forEach(child => {
-            const transformer = this.getTransformer(child.kind);
-            if (transformer) {
-                transformer.transform(child, node, printer);
-            }
-        });
-    }
-
     public transformSynx(node: ASTNode, sourceFile: SourceFile, printer: TransPrinter): void {
         const transformer = this.getTransformer(node.kind);
         if (transformer) {
             transformer.transform(node, sourceFile, printer);
-        } else {
+        } else if (node.parent && node.parent.kind !== SynxType.SourceFile) {
             printer.print(convertAccess(node.getText()));
         }
     }

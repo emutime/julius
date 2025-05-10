@@ -10,9 +10,16 @@ import TransPrinter from './core/Printer/TransPrinter';
 import { SynxType } from './core/SynxType';
 import { traverse } from './core/Traverse';
 
-const args = ['-Xclang', '-ast-dump=json', '-fsyntax-only', '-I./src'];
+const args = [
+    '-Xclang',
+    '-ast-dump=json',
+    '-fsyntax-only',
+    '-I./src',
+    '-isystemC:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt',
+    '-isystemC:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include'
+];
 
-const files = ["./src/building/construction_building.c", "./src/building/construction_building.h"];
+const files = ["./src/building/building.c", "./src/building/building.h"];
 
 function clangParseAst(args: string[]) {
     return new Promise<string>((resolve, reject) => {
@@ -75,7 +82,12 @@ async function main() {
                             if (defines.has(node.getText())) {
                                 return;
                             }
-                            defines.set(node.getText(), genDefineDeclaration(node, tsFilePath));
+
+                            const define = genDefineDeclaration(node, tsFilePath);
+                            if (!define) {
+                                return;
+                            }
+                            defines.set(node.getText(), define);
                         }
                     }
                 },
@@ -85,7 +97,7 @@ async function main() {
 
 
         if (pair.source) {
-            TransformerMgr.instance.transform(pair.source, printer);
+            TransformerMgr.instance.transformStmts(pair.source.children, pair.source, printer);
             sourceFile.replaceWithText([...defines.values()].join("\n") + "\n" + printer.getContent());
             sourceFile.organizeImports();
             sourceFile.formatText();
@@ -94,7 +106,7 @@ async function main() {
         }
 
         if (pair.header) {
-            TransformerMgr.instance.transform(pair.header, printer);
+            TransformerMgr.instance.transformStmts(pair.source.children, pair.header, printer);
             sourceFile.replaceWithText([...defines.values()].join("\n") + "\n" + printer.getContent());
             sourceFile.organizeImports();
             sourceFile.formatText();
