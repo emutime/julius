@@ -1,3 +1,4 @@
+import { TypeDefMgr } from "../Manager/TypeDefMgr";
 import { SynxType } from "../SynxType";
 import { ASTNode } from "./ASTNode";
 import { ElaboratedType } from "./ElaboratedType";
@@ -13,6 +14,9 @@ export class TypedefDecl extends ASTNode {
         this.isReferenced = !!node["isReferenced"];
         if (!this.isImplicit) {
             this.elaboratedType = this.children.find(child => child.isKind(SynxType.ElaboratedType)) as ElaboratedType;
+            if (this.elaboratedType && this.elaboratedType.m_ownedTagDeclId) {
+                TypeDefMgr.instance.setTypedefDecl(this.elaboratedType.m_ownedTagDeclId, this);
+            }
         }
     }
 }
