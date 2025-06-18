@@ -1,6 +1,7 @@
 import path from 'path';
 import { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
+import { getTSFilePath } from '../Helper';
 import { TransformerMgr } from '../Manager/TransformerMgr';
 import TransPrinter from '../Printer/TransPrinter';
 import { SynxType } from "../SynxType";
@@ -14,6 +15,10 @@ export class TransformerFunctionDecl extends TransformerBase {
 
         if (node.includedFrom) {
             if (!node.isUsed) {
+                return;
+            }
+
+            if (getTSFilePath(node.locFile) === getTSFilePath(sourceFile.filePath)) {
                 return;
             }
 

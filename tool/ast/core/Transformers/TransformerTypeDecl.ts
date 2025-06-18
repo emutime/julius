@@ -1,6 +1,7 @@
 import path from 'path';
 import { ASTNode } from '../CAstNode/ASTNode';
 import type { SourceFile } from '../CAstNode/SourceFile';
+import { getTSFilePath } from '../Helper';
 import TransPrinter from '../Printer/TransPrinter';
 import { SynxType } from "../SynxType";
 import { TransformerBase } from './TransformerBase';
@@ -37,6 +38,10 @@ export class TransformerTypedefDecl extends TransformerBase {
 
             const baseDir = path.resolve(process.cwd() + '\\src');
             if (node.locFile && !node.locFile.startsWith(baseDir)) {
+                return;
+            }
+
+            if (getTSFilePath(node.locFile) === getTSFilePath(sourceFile.filePath)) {
                 return;
             }
 
