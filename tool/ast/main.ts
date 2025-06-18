@@ -20,7 +20,7 @@ const args = [
     '-isystemC:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include'
 ];
 
-const files = ["./src/building/building.c", "./src/building/building.h"];
+const files = ["./src/building/building.c", "./src/building/building.h", "./src/building/type.h"];
 
 function clangParseAst(args: string[]) {
     return new Promise<string>((resolve, reject) => {
@@ -101,17 +101,17 @@ async function main() {
         if (pair.source) {
             TransformerMgr.instance.transformStmts(pair.source.children, pair.source, printer);
             sourceFile.replaceWithText([...defines.values()].join("\n") + "\n" + printer.getContent());
-            sourceFile.organizeImports();
             sourceFile.formatText();
+            sourceFile.organizeImports();
             sourceFile.saveSync();
             return;
         }
 
         if (pair.header) {
-            TransformerMgr.instance.transformStmts(pair.source.children, pair.header, printer);
+            TransformerMgr.instance.transformStmts(pair.header.children, pair.header, printer);
             sourceFile.replaceWithText([...defines.values()].join("\n") + "\n" + printer.getContent());
-            sourceFile.organizeImports();
             sourceFile.formatText();
+            sourceFile.organizeImports();
             sourceFile.saveSync();
         }
     });

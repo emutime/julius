@@ -32,23 +32,23 @@ export class TransformerEnumDecl extends TransformerBase {
             let removedExt = node.locFile.substring(0, node.locFile.length - path.extname(node.locFile).length);
             let importPath = path.relative(baseDir, removedExt).replace(/\\/g, '/');
 
-            printer.println(`import { ${node.name} } from '${importPath}';`);
+            printer.println(`import { ${node.getDescName()} } from '${importPath}';`);
 
 
             // 生成 import constant = enum.constant;
-            referenced.map(item => printer.println(`import ${item.getName()} = ${node.name!}.${item.getName()};`));
+            referenced.map(item => printer.println(`import ${item.getName()} = ${node.getDescName()!}.${item.getName()};`));
             return;
         }
 
         if (node.isUsed) {
-            console.log(`EnumDecl ${node.name} is used`);
+            console.log(`EnumDecl ${node.getDescName()} is used`);
             return;
         }
 
         // if (node.locFile !== sourceFile.getFilePath()) {
         //     return;
         // }
-        printer.println(`export const enum ${node.name} {`);
+        printer.println(`export const enum ${node.getDescName()} {`);
         printer.addAdvance(1);
         for (const item of node.getConstants()) {
             printer.println(`${item.getName()} = ${item.getValue()},`);

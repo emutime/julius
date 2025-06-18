@@ -1,4 +1,8 @@
-1 - 嵌套类型全部不导出 - done
-2 - unions 可选define方式支持
-3 - unnamed 优化 - doing
-4 - 同源的h和c文件最终翻译为一个ts文件，不需要import
+- [x] 嵌套类型全部不导出
+- [ ] unions 可选define方式支持
+- [ ] unnamed 优化
+- [x] 同源的h和c文件最终翻译为一个ts文件，不需要import
+- [ ] let b: building = 0; 编译报错
+- [ ] import 的重新排序
+- [x] import 的获取命名错误，enum的name要从typedef中获取
+- [ ] memset(&(b->data), 0, sizeof(b->data)); 要去除&
