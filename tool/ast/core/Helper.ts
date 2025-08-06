@@ -16,7 +16,12 @@ export function getTSFilePath(filePath: string): string {
 }
 
 export function getArrayLengthExp(text: string): string {
-    return text.match(/[^\[]+\[([^\]]+)\]/)[1];
+    const match = text.match(/[^\[]+\[([^\]]+)\]/);
+    if (!match) {
+        return "";
+    } else {
+        return match[1];
+    }
 }
 
 export function convertAccess(statement: string): string {
