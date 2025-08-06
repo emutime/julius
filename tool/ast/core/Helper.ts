@@ -25,6 +25,12 @@ export function convertAccess(statement: string): string {
     return statement;
 }
 
+export function convertAccessForArgsExpr(argsExpr: string): string {
+    argsExpr = argsExpr.replace(/->/g, ".");
+    argsExpr = argsExpr.replace(/^&[\s]*[\(]?[\s]*([\w.]+)[\s]*[\)]?[\s]*/g, "$1");
+    return argsExpr;
+}
+
 export function genDefineDeclaration(node: IntegerLiteral, currentFile: string): string {
     if (node.node["range"]["begin"]["spellingLoc"] === undefined) {
         return "";

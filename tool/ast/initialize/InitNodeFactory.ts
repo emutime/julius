@@ -1,5 +1,6 @@
 import { ASTNode } from "../core/CAstNode/ASTNode";
 import { BinaryOperator } from "../core/CAstNode/BinaryOperator";
+import { CallExpr } from "../core/CAstNode/CallExpr";
 import { CaseStmt } from "../core/CAstNode/CaseStmt";
 import { CompoundStmt } from "../core/CAstNode/CompoundStmt";
 import { ConstantExpr } from "../core/CAstNode/ConstantExpr";
@@ -41,3 +42,4 @@ NodeFactoryMgr.instance.regCreator(SynxType.ReturnStmt, ReturnStmt);
 NodeFactoryMgr.instance.regCreator(SynxType.BinaryOperator, BinaryOperator);
 NodeFactoryMgr.instance.regCreator(SynxType.RecordDecl, RecordDecl);
 NodeFactoryMgr.instance.regCreator(SynxType.FieldDecl, FieldDecl);
+NodeFactoryMgr.instance.regCreator(SynxType.CallExpr, CallExpr);
