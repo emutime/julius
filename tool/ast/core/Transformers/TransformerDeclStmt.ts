@@ -13,7 +13,7 @@ export class TransformerDeclStmt extends TransformerBase {
 
         node.varDecls.forEach(varDecl => {
             let initializer = varDecl.children.length > 0 ? varDecl.children[0].getText() : "";
-            if (initializer === "0" && varDecl.isPointer === true) {
+            if (initializer === "0" && varDecl.type.isPointer === true) {
                 initializer = "null";
             }
 

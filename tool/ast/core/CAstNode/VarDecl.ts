@@ -4,7 +4,6 @@ import { ASTNode } from "./ASTNode";
 
 export class VarDecl extends ASTNode {
     public readonly type: TypeNode;
-    public readonly isPointer: boolean = false;
     public readonly storageClass: string | undefined;
 
     public constructor(node: Record<string, any>) {
