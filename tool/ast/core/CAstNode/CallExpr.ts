@@ -5,7 +5,7 @@ export class CallExpr extends ASTNode {
     public readonly value: string;
     public constructor(node: Record<string, any>) {
         super(node);
-        this.name = node.inner[0].inner[0].referencedDecl.name;
+        this.name = node.inner[0].inner[0].referencedDecl?.name;
     }
     public getText(): string {
         const text = super.getText();
