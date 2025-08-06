@@ -47,7 +47,7 @@ export class TypeNode {
         let type = this.typeInfo["qualType"];
         type = type.split("*")[0].trim();
         type = type.split("&")[0].trim();
-        type = type.split("const").reverse()[0].trim();
+        type = type.split("const ").reverse()[0].trim();
 
         if (this.isArray) {
             type = type.split("[")[0].trim();
@@ -58,7 +58,7 @@ export class TypeNode {
                 const localNameParts = type.split("(")[1].split(")")[0].split(":");
                 type = `unnamed${localNameParts[1]}_${localNameParts[2]}`;
             } else {
-                type = type.split(this.isStruct ? "struct" : "union")[1].trim();
+                type = type.split(this.isStruct ? "struct " : "union ")[1].trim();
             }
         }
 
