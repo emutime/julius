@@ -20,7 +20,13 @@ const args = [
     '-isystemC:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include'
 ];
 
-const files = ["./src/building/building.c", "./src/building/building.h", "./src/building/type.h"];
+const files = [
+    "./src/building/building.c",
+    "./src/building/building.h",
+    "./src/building/animation.c",
+    "./src/building/animation.h",
+    "./src/building/type.h"
+];
 
 function clangParseAst(args: string[]) {
     return new Promise<string>((resolve, reject) => {
