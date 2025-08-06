@@ -6,3 +6,4 @@
 - [x] import 的重新排序
 - [x] import 的获取命名错误，enum的name要从typedef中获取
 - [x] memset(&(b->data), 0, sizeof(b->data)); 要去除&
+- [ ] 局部变量的struct类型，没有初始值时，需要使用new 方式初始化
