@@ -7,3 +7,6 @@
 - [x] import 的获取命名错误，enum的name要从typedef中获取
 - [x] memset(&(b->data), 0, sizeof(b->data)); 要去除&
 - [ ] 局部变量的struct类型，没有初始值时，需要使用new 方式初始化
+- [ ] 内部的枚举也需要import每个字段
+- [ ] 有赋值的变量不需要类型，比如int *houses可能是个数组
+- [ ] 结构体的初始化，需要加new关键字
