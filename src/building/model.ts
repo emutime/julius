@@ -1,193 +1,210 @@
-// 引入必要的模块
-import { io } from "core/io";
-import { log } from "core/log";
-import { string_length, string_to_int } from "core/string";
-
-const TMP_BUFFER_SIZE = 100000;
-
-const NUM_BUILDINGS = 130;
-const NUM_HOUSES = 20;
-
-
-/**
- * 建筑模型
- */
-class model_building {
-    cost: number; /**< 结构或结构一块（墙壁）的成本 */
-    desirability_value: number; /**< 初始吸引值 */
-    desirability_step: number; /**< 吸引值步长（以块为单位） */
-    desirability_step_size: number; /**< 吸引值步长大小 */
-    desirability_range: number; /**< 最大吸引值范围 */
-    laborers: number; /**< 建筑雇佣的人数 */
-};
-
-/**
- * 房屋模型
- */
-class model_house {
-    devolve_desirability: number; /**< 房屋退化的吸引值 */
-    evolve_desirability: number; /**< 房屋进化的吸引值 */
-    entertainment: number; /**< 所需娱乐点数 */
-    water: number; /**< 所需水源：1 = 井，2 = 喷泉 */
-    religion: number; /**< 所需神灵数量 */
-    education: number; /**< 所需教育：
-        1 = 学校或图书馆，2 = 学校和图书馆，3 = 学校、图书馆和学院 */
-    barber: number; /**< 是否需要理发师（布尔值） */
-    bathhouse: number; /**< 是否需要澡堂（布尔值） */
-    health: number; /**< 所需健康：1 = 医生或医院，2 = 医生和医院 */
-    food_types: number; /**< 所需食物种类数量 */
-    pottery: number; /**< 所需陶器 */
-    oil: number; /**< 所需油 */
-    furniture: number; /**< 所需家具 */
-    wine: number; /**< 所需葡萄酒种类：1 = 任何葡萄酒，2 = 两种葡萄酒 */
-    prosperity: number; /**< 繁荣贡献 */
-    max_people: number; /**< 每块最大人数（中型公寓及以下）或每户（大型公寓及以上） */
-    tax_multiplier: number; /**< 税率乘数 */
-};
-
-
-// 定义常量数组
-const ALL_BUILDINGS = ['A', 'L', 'L', ' ', 'B', 'U', 'I', 'L', 'D', 'I', 'N', 'G', 'S', 0];
-const ALL_HOUSES = ['A', 'L', 'L', ' ', 'H', 'O', 'U', 'S', 'E', 'S', 0];
-
-// 创建建筑和房屋数组
-const buildings: model_building[] = new Array(NUM_BUILDINGS);
-const houses: model_house[] = new Array(NUM_HOUSES);
-
-// 字符串比较函数
-function strings_equal(a: Uint8Array, b: Uint8Array, len: number): boolean {
-    for (let i = 0; i < len; i++) {
-        if (a[i] !== b[i]) {
-            return false;
+export const TMP_BUFFER_SIZE = 100000;
+export const NUM_BUILDINGS = 130;
+export const NUM_HOUSES = 20;
+import { building_type } from 'building/type';
+import { house_level } from 'building/type';
+export class model_building {
+    public cost: number = 0;
+    public desirability_value: number = 0;
+    public desirability_step: number = 0;
+    public desirability_step_size: number = 0;
+    public desirability_range: number = 0;
+    public laborers: number = 0;
+    public constructor(...args: any[]) {
+        args.length >= 1 && (this.cost = args[0]);
+        args.length >= 2 && (this.desirability_value = args[1]);
+        args.length >= 3 && (this.desirability_step = args[2]);
+        args.length >= 4 && (this.desirability_step_size = args[3]);
+        args.length >= 5 && (this.desirability_range = args[4]);
+        args.length >= 6 && (this.laborers = args[5]);
+    }
+}
+export class model_house {
+    public devolve_desirability: number = 0;
+    public evolve_desirability: number = 0;
+    public entertainment: number = 0;
+    public water: number = 0;
+    public religion: number = 0;
+    public education: number = 0;
+    public barber: number = 0;
+    public bathhouse: number = 0;
+    public health: number = 0;
+    public food_types: number = 0;
+    public pottery: number = 0;
+    public oil: number = 0;
+    public furniture: number = 0;
+    public wine: number = 0;
+    public prosperity: number = 0;
+    public max_people: number = 0;
+    public tax_multiplier: number = 0;
+    public constructor(...args: any[]) {
+        args.length >= 1 && (this.devolve_desirability = args[0]);
+        args.length >= 2 && (this.evolve_desirability = args[1]);
+        args.length >= 3 && (this.entertainment = args[2]);
+        args.length >= 4 && (this.water = args[3]);
+        args.length >= 5 && (this.religion = args[4]);
+        args.length >= 6 && (this.education = args[5]);
+        args.length >= 7 && (this.barber = args[6]);
+        args.length >= 8 && (this.bathhouse = args[7]);
+        args.length >= 9 && (this.health = args[8]);
+        args.length >= 10 && (this.food_types = args[9]);
+        args.length >= 11 && (this.pottery = args[10]);
+        args.length >= 12 && (this.oil = args[11]);
+        args.length >= 13 && (this.furniture = args[12]);
+        args.length >= 14 && (this.wine = args[13]);
+        args.length >= 15 && (this.prosperity = args[14]);
+        args.length >= 16 && (this.max_people = args[15]);
+        args.length >= 17 && (this.tax_multiplier = args[16]);
+    }
+}
+import { localized } from 'core/dir';
+import NOT_LOCALIZED = localized.NOT_LOCALIZED;
+import { dir_listing } from 'core/dir';
+import { io_read_file_into_buffer } from 'core/io';
+import { log_info } from 'core/log';
+import { log_error } from 'core/log';;
+import { string_length } from 'core/string';
+import { string_to_int } from 'core/string';
+import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
+import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
+import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
+import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
+import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
+import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stddef';
+import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
+import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
+import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
+import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
+import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
+let ALL_BUILDINGS: number[] = new Array().fill({ 'A', 'L', 'L', ' ', 'B', 'U', 'I', 'L', 'D', 'I', 'N', 'G', 'S', 0});
+let ALL_HOUSES: number[] = new Array().fill({ 'A', 'L', 'L', ' ', 'H', 'O', 'U', 'S', 'E', 'S', 0});
+let buildings: model_building[] = new Array(NUM_BUILDINGS);
+let houses: model_house[] = new Array(NUM_HOUSES);
+function strings_equal(a: number, b: number, len: number) {
+    for (let i: number = 0; i < len; i++, a++, b++) {
+        if (* a != * b) {
+            return 0;
         }
     }
-    return true;
+    return 1;
 }
-
-// 查找字符串的索引
-function index_of_string(haystack: Uint8Array, needle: Uint8Array, haystack_length: number): number {
-    const needle_length = string_length(needle);
-    for (let i = 0; i < haystack_length; i++) {
-        if (haystack[i] === needle[0] && strings_equal(haystack.subarray(i), needle, needle_length)) {
+function index_of_string(haystack: number, needle: number, haystack_length: number) {
+    let needle_length: number = string_length(needle);
+    for (let i: number = 0; i < haystack_length; i++) {
+        if (haystack[i] == needle[0] && strings_equal(haystack[i], needle, needle_length)) {
             return i + 1;
         }
     }
     return 0;
 }
-
-// 查找字符的索引
-function index_of(haystack: Uint8Array, needle: number, haystack_length: number): number {
-    for (let i = 0; i < haystack_length; i++) {
-        if (haystack[i] === needle) {
+function index_of(haystack: number, needle: number, haystack_length: number) {
+    for (let i: number = 0; i < haystack_length; i++) {
+        if (haystack[i] == needle) {
             return i + 1;
         }
     }
     return 0;
 }
-
-// 跳过非数字字符
-function skip_non_digits(str: Uint8Array): Uint8Array {
-    let safeguard = 0;
-    while (true) {
+function skip_non_digits(str: number) {
+    let safeguard: number = 0;
+    while (1) {
         if (++safeguard >= 1000) {
             break;
         }
-        if ((str[0] >= '0'.charCodeAt(0) && str[0] <= '9'.charCodeAt(0)) || str[0] === '-'.charCodeAt(0)) {
+        if ((* str >= '0' && * str <= '9') || * str == '-') {
             break;
         }
-        str = str.subarray(1);
+        str++;
     }
     return str;
 }
-
-// 获取值
-function get_value(ptr: Uint8Array, end_ptr: Uint8Array, value: { value: number }): Uint8Array {
+function get_value(ptr: number, end_ptr: number, value: number) {
     ptr = skip_non_digits(ptr);
-    value.value = string_to_int(ptr);
-    ptr = ptr.subarray(index_of(ptr, ','.charCodeAt(0), end_ptr.length - ptr.length));
+    * value = string_to_int(ptr);
+    ptr += index_of(ptr, ',', (int)(end_ptr - ptr))
     return ptr;
 }
-
-// 加载模型
-function model_load(): boolean {
-    const buffer = new Uint8Array(TMP_BUFFER_SIZE);
-    const filesize = io.read_file_into_buffer("c3_model.txt", NOT_LOCALIZED, buffer, TMP_BUFFER_SIZE);
-    if (filesize === 0) {
-        log.error("No c3_model.txt file", 0, 0);
-        return false;
+export function model_load() {
+    let buffer: number = (uint8_t *) malloc(TMP_BUFFER_SIZE);
+    if (!buffer) {
+        log_error("No memory for model", 0, 0);
+        return 0;
     }
-
-    let num_lines = 0;
-    let guard = 200;
+    memset(buffer, 0);
+    let filesize: number = io_read_file_into_buffer("c3_model.txt", NOT_LOCALIZED, buffer, TMP_BUFFER_SIZE);
+    if (filesize == 0) {
+        log_error("No c3_model.txt file", 0, 0);
+        free(buffer);
+        return 0;
+    }
+    let num_lines: number = 0;
+    let guard: number = 200;
     let brace_index: number;
-    let ptr = buffer.subarray(index_of_string(buffer, ALL_BUILDINGS, filesize));
+    let ptr: number = buffer[index_of_string(buffer, ALL_BUILDINGS, filesize)];
     do {
         guard--;
-        brace_index = index_of(ptr, '{'.charCodeAt(0), filesize);
+        brace_index = index_of(ptr, '{', filesize);
         if (brace_index) {
-            ptr = ptr.subarray(brace_index);
+            ptr += brace_index;
             num_lines++;
         }
-    } while (brace_index && guard > 0);
-
-    if (num_lines !== NUM_BUILDINGS + NUM_HOUSES) {
-        log.error("Model has incorrect number of lines", 0, num_lines + 1);
-        return false;
+    } while (brace_index && guard > 0)
+    if (num_lines != NUM_BUILDINGS + NUM_HOUSES) {
+        log_error("Model has incorrect no of lines ", 0, num_lines + 1);
+        free(buffer);
+        return 0;
     }
-
-    let dummy: { value: number } = { value: 0 };
-    ptr = buffer.subarray(index_of_string(buffer, ALL_BUILDINGS, filesize));
-    const end_ptr = buffer.subarray(filesize);
-    for (let i = 0; i < NUM_BUILDINGS; i++) {
-        ptr = ptr.subarray(index_of(ptr, '{'.charCodeAt(0), filesize));
-
-        ptr = get_value(ptr, end_ptr, { value: buildings[i].cost });
-        ptr = get_value(ptr, end_ptr, { value: buildings[i].desirability_value });
-        ptr = get_value(ptr, end_ptr, { value: buildings[i].desirability_step });
-        ptr = get_value(ptr, end_ptr, { value: buildings[i].desirability_step_size });
-        ptr = get_value(ptr, end_ptr, { value: buildings[i].desirability_range });
-        ptr = get_value(ptr, end_ptr, { value: buildings[i].laborers });
+    let dummy: number;
+    ptr = buffer[index_of_string(buffer, ALL_BUILDINGS, filesize)];
+    let end_ptr: number = buffer[filesize];
+    for (let i: number = 0; i < NUM_BUILDINGS; i++) {
+        ptr += index_of(ptr, '{', filesize)
+        ptr = get_value(ptr, end_ptr, buildings[i].cost);
+        ptr = get_value(ptr, end_ptr, buildings[i].desirability_value);
+        ptr = get_value(ptr, end_ptr, buildings[i].desirability_step);
+        ptr = get_value(ptr, end_ptr, buildings[i].desirability_step_size);
+        ptr = get_value(ptr, end_ptr, buildings[i].desirability_range);
+        ptr = get_value(ptr, end_ptr, buildings[i].laborers);
         ptr = get_value(ptr, end_ptr, dummy);
         ptr = get_value(ptr, end_ptr, dummy);
     }
-
-    ptr = buffer.subarray(index_of_string(buffer, ALL_HOUSES, filesize));
-
-    for (let i = 0; i < NUM_HOUSES; i++) {
-        ptr = ptr.subarray(index_of(ptr, '{'.charCodeAt(0), filesize));
-
-        ptr = get_value(ptr, end_ptr, { value: houses[i].devolve_desirability });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].evolve_desirability });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].entertainment });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].water });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].religion });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].education });
+    ptr = buffer[index_of_string(buffer, ALL_HOUSES, filesize)];
+    for (let i: number = 0; i < NUM_HOUSES; i++) {
+        ptr += index_of(ptr, '{', filesize)
+        ptr = get_value(ptr, end_ptr, houses[i].devolve_desirability);
+        ptr = get_value(ptr, end_ptr, houses[i].evolve_desirability);
+        ptr = get_value(ptr, end_ptr, houses[i].entertainment);
+        ptr = get_value(ptr, end_ptr, houses[i].water);
+        ptr = get_value(ptr, end_ptr, houses[i].religion);
+        ptr = get_value(ptr, end_ptr, houses[i].education);
         ptr = get_value(ptr, end_ptr, dummy);
-        ptr = get_value(ptr, end_ptr, { value: houses[i].barber });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].bathhouse });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].health });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].food_types });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].pottery });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].oil });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].furniture });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].wine });
+        ptr = get_value(ptr, end_ptr, houses[i].barber);
+        ptr = get_value(ptr, end_ptr, houses[i].bathhouse);
+        ptr = get_value(ptr, end_ptr, houses[i].health);
+        ptr = get_value(ptr, end_ptr, houses[i].food_types);
+        ptr = get_value(ptr, end_ptr, houses[i].pottery);
+        ptr = get_value(ptr, end_ptr, houses[i].oil);
+        ptr = get_value(ptr, end_ptr, houses[i].furniture);
+        ptr = get_value(ptr, end_ptr, houses[i].wine);
         ptr = get_value(ptr, end_ptr, dummy);
         ptr = get_value(ptr, end_ptr, dummy);
-        ptr = get_value(ptr, end_ptr, { value: houses[i].prosperity });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].max_people });
-        ptr = get_value(ptr, end_ptr, { value: houses[i].tax_multiplier });
+        ptr = get_value(ptr, end_ptr, houses[i].prosperity);
+        ptr = get_value(ptr, end_ptr, houses[i].max_people);
+        ptr = get_value(ptr, end_ptr, houses[i].tax_multiplier);
     }
-
-    log.info("Model loaded", 0, 0);
-    return true;
+    log_info("Model loaded", 0, 0);
+    free(buffer);
+    return 1;
 }
-
-// 获取建筑模型
-export function model_get_building(type: number): model_building {
+export function model_get_building(type: building_type) {
     return buildings[type];
 }
-
-// 获取房屋模型
-export function model_get_house(level: number): model_house {
+export function model_get_house(level: house_level) {
     return houses[level];
 }

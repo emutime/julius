@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as tsMorph from 'ts-morph';
 import "./initialize";
 
+import { globSync } from 'glob';
 import { SourceFile } from './core/CAstNode/SourceFile';
 import { genDefineDeclaration } from './core/Helper';
 import { SourceFileMgr } from './core/Manager/SourceFileMgr';
@@ -16,71 +17,45 @@ const args = [
     '-ast-dump=json',
     '-fsyntax-only',
     '-I./src',
+    '-I./ext/png',
+    '-D_CRT_SECURE_NO_WARNINGS', // 禁用CRT安全警告
+    '-Wno-deprecated-declarations', // 禁用弃用函数警告
     '-isystemC:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt',
     '-isystemC:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include'
 ];
 
-const files = [
-    "./src/building/animation.c",
-    "./src/building/animation.h",
-    "./src/building/barracks.c",
-    "./src/building/barracks.h",
-    "./src/building/building.c",
-    "./src/building/building.h",
-    "./src/building/building_state.c",
-    "./src/building/building_state.h",
-    "./src/building/clone.c",
-    "./src/building/clone.h",
-    "./src/building/construction.c",
-    "./src/building/construction.h",
-    "./src/building/construction_building.c",
-    "./src/building/construction_building.h",
-    "./src/building/construction_clear.c",
-    "./src/building/construction_clear.h",
-    "./src/building/construction_routed.c",
-    "./src/building/construction_routed.h",
-    "./src/building/construction_warning.c",
-    "./src/building/construction_warning.h",
-    "./src/building/count.c",
-    "./src/building/count.h",
-    "./src/building/destruction.c",
-    "./src/building/destruction.h",
-    "./src/building/dock.c",
-    "./src/building/dock.h",
-    "./src/building/figure.c",
-    "./src/building/figure.h",
-    "./src/building/government.c",
-    "./src/building/government.h",
-    "./src/building/granary.c",
-    "./src/building/granary.h",
-    "./src/building/house.c",
-    "./src/building/house.h",
-    "./src/building/house_evolution.c",
-    "./src/building/house_evolution.h",
-    "./src/building/house_population.c",
-    "./src/building/house_population.h",
-    "./src/building/house_service.c",
-    "./src/building/house_service.h",
-    "./src/building/industry.c",
-    "./src/building/industry.h",
-    "./src/building/list.c",
-    "./src/building/list.h",
-    "./src/building/maintenance.c",
-    "./src/building/maintenance.h",
-    "./src/building/market.c",
-    "./src/building/market.h",
-    "./src/building/menu.c",
-    "./src/building/menu.h",
-    "./src/building/model.c",
-    "./src/building/model.h",
-    "./src/building/properties.c",
-    "./src/building/properties.h",
-    "./src/building/storage.c",
-    "./src/building/storage.h",
-    "./src/building/type.h",
-    "./src/building/warehouse.c",
-    "./src/building/warehouse.h",
+const dirs = [
+    './src/building',
+    './src/city',
+    './src/core',
+    './src/editor',
+    './src/empire',
+    './src/figure',
+    './src/figuretype',
+    './src/game',
+    './src/graphics',
+    './src/input',
+    './src/map',
+    //'./src/platform',
+    './src/scenario',
+    './src/sound',
+    './src/translation',
+    './src/widget',
+    './src/window',
 ];
+
+const except = [
+    './src/graphics/screenshot.c',
+    './src/graphics/screenshot.h',
+].map(filePath => path.resolve(process.cwd(), filePath));
+
+let files = dirs.map(dir => path.resolve(process.cwd(), dir)).map(dir => globSync(path.join(dir, '*.{c,h}').replace(/\\/g, '/'))).flat();
+
+files = files.filter(filePath => {
+    return !except.some(except => filePath.includes(except));
+}).map((filePath) => {
+    return `./${path.relative(process.cwd(), filePath).replace(/\\/g, '/')}`
+});
 
 function clangParseAst(args: string[]) {
     return new Promise<string>((resolve, reject) => {

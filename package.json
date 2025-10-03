@@ -1,6 +1,7 @@
 {
   "devDependencies": {
     "@types/node": "^22.14.1",
+    "glob": "^11.0.3",
     "ts-morph": "^25.0.1",
     "ts-node": "^10.9.2"
   }
