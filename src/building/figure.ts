@@ -29,6 +29,7 @@ import { map_random_get } from 'map/random';
 import { map_has_road_access, map_has_road_access_granary, map_has_road_access_hippodrome } from 'map/road_access';
 import { map_terrain_exists_tile_in_area_with_type, map_terrain_get_adjacent_road_or_clear_land, terrain } from 'map/terrain';
 import { map_water_can_spawn_fishing_boat } from 'map/water';
+import { Ref } from '../../ext/crt';
 import BUILDING_HOUSE_SMALL_VILLA = building_type.BUILDING_HOUSE_SMALL_VILLA;
 import BUILDING_HOUSE_LUXURY_PALACE = building_type.BUILDING_HOUSE_LUXURY_PALACE;
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
@@ -242,7 +243,9 @@ function spawn_figure_warehouse(b: building) {
             return;
         }
         let resource: number;
-        let task: number = building_warehouse_determine_worker_task(b, resource);
+        let resource_ref: Ref<number>;
+        let task: number = building_warehouse_determine_worker_task(b, resource_ref);
+        resource = resource_ref.v;
         if (task != WAREHOUSE_TASK_NONE) {
             let f: figure = figure_create(FIGURE_WAREHOUSEMAN, road.x, road.y, DIR_4_BOTTOM);
             f.action_state = FIGURE_ACTION_50_WAREHOUSEMAN_CREATED;

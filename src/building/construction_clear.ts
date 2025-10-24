@@ -58,15 +58,15 @@ let confirm: unnamed20_8 = new unnamed20_8();
 function get_deletable_building(grid_offset: number) {
     let building_id: number = map_building_at(grid_offset);
     if (!building_id) {
-        return 0;
+        return null;
     }
     let b: building = building_main(building_get(building_id));
     if (b.type == BUILDING_BURNING_RUIN || b.type == BUILDING_NATIVE_CROPS ||
         b.type == BUILDING_NATIVE_HUT || b.type == BUILDING_NATIVE_MEETING) {
-        return 0;
+        return null;
     }
     if (b.state == BUILDING_STATE_DELETED_BY_PLAYER || b.is_deleted) {
-        return 0;
+        return null;
     }
     return b;
 }

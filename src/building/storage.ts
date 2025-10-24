@@ -1,19 +1,17 @@
 export const MAX_STORAGES = 200;
-import { MAX_BUILDINGS } from 'building/building';
-;
-import { buffer } from 'core/buffer';
-import { buffer_write_u8 } from 'core/buffer';
-import { buffer_write_i32 } from 'core/buffer';
-import { buffer_read_u8 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
-import { buffer_skip } from 'core/buffer';
+import { building, building_get, MAX_BUILDINGS } from 'building/building';
+import { building_state, building_type } from 'building/type';
+import { buffer, buffer_read_i32, buffer_read_u8, buffer_skip, buffer_write_i32, buffer_write_u8 } from 'core/buffer';
 import { resource_type } from 'game/resource';
+import { memset } from '../../ext/crt';
+export const enum building_storage_state {
+    BUILDING_STORAGE_STATE_ACCEPTING = 0,
+    BUILDING_STORAGE_STATE_NOT_ACCEPTING = 1,
+    BUILDING_STORAGE_STATE_GETTING = 2
+};
+
 import RESOURCE_MIN = resource_type.RESOURCE_MIN;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { building_storage_state } from 'building/storage';
 import BUILDING_STORAGE_STATE_ACCEPTING = building_storage_state.BUILDING_STORAGE_STATE_ACCEPTING;
 import BUILDING_STORAGE_STATE_NOT_ACCEPTING = building_storage_state.BUILDING_STORAGE_STATE_NOT_ACCEPTING;
 import BUILDING_STORAGE_STATE_GETTING = building_storage_state.BUILDING_STORAGE_STATE_GETTING;
@@ -25,25 +23,9 @@ export class building_storage {
         args.length >= 2 && (this.resource_state = args[1]);
     }
 }
-import { building_type } from 'building/type';
 import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
 import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
-import { building_type } from 'building/type';
-import { building_state } from 'building/type';
 import BUILDING_STATE_UNUSED = building_state.BUILDING_STATE_UNUSED;
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 export class data_storage {
     public in_use: number = 0;
     public building_id: number = 0;
@@ -130,8 +112,8 @@ export function building_storage_save_state(buf: buffer) {
     for (let i: number = 0; i < MAX_STORAGES; i++) {
         buffer_write_i32(buf, 0);
         buffer_write_i32(buf, data.storages[i].building_id);
-        buffer_write_u8(buf, (uint8_t) data.storages[i].in_use);
-        buffer_write_u8(buf, (uint8_t) data.storages[i].storage.empty_all);
+        buffer_write_u8(buf, data.storages[i].in_use);
+        buffer_write_u8(buf, data.storages[i].storage.empty_all);
         for (let r: number = 0; r < RESOURCE_MAX; r++) {
             buffer_write_u8(buf, data.storages[i].storage.resource_state[r]);
         }

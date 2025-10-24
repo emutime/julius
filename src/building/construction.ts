@@ -1,5 +1,43 @@
-import { MAX_FIGURES } from 'figure/figure';
+import { building, building_create, building_is_fort } from 'building/building';
+import { building_construction_place_building } from 'building/construction_building';
+import { building_construction_clear_land } from 'building/construction_clear';
+import { building_construction_place_aqueduct, building_construction_place_aqueduct_for_reservoir, building_construction_place_road, building_construction_place_wall } from 'building/construction_routed';
+import { building_construction_warning_check_food_stocks, building_construction_warning_check_reservoir, building_construction_warning_reset } from 'building/construction_warning';
+import { building_count_total } from 'building/count';
+import { model_get_building } from 'building/model';
+import { building_properties_for_type } from 'building/properties';
 import { building_type } from 'building/type';
+import { building_warehouses_remove_resource } from 'building/warehouse';
+import { city_buildings_has_distribution_center, city_buildings_has_hippodrome, city_buildings_has_senate } from 'city/buildings';
+import { city_finance_out_of_money, city_finance_process_construction } from 'city/finance';
+import { city_resource_count } from 'city/resource';
+import { city_view_orientation } from 'city/view';
+import { city_warning_show, warning_type } from 'city/warning';
+import { calc_maximum_distance } from 'core/calc';
+import { config_get, config_key } from 'core/config';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { time_get_millis, time_millis } from 'core/time';
+import { figure, figure_get, figure_is_enemy, MAX_FIGURES } from 'figure/figure';
+import { formation_get_num_legions_cached, formation_move_herds_away } from 'figure/formation';
+import { figure_state } from 'figure/type';
+import { resource_type } from 'game/resource';
+import { game_undo_add_building, game_undo_finish_build, game_undo_restore_building_state, game_undo_restore_map, game_undo_start_build } from 'game/undo';
+import { window_invalidate } from 'graphics/window';
+import { map_aqueduct_set } from 'map/aqueduct';
+import { map_bridge_add, map_bridge_building_length, map_bridge_reset_building_length } from 'map/bridge';
+import { map_building_is_reservoir } from 'map/building';
+import { map_building_tiles_add, map_building_tiles_are_clear, map_building_tiles_mark_construction } from 'map/building_tiles';
+import { GRID, map_grid_offset, map_grid_start_end_to_area } from 'map/grid';
+import { map_image_set } from 'map/image';
+import { map_tile } from 'map/point';
+import { map_property_clear_constructing_and_deleted, map_property_is_plaza_or_earthquake, map_property_mark_constructing, map_property_mark_draw_tile, map_property_mark_plaza_or_earthquake, map_property_set_multi_tile_size } from 'map/property';
+import { map_routing_block, map_routing_calculate_distances_for_building, routed_building_type } from 'map/routing';
+import { map_routing_update_land } from 'map/routing_terrain';
+import { map_terrain_add, map_terrain_all_tiles_in_radius_are, map_terrain_exists_tile_in_area_with_type, map_terrain_exists_tile_in_radius_with_type, map_terrain_is, terrain } from 'map/terrain';
+import { map_tiles_are_clear, map_tiles_update_all_aqueducts, map_tiles_update_all_gardens, map_tiles_update_all_plazas } from 'map/tiles';
+import { map_water_determine_orientation_size2, map_water_determine_orientation_size3 } from 'map/water';
+import { Ref } from '../../ext/crt';
 import BUILDING_NONE = building_type.BUILDING_NONE;
 import BUILDING_ROAD = building_type.BUILDING_ROAD;
 import BUILDING_WALL = building_type.BUILDING_WALL;
@@ -40,56 +78,12 @@ import BUILDING_MARBLE_QUARRY = building_type.BUILDING_MARBLE_QUARRY;
 import BUILDING_IRON_MINE = building_type.BUILDING_IRON_MINE;
 import BUILDING_TIMBER_YARD = building_type.BUILDING_TIMBER_YARD;
 import BUILDING_CLAY_PIT = building_type.BUILDING_CLAY_PIT;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
-import { building_construction_place_building } from 'building/construction_building';
-import { building_construction_clear_land } from 'building/construction_clear';;
-import { buffer } from 'core/buffer';
-import { routed_building_type } from 'map/routing';
+;
 import ROUTED_BUILDING_ROAD = routed_building_type.ROUTED_BUILDING_ROAD;
 import ROUTED_BUILDING_WALL = routed_building_type.ROUTED_BUILDING_WALL;
 import ROUTED_BUILDING_AQUEDUCT = routed_building_type.ROUTED_BUILDING_AQUEDUCT;
-import { routed_building_type } from 'map/routing';
-import { map_routing_calculate_distances_for_building } from 'map/routing';
-import { map_routing_block } from 'map/routing';
-import { building_construction_place_road } from 'building/construction_routed';
-import { building_construction_place_wall } from 'building/construction_routed';
-import { building_construction_place_aqueduct } from 'building/construction_routed';
-import { building_construction_place_aqueduct_for_reservoir } from 'building/construction_routed';
-import { building_construction_warning_reset } from 'building/construction_warning';
-import { building_construction_warning_check_food_stocks } from 'building/construction_warning';
-import { building_construction_warning_check_reservoir } from 'building/construction_warning';
-import { resource_type } from 'game/resource';
 import RESOURCE_MARBLE = resource_type.RESOURCE_MARBLE;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { building_count_total } from 'building/count';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_building } from 'building/model';
-import { building_properties } from 'building/properties';
-import { building_properties_for_type } from 'building/properties';
-import { building } from 'building/building';
-import { building_create } from 'building/building';
-import { building_is_fort } from 'building/building';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { building_warehouses_remove_resource } from 'building/warehouse';
-import { city_buildings_has_senate } from 'city/buildings';
-import { city_buildings_has_distribution_center } from 'city/buildings';
-import { city_buildings_has_hippodrome } from 'city/buildings';
-import { city_finance_out_of_money } from 'city/finance';
-import { city_finance_process_construction } from 'city/finance';
-import { finance_overview } from 'city/finance';
-import { resource_trade_status } from 'city/constants';
-import { resource_list } from 'city/resource';
-import { city_resource_count } from 'city/resource';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_orientation } from 'city/view';
-import { warning_type } from 'city/warning';
 import WARNING_CLEAR_LAND_NEEDED = warning_type.WARNING_CLEAR_LAND_NEEDED;
 import WARNING_OUT_OF_MONEY = warning_type.WARNING_OUT_OF_MONEY;
 import WARNING_MARBLE_NEEDED_LARGE_TEMPLE = warning_type.WARNING_MARBLE_NEEDED_LARGE_TEMPLE;
@@ -102,75 +96,11 @@ import WARNING_SHORE_NEEDED = warning_type.WARNING_SHORE_NEEDED;
 import WARNING_WALL_NEEDED = warning_type.WARNING_WALL_NEEDED;
 import WARNING_ENEMY_NEARBY = warning_type.WARNING_ENEMY_NEARBY;
 import WARNING_HOUSE_TOO_FAR_FROM_ROAD = warning_type.WARNING_HOUSE_TOO_FAR_FROM_ROAD;
-import { warning_type } from 'city/warning';
-import { city_warning_show } from 'city/warning';
-import { direction_type } from 'core/direction';
-import { calc_maximum_distance } from 'core/calc';
-import { config_key } from 'core/config';
 import CONFIG_UI_SHOW_CONSTRUCTION_SIZE = config_key.CONFIG_UI_SHOW_CONSTRUCTION_SIZE;
-import { config_key } from 'core/config';
-import { config_string_key } from 'core/config';
-import { config_get } from 'core/config';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_BUILDING_RESERVOIR = group_terrain.GROUP_BUILDING_RESERVOIR;
 import GROUP_BUILDING_HOUSE_VACANT_LOT = group_terrain.GROUP_BUILDING_HOUSE_VACANT_LOT;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { time_millis } from 'core/time';
-import { time_get_millis } from 'core/time';
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_ALIVE = figure_state.FIGURE_STATE_ALIVE;
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_get_num_legions_cached } from 'figure/formation';
-import { formation_move_herds_away } from 'figure/formation';
-import { game_undo_add_building } from 'game/undo';
-import { game_undo_restore_building_state } from 'game/undo';
-import { game_undo_restore_map } from 'game/undo';
-import { game_undo_start_build } from 'game/undo';
-import { game_undo_finish_build } from 'game/undo';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-import { map_aqueduct_set } from 'map/aqueduct';
-import { map_bridge_building_length } from 'map/bridge';
-import { map_bridge_reset_building_length } from 'map/bridge';
-import { map_bridge_add } from 'map/bridge';
-import { map_building_is_reservoir } from 'map/building';
-import { map_building_tiles_add } from 'map/building_tiles';
-import { map_building_tiles_mark_construction } from 'map/building_tiles';
-import { map_building_tiles_are_clear } from 'map/building_tiles';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_start_end_to_area } from 'map/grid';
-import { map_image_set } from 'map/image';
-import { map_property_mark_draw_tile } from 'map/property';
-import { map_property_set_multi_tile_size } from 'map/property';
-import { map_property_is_plaza_or_earthquake } from 'map/property';
-import { map_property_mark_plaza_or_earthquake } from 'map/property';
-import { map_property_mark_constructing } from 'map/property';
-import { map_property_clear_constructing_and_deleted } from 'map/property';
-import { map_routing_update_land } from 'map/routing_terrain';
-import { terrain } from 'map/terrain';
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_ROCK = terrain.TERRAIN_ROCK;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
@@ -184,20 +114,6 @@ import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 import TERRAIN_NOT_CLEAR = terrain.TERRAIN_NOT_CLEAR;
 import TERRAIN_ALL = terrain.TERRAIN_ALL;
-import { map_terrain_is } from 'map/terrain';
-import { map_terrain_add } from 'map/terrain';
-import { map_terrain_exists_tile_in_area_with_type } from 'map/terrain';
-import { map_terrain_exists_tile_in_radius_with_type } from 'map/terrain';
-import { map_terrain_all_tiles_in_radius_are } from 'map/terrain';
-import { map_tiles_update_all_gardens } from 'map/tiles';
-import { map_tiles_update_all_plazas } from 'map/tiles';
-import { map_tiles_update_all_aqueducts } from 'map/tiles';
-import { map_tiles_are_clear } from 'map/tiles';
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_is_enemy } from 'figure/figure';
-import { map_water_determine_orientation_size2 } from 'map/water';
-import { map_water_determine_orientation_size3 } from 'map/water';
 export class reservoir_info {
     public cost: number = 0;
     public place_reservoir_at_start: number = 0;
@@ -214,6 +130,12 @@ export const enum place_reservoir {
     PLACE_RESERVOIR_YES = 1,
     PLACE_RESERVOIR_EXISTS = 2,
 }
+
+import PLACE_RESERVOIR_BLOCKED = place_reservoir.PLACE_RESERVOIR_BLOCKED;
+import PLACE_RESERVOIR_NO = place_reservoir.PLACE_RESERVOIR_NO;
+import PLACE_RESERVOIR_YES = place_reservoir.PLACE_RESERVOIR_YES;
+import PLACE_RESERVOIR_EXISTS = place_reservoir.PLACE_RESERVOIR_EXISTS;
+
 class required_terrain {
     public meadow: number = 0;
     public rock: number = 0;
@@ -401,49 +323,51 @@ function place_reservoir_and_aqueducts(measure_only: number, x_start: number, y_
         map_routing_block(x_end - 1, y_end - 1, 3);
         mark_construction(x_end - 1, y_end - 1, 3, TERRAIN_ALL, 1);
     }
-    let aqueduct_offsets_x: number[] = { 0, 2, 0, - 2
-};
-let aqueduct_offsets_y: number[] = {- 2, 0, 2, 0};
-let min_dist: number = 10000;
-let min_dir_start: number = 0
-let min_dir_end: number = 0;
-for (let dir_start: number = 0; dir_start < 4; dir_start++) {
-    let dx_start: number = aqueduct_offsets_x[dir_start];
-    let dy_start: number = aqueduct_offsets_y[dir_start];
-    for (let dir_end: number = 0; dir_end < 4; dir_end++) {
-        let dx_end: number = aqueduct_offsets_x[dir_end];
-        let dy_end: number = aqueduct_offsets_y[dir_end];
-        let dist: number;
-        if (building_construction_place_aqueduct_for_reservoir(1,
-            x_start + dx_start, y_start + dy_start, x_end + dx_end, y_end + dy_end, dist)) {
-            if (dist && dist < min_dist) {
-                min_dist = dist;
-                min_dir_start = dir_start;
-                min_dir_end = dir_end;
+    let aqueduct_offsets_x: number[] = [0, 2, 0, -2];
+    let aqueduct_offsets_y: number[] = [- 2, 0, 2, 0];
+    let min_dist: number = 10000;
+    let min_dir_start: number = 0
+    let min_dir_end: number = 0;
+    for (let dir_start: number = 0; dir_start < 4; dir_start++) {
+        let dx_start: number = aqueduct_offsets_x[dir_start];
+        let dy_start: number = aqueduct_offsets_y[dir_start];
+        for (let dir_end: number = 0; dir_end < 4; dir_end++) {
+            let dx_end: number = aqueduct_offsets_x[dir_end];
+            let dy_end: number = aqueduct_offsets_y[dir_end];
+            let dist: number;
+            let dist_ref = new Ref(dist);
+            if (building_construction_place_aqueduct_for_reservoir(1,
+                x_start + dx_start, y_start + dy_start, x_end + dx_end, y_end + dy_end, dist_ref)) {
+                dist = dist_ref.v;
+                if (dist && dist < min_dist) {
+                    min_dist = dist;
+                    min_dir_start = dir_start;
+                    min_dir_end = dir_end;
+                }
             }
         }
     }
-}
-if (min_dist == 10000) {
-    return 0;
-}
-let x_aq_start: number = aqueduct_offsets_x[min_dir_start];
-let y_aq_start: number = aqueduct_offsets_y[min_dir_start];
-let x_aq_end: number = aqueduct_offsets_x[min_dir_end];
-let y_aq_end: number = aqueduct_offsets_y[min_dir_end];
-let aq_items: number;
-building_construction_place_aqueduct_for_reservoir(0, x_start + x_aq_start, y_start + y_aq_start,
-    x_end + x_aq_end, y_end + y_aq_end, aq_items);
-if (info.place_reservoir_at_start == PLACE_RESERVOIR_YES) {
-    info.cost += model_get_building(BUILDING_RESERVOIR).cost
-}
-if (info.place_reservoir_at_end == PLACE_RESERVOIR_YES) {
-    info.cost += model_get_building(BUILDING_RESERVOIR).cost
-}
-if (aq_items) {
-    info.cost += aq_items * model_get_building(BUILDING_AQUEDUCT).cost
-}
-return 1;
+    if (min_dist == 10000) {
+        return 0;
+    }
+    let x_aq_start: number = aqueduct_offsets_x[min_dir_start];
+    let y_aq_start: number = aqueduct_offsets_y[min_dir_start];
+    let x_aq_end: number = aqueduct_offsets_x[min_dir_end];
+    let y_aq_end: number = aqueduct_offsets_y[min_dir_end];
+    let aq_items: number;
+    let aq_items_ref = new Ref(aq_items);
+    building_construction_place_aqueduct_for_reservoir(0, x_start + x_aq_start, y_start + y_aq_start, x_end + x_aq_end, y_end + y_aq_end, aq_items_ref);
+    aq_items = aq_items_ref.v;
+    if (info.place_reservoir_at_start == PLACE_RESERVOIR_YES) {
+        info.cost += model_get_building(BUILDING_RESERVOIR).cost
+    }
+    if (info.place_reservoir_at_end == PLACE_RESERVOIR_YES) {
+        info.cost += model_get_building(BUILDING_RESERVOIR).cost
+    }
+    if (aq_items) {
+        info.cost += aq_items * model_get_building(BUILDING_AQUEDUCT).cost
+    }
+    return 1;
 }
 export function building_construction_set_cost(cost: number) {
     data.cost_preview = cost;
@@ -514,7 +438,7 @@ export function building_construction_type() {
 export function building_construction_cost() {
     return data.cost_preview;
 }
-export function building_construction_size(x: number, y: number) {
+export function building_construction_size(x: Ref<number>, y: Ref<number>) {
     if (!config_get(CONFIG_UI_SHOW_CONSTRUCTION_SIZE) ||
         !building_construction_is_updatable() || !data.in_progress ||
         (data.type != BUILDING_CLEAR_LAND && !data.cost_preview)) {
@@ -530,8 +454,8 @@ export function building_construction_size(x: number, y: number) {
     }
     size_x++;
     size_y++;
-    * x = size_x;
-    * y = size_y;
+    x.v = size_x;
+    y.v = size_y;
     return 1;
 }
 export function building_construction_in_progress() {
@@ -640,7 +564,9 @@ export function building_construction_update(x: number, y: number, grid_offset: 
             current_cost *= length
         }
     } else if (type == BUILDING_AQUEDUCT) {
-        building_construction_place_aqueduct(data.start.x, data.start.y, x, y, current_cost);
+        let current_cost_ref = new Ref(current_cost);
+        building_construction_place_aqueduct(data.start.x, data.start.y, x, y, current_cost_ref);
+        current_cost = current_cost_ref.v;
         map_tiles_update_all_aqueducts(0);
     } else if (type == BUILDING_DRAGGABLE_RESERVOIR) {
         let info: reservoir_info;
@@ -661,46 +587,45 @@ export function building_construction_update(x: number, y: number, grid_offset: 
         mark_construction(x, y, 3, TERRAIN_ALL, 0);
     } else if (building_is_fort(type)) {
         if (formation_get_num_legions_cached() < 6) {
-            let offsets_x: number[] = { 3, 4, 4, 3};
-            let offsets_y: number[] = {- 1, -1, 0, 0
-        };
-        let orient_index: number = city_view_orientation() / 2;
-        let x_offset: number = offsets_x[orient_index];
-        let y_offset: number = offsets_y[orient_index];
-        if (map_building_tiles_are_clear(x, y, 3, TERRAIN_ALL) &&
-            map_building_tiles_are_clear(x + x_offset, y + y_offset, 4, TERRAIN_ALL)) {
-            mark_construction(x, y, 3, TERRAIN_ALL, 0);
-            mark_construction(x + x_offset, y + y_offset, 4, TERRAIN_ALL, 0);
+            let offsets_x: number[] = [3, 4, 4, 3];
+            let offsets_y: number[] = [- 1, -1, 0, 0];
+            let orient_index: number = city_view_orientation() / 2;
+            let x_offset: number = offsets_x[orient_index];
+            let y_offset: number = offsets_y[orient_index];
+            if (map_building_tiles_are_clear(x, y, 3, TERRAIN_ALL) &&
+                map_building_tiles_are_clear(x + x_offset, y + y_offset, 4, TERRAIN_ALL)) {
+                mark_construction(x, y, 3, TERRAIN_ALL, 0);
+                mark_construction(x + x_offset, y + y_offset, 4, TERRAIN_ALL, 0);
+            }
+        }
+    } else if (type == BUILDING_HIPPODROME) {
+        if (map_building_tiles_are_clear(x, y, 5, TERRAIN_ALL) &&
+            map_building_tiles_are_clear(x + 5, y, 5, TERRAIN_ALL) &&
+            map_building_tiles_are_clear(x + 10, y, 5, TERRAIN_ALL) &&
+            !city_buildings_has_hippodrome()) {
+            mark_construction(x, y, 5, TERRAIN_ALL, 0);
+            mark_construction(x + 5, y, 5, TERRAIN_ALL, 0);
+            mark_construction(x + 10, y, 5, TERRAIN_ALL, 0);
+        }
+    } else if (type == BUILDING_SHIPYARD || type == BUILDING_WHARF) {
+        if (!map_water_determine_orientation_size2(x, y, 1, 0, 0)) {
+            data.draw_as_constructing = 1;
+        }
+    } else if (type == BUILDING_DOCK) {
+        if (!map_water_determine_orientation_size3(x, y, 1, 0, 0)) {
+            data.draw_as_constructing = 1;
+        }
+    } else if (data.required_terrain.meadow || data.required_terrain.rock || data.required_terrain.tree ||
+        data.required_terrain.water || data.required_terrain.wall) {
+    } else {
+        if (!(type == BUILDING_SENATE && city_buildings_has_senate()) &&
+            !(type == BUILDING_BARRACKS && building_count_total(BUILDING_BARRACKS) > 0) &&
+            !(type == BUILDING_DISTRIBUTION_CENTER_UNUSED && city_buildings_has_distribution_center())) {
+            let size: number = building_properties_for_type(type).size;
+            mark_construction(x, y, size, TERRAIN_ALL, 0);
         }
     }
-} else if (type == BUILDING_HIPPODROME) {
-    if (map_building_tiles_are_clear(x, y, 5, TERRAIN_ALL) &&
-        map_building_tiles_are_clear(x + 5, y, 5, TERRAIN_ALL) &&
-        map_building_tiles_are_clear(x + 10, y, 5, TERRAIN_ALL) &&
-        !city_buildings_has_hippodrome()) {
-        mark_construction(x, y, 5, TERRAIN_ALL, 0);
-        mark_construction(x + 5, y, 5, TERRAIN_ALL, 0);
-        mark_construction(x + 10, y, 5, TERRAIN_ALL, 0);
-    }
-} else if (type == BUILDING_SHIPYARD || type == BUILDING_WHARF) {
-    if (!map_water_determine_orientation_size2(x, y, 1, 0, 0)) {
-        data.draw_as_constructing = 1;
-    }
-} else if (type == BUILDING_DOCK) {
-    if (!map_water_determine_orientation_size3(x, y, 1, 0, 0)) {
-        data.draw_as_constructing = 1;
-    }
-} else if (data.required_terrain.meadow || data.required_terrain.rock || data.required_terrain.tree ||
-    data.required_terrain.water || data.required_terrain.wall) {
-} else {
-    if (!(type == BUILDING_SENATE && city_buildings_has_senate()) &&
-        !(type == BUILDING_BARRACKS && building_count_total(BUILDING_BARRACKS) > 0) &&
-        !(type == BUILDING_DISTRIBUTION_CENTER_UNUSED && city_buildings_has_distribution_center())) {
-        let size: number = building_properties_for_type(type).size;
-        mark_construction(x, y, size, TERRAIN_ALL, 0);
-    }
-}
-data.cost_preview = current_cost;
+    data.cost_preview = current_cost;
 }
 function has_nearby_enemy(x_start: number, y_start: number, x_end: number, y_end: number) {
     for (let i: number = 1; i < MAX_FIGURES; i++) {
@@ -794,12 +719,12 @@ export function building_construction_place() {
         }
         placement_cost *= length
     } else if (type == BUILDING_AQUEDUCT) {
-        let cost: number;
-        if (!building_construction_place_aqueduct(x_start, y_start, x_end, y_end, cost)) {
+        let cost_ref = new Ref(0);
+        if (!building_construction_place_aqueduct(x_start, y_start, x_end, y_end, cost_ref)) {
             city_warning_show(WARNING_CLEAR_LAND_NEEDED);
             return;
         }
-        placement_cost = cost;
+        placement_cost = cost_ref.v;
         map_tiles_update_all_aqueducts(0);
         map_routing_update_land();
     } else if (type == BUILDING_DRAGGABLE_RESERVOIR) {
@@ -856,12 +781,12 @@ export function building_construction_place() {
         game_undo_finish_build(placement_cost);
     }
 }
-function set_warning(warning_id: number, warning: number) {
+function set_warning(warning_id: Ref<number>, warning: number) {
     if (warning_id) {
-        * warning_id = warning;
+        warning_id.v = warning;
     }
 }
-export function building_construction_can_place_on_terrain(x: number, y: number, warning_id: number) {
+export function building_construction_can_place_on_terrain(x: number, y: number, warning_id: Ref<number>) {
     if (data.required_terrain.meadow) {
         if (!map_terrain_exists_tile_in_radius_with_type(x, y, 3, 1, TERRAIN_MEADOW)) {
             set_warning(warning_id, WARNING_MEADOW_NEEDED);
@@ -907,9 +832,9 @@ export function building_construction_record_view_position(view_x: number, view_
         data.start_offset_y_view = view_y;
     }
 }
-export function building_construction_get_view_position(view_x: number, view_y: number) {
-    * view_x = data.start_offset_x_view;
-    * view_y = data.start_offset_y_view;
+export function building_construction_get_view_position(view_x: Ref<number>, view_y: Ref<number>) {
+    view_x.v = data.start_offset_x_view;
+    view_y.v = data.start_offset_y_view;
 }
 export function building_construction_get_start_grid_offset() {
     return data.start.grid_offset;

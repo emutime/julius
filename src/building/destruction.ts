@@ -1,85 +1,40 @@
-import { MAX_BUILDINGS } from 'building/building';
-import { building_type } from 'building/type';
+import { building, building_clear_related_data, building_create, building_get, building_main, building_next, MAX_BUILDINGS } from 'building/building';
+import { building_state, building_type, house_level } from 'building/type';
+import { city_message_post, city_message_type } from 'city/message';
+import { city_population_remove_home_removed } from 'city/population';
+import { city_ratings_peace_building_destroyed } from 'city/ratings';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { figure_create_explosion_cloud } from 'figuretype/missile';
+import { figure_kill_tower_sentries_at, figure_tower_sentry_reroute } from 'figuretype/wall';
+import { game_undo_disable } from 'game/undo';
+import { map_building_at, map_building_damage_increase } from 'map/building';
+import { map_building_tiles_add, map_building_tiles_remove, map_building_tiles_set_rubble } from 'map/building_tiles';
+import { GRID, map_grid_offset, map_grid_offset_to_x, map_grid_offset_to_y } from 'map/grid';
+import { map_random_get } from 'map/random';
+import { map_routing_update_land, map_routing_update_walls, map_routing_update_water } from 'map/routing_terrain';
+import { map_terrain_is, terrain } from 'map/terrain';
+import { map_tiles_update_area_walls, map_tiles_update_region_aqueducts } from 'map/tiles';
+import { sound_effect, sound_effect_play } from 'sound/effect';
+import { memset } from '../../ext/crt';
 import BUILDING_SHIPYARD = building_type.BUILDING_SHIPYARD;
 import BUILDING_DOCK = building_type.BUILDING_DOCK;
 import BUILDING_WHARF = building_type.BUILDING_WHARF;
 import BUILDING_BURNING_RUIN = building_type.BUILDING_BURNING_RUIN;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
 import HOUSE_LARGE_TENT = house_level.HOUSE_LARGE_TENT;
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
 import BUILDING_STATE_CREATED = building_state.BUILDING_STATE_CREATED;
 import BUILDING_STATE_RUBBLE = building_state.BUILDING_STATE_RUBBLE;
 import BUILDING_STATE_DELETED_BY_GAME = building_state.BUILDING_STATE_DELETED_BY_GAME;;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_main } from 'building/building';
-import { building_next } from 'building/building';
-import { building_create } from 'building/building';
-import { building_clear_related_data } from 'building/building';
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
 import MESSAGE_ROAD_TO_ROME_BLOCKED = city_message_type.MESSAGE_ROAD_TO_ROME_BLOCKED;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_post } from 'city/message';
-import { city_population_remove_home_removed } from 'city/population';
-import { selected_rating } from 'city/ratings';
-import { city_ratings_peace_building_destroyed } from 'city/ratings';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_TERRAIN_RUBBLE_TENT = group_terrain.GROUP_TERRAIN_RUBBLE_TENT;
 import GROUP_TERRAIN_RUBBLE_GENERAL = group_terrain.GROUP_TERRAIN_RUBBLE_GENERAL;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { direction_type } from 'core/direction';
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { figure_create_explosion_cloud } from 'figuretype/missile';
-import { figure_tower_sentry_reroute } from 'figuretype/wall';
-import { figure_kill_tower_sentries_at } from 'figuretype/wall';
-import { game_undo_disable } from 'game/undo';
-import { map_building_at } from 'map/building';
-import { map_building_damage_increase } from 'map/building';
-import { map_building_tiles_add } from 'map/building_tiles';
-import { map_building_tiles_remove } from 'map/building_tiles';
-import { map_building_tiles_set_rubble } from 'map/building_tiles';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_offset_to_x } from 'map/grid';
-import { map_grid_offset_to_y } from 'map/grid';
-import { map_random_get } from 'map/random';
-import { map_routing_update_land } from 'map/routing_terrain';
-import { map_routing_update_water } from 'map/routing_terrain';
-import { map_routing_update_walls } from 'map/routing_terrain';
-import { terrain } from 'map/terrain';
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
 import TERRAIN_BUILDING = terrain.TERRAIN_BUILDING;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_is } from 'map/terrain';
-import { map_tiles_update_area_walls } from 'map/tiles';
-import { map_tiles_update_region_aqueducts } from 'map/tiles';
-import { sound_effect } from 'sound/effect';
 import SOUND_EFFECT_EXPLOSION = sound_effect.SOUND_EFFECT_EXPLOSION;
-import { sound_effect_play } from 'sound/effect';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 function destroy_on_fire(b: building, plagued: number) {
     game_undo_disable();
     b.fire_risk = 0;
@@ -87,7 +42,7 @@ function destroy_on_fire(b: building, plagued: number) {
     if (b.house_size && b.house_population) {
         city_population_remove_home_removed(b.house_population);
     }
-    let was_tent: number = b.house_size && b.subtype.house_level <= HOUSE_LARGE_TENT;
+    let was_tent: boolean = b.house_size && b.subtype.house_level <= HOUSE_LARGE_TENT;
     b.house_population = 0;
     b.house_size = 0;
     b.output_resource_id = 0;
@@ -124,12 +79,12 @@ function destroy_on_fire(b: building, plagued: number) {
         }
         map_building_tiles_add(b.id, b.x, b.y, 1, image_id, TERRAIN_BUILDING);
     }
-    let x_tiles: number[] = {
+    let x_tiles: number[] = [
         0, 1, 1, 0, 2, 2, 2, 1, 0, 3, 3, 3, 3, 2, 1, 0, 4, 4, 4, 4, 4, 3, 2, 1, 0, 5, 5, 5, 5, 5, 5, 4, 3, 2, 1, 0
-    };
-    let y_tiles: number[] = {
+    ];
+    let y_tiles: number[] = [
         0, 0, 1, 1, 0, 1, 2, 2, 2, 0, 1, 2, 3, 3, 3, 3, 0, 1, 2, 3, 4, 4, 4, 4, 4, 0, 1, 2, 3, 4, 5, 5, 5, 5, 5, 5
-    };
+    ];
     for (let tile: number = 1; tile < num_tiles; tile++) {
         let x: number = x_tiles[tile] + b.x;
         let y: number = y_tiles[tile] + b.y;

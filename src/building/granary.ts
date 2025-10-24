@@ -1,29 +1,32 @@
 export const ONE_LOAD = 100;
 export const UNITS_PER_LOAD = 100;
 export const MAX_GRANARIES = 100;
-import { MAX_BUILDINGS } from 'building/building';
+import { building, building_get, MAX_BUILDINGS } from 'building/building';
+import { building_destroy_by_fire } from 'building/destruction';
+import { model_get_building } from 'building/model';
+import { building_storage, building_storage_get, building_storage_state } from 'building/storage';
+import { building_state, building_type } from 'building/type';
+import { building_warehouse_get_amount, building_warehouse_remove_resource_curse } from 'building/warehouse';
+import { city_message_disable_sound_for_next_message, city_message_post, city_message_type } from 'city/message';
+import { city_resource_add_produced_to_granary, city_resource_is_stockpiled, city_resource_remove_from_granary } from 'city/resource';
+import { calc_distance_with_penalty, calc_percentage } from 'core/calc';
+import { resource_is_food, resource_type } from 'game/resource';
+import { map_point, map_point_store_result } from 'map/point';
+import { map_routing_update_land } from 'map/routing_terrain';
+import { scenario_property_rome_supplies_wheat } from 'scenario/property';
+import { sound_effect, sound_effect_play } from 'sound/effect';
+import { Ref } from '../../ext/crt';
 export const INFINITE = 10000;
 export const CURSE_LOADS = 16;
-import { building_type } from 'building/type';
 import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
 import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { map_point } from 'map/point';
-import { map_point_store_result } from 'map/point';
-import { granary_task } from 'building/granary';
+export const enum granary_task {
+    GRANARY_TASK_NONE = -1,
+    GRANARY_TASK_GETTING = 0
+};
 import GRANARY_TASK_NONE = granary_task.GRANARY_TASK_NONE;
 import GRANARY_TASK_GETTING = granary_task.GRANARY_TASK_GETTING;
-import { building_destroy_by_fire } from 'building/destruction';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_building } from 'building/model';
-import { resource_type } from 'game/resource';
 import RESOURCE_NONE = resource_type.RESOURCE_NONE;
 import RESOURCE_WHEAT = resource_type.RESOURCE_WHEAT;
 import RESOURCE_VEGETABLES = resource_type.RESOURCE_VEGETABLES;
@@ -33,40 +36,10 @@ import RESOURCE_MIN = resource_type.RESOURCE_MIN;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MIN_FOOD = resource_type.RESOURCE_MIN_FOOD;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_is_food } from 'game/resource';
-import { building_storage_state } from 'building/storage';
 import BUILDING_STORAGE_STATE_NOT_ACCEPTING = building_storage_state.BUILDING_STORAGE_STATE_NOT_ACCEPTING;
 import BUILDING_STORAGE_STATE_GETTING = building_storage_state.BUILDING_STORAGE_STATE_GETTING;
-import { building_storage_state } from 'building/storage';
-import { building_storage } from 'building/storage';
-import { building_storage_get } from 'building/storage';
-import { building_warehouse_get_amount } from 'building/warehouse';
-import { building_warehouse_remove_resource_curse } from 'building/warehouse';
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
 import MESSAGE_FIRE = city_message_type.MESSAGE_FIRE;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_disable_sound_for_next_message } from 'city/message';
-import { city_message_post } from 'city/message';
-import { resource_trade_status } from 'city/constants';
-import { resource_list } from 'city/resource';
-import { city_resource_is_stockpiled } from 'city/resource';
-import { city_resource_add_produced_to_granary } from 'city/resource';
-import { city_resource_remove_from_granary } from 'city/resource';
-import { direction_type } from 'core/direction';
-import { calc_percentage } from 'core/calc';
-import { calc_distance_with_penalty } from 'core/calc';
-import { map_routing_update_land } from 'map/routing_terrain';
-import { scenario_climate } from 'scenario/property';
-import { scenario_property_rome_supplies_wheat } from 'scenario/property';
-import { sound_effect } from 'sound/effect';
 import SOUND_EFFECT_EXPLOSION = sound_effect.SOUND_EFFECT_EXPLOSION;
-import { sound_effect_play } from 'sound/effect';
 export class unnamed20_8 {
     public building_ids: number[] = new Array(MAX_GRANARIES).fill(0);
     public num_items: number = 0;
@@ -133,7 +106,7 @@ export function building_granary_remove_resource(granary: building, resource: nu
     granary.data.granary.resource_stored[RESOURCE_NONE] += removed
     return amount - removed;
 }
-export function building_granary_remove_for_getting_deliveryman(src: building, dst: building, resource: number) {
+export function building_granary_remove_for_getting_deliveryman(src: building, dst: building, resource: Ref<number>) {
     let s_src: building_storage = building_storage_get(src.storage_id);
     let s_dst: building_storage = building_storage_get(dst.storage_id);
     let max_amount: number = 0;
@@ -173,7 +146,7 @@ export function building_granary_remove_for_getting_deliveryman(src: building, d
         max_amount = dst.data.granary.resource_stored[RESOURCE_NONE];
     }
     building_granary_remove_resource(src, max_resource, max_amount);
-    * resource = max_resource;
+    resource.v = max_resource;
     return max_amount / UNITS_PER_LOAD;
 }
 export function building_granary_determine_worker_task(granary: building) {
@@ -254,7 +227,7 @@ export function building_granaries_calculate_stocks() {
         }
     }
 }
-export function building_granary_for_storing(x: number, y: number, resource: number, distance_from_entry: number, road_network_id: number, force_on_stockpile: number, understaffed: number, dst: map_point) {
+export function building_granary_for_storing(x: number, y: number, resource: number, distance_from_entry: number, road_network_id: number, force_on_stockpile: number, understaffed: Ref<number>, dst: map_point) {
     if (scenario_property_rome_supplies_wheat()) {
         return 0;
     }
@@ -277,7 +250,7 @@ export function building_granary_for_storing(x: number, y: number, resource: num
         let pct_workers: number = calc_percentage(b.num_workers, model_get_building(b.type).laborers);
         if (pct_workers < 100) {
             if (understaffed) {
-                * understaffed += 1
+                understaffed.v += 1;
             }
             continue
         }

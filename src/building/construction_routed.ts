@@ -1,38 +1,24 @@
 
-;
-import { buffer } from 'core/buffer';
-import { routed_building_type } from 'map/routing';
+import { model_get_building } from 'building/model';
+import { building_type } from 'building/type';
+import { calc_general_direction } from 'core/calc';
+import { direction_type } from 'core/direction';
+import { game_undo_restore_map } from 'game/undo';
+import { window_invalidate } from 'graphics/window';
+import { map_building_tiles_add_aqueduct } from 'map/building_tiles';
+import { map_grid_direction_delta, map_grid_offset, map_grid_offset_to_x, map_grid_offset_to_y } from 'map/grid';
+import { map_property_is_plaza_or_earthquake } from 'map/property';
+import { map_routing_calculate_distances_for_building, map_routing_distance, routed_building_type } from 'map/routing';
+import { map_routing_update_land, map_routing_update_walls } from 'map/routing_terrain';
+import { map_terrain_is, terrain } from 'map/terrain';
+import { map_tiles_set_road, map_tiles_set_wall } from 'map/tiles';
+import { Ref } from '../../ext/crt';
 import ROUTED_BUILDING_ROAD = routed_building_type.ROUTED_BUILDING_ROAD;
 import ROUTED_BUILDING_WALL = routed_building_type.ROUTED_BUILDING_WALL;
 import ROUTED_BUILDING_AQUEDUCT = routed_building_type.ROUTED_BUILDING_AQUEDUCT;
 import ROUTED_BUILDING_AQUEDUCT_WITHOUT_GRAPHIC = routed_building_type.ROUTED_BUILDING_AQUEDUCT_WITHOUT_GRAPHIC;
-import { routed_building_type } from 'map/routing';
-import { map_routing_calculate_distances_for_building } from 'map/routing';
-import { map_routing_distance } from 'map/routing';
-import { direction_type } from 'core/direction';
 import DIR_8_NONE = direction_type.DIR_8_NONE;
-import { direction_type } from 'core/direction';
-import { calc_general_direction } from 'core/calc';
-import { building_type } from 'building/type';
 import BUILDING_AQUEDUCT = building_type.BUILDING_AQUEDUCT;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_building } from 'building/model';
-import { building } from 'building/building';
-import { game_undo_restore_map } from 'game/undo';
-import { map_building_tiles_add_aqueduct } from 'map/building_tiles';
-import { GRID } from 'map/grid';
-import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_offset_to_x } from 'map/grid';
-import { map_grid_offset_to_y } from 'map/grid';
-import { map_grid_direction_delta } from 'map/grid';
-import { map_property_is_plaza_or_earthquake } from 'map/property';
-import { map_routing_update_land } from 'map/routing_terrain';
-import { map_routing_update_walls } from 'map/routing_terrain';
-import { terrain } from 'map/terrain';
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_ROCK = terrain.TERRAIN_ROCK;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
@@ -45,87 +31,65 @@ import TERRAIN_ELEVATION = terrain.TERRAIN_ELEVATION;
 import TERRAIN_ACCESS_RAMP = terrain.TERRAIN_ACCESS_RAMP;
 import TERRAIN_RUBBLE = terrain.TERRAIN_RUBBLE;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
-import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 import TERRAIN_NOT_CLEAR = terrain.TERRAIN_NOT_CLEAR;
-import { map_terrain_is } from 'map/terrain';
-import { map_tiles_set_wall } from 'map/tiles';
-import { map_tiles_set_road } from 'map/tiles';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-function place_routed_building(x_start: number, y_start: number, x_end: number, y_end: number, type: routed_building_type, items: number) {
-    let direction_indices: number[] = {
-        { 0, 2, 6, 4 },
-    { 0, 2, 6, 4 },
-    { 2, 4, 0, 6 },
-    { 2, 4, 0, 6 },
-    { 4, 6, 2, 0 },
-    { 4, 6, 2, 0 },
-    { 6, 0, 4, 2 },
-    { 6, 0, 4, 2 }
-};
-    * items = 0;
-let grid_offset: number = map_grid_offset(x_end, y_end);
-let guard: number = 0;
-while (1) {
-    if (++guard >= 400) {
-        return 0;
-    }
-            int distance = map_routing_distance(grid_offset);
-    if (distance <= 0) {
-        return 0;
-    }
-    switch (type) {
-        default:
-        case ROUTED_BUILDING_ROAD:
-                    * items += map_tiles_set_road(x_end, y_end);
-            break;
-        case ROUTED_BUILDING_WALL:
-                    * items += map_tiles_set_wall(x_end, y_end);
-            break;
-        case ROUTED_BUILDING_AQUEDUCT:
-                    * items += map_building_tiles_add_aqueduct(x_end, y_end);
-            break;
-        case ROUTED_BUILDING_AQUEDUCT_WITHOUT_GRAPHIC:
-                    * items += 1;
-            break;
-    }
-            int direction = calc_general_direction(x_end, y_end, x_start, y_start);
-    if (direction == DIR_8_NONE) {
-        return 1; // destination reached
-    }
-            int routed = 0;
-    for (int i = 0; i < 4; i++) {
-                int index = direction_indices[direction][i];
-                int new_grid_offset = grid_offset + map_grid_direction_delta(index);
-                int new_dist = map_routing_distance(new_grid_offset);
-        if (new_dist > 0 && new_dist < distance) {
-            grid_offset = new_grid_offset;
-            x_end = map_grid_offset_to_x(grid_offset);
-            y_end = map_grid_offset_to_y(grid_offset);
-            routed = 1;
-            break;
+function place_routed_building(x_start: number, y_start: number, x_end: number, y_end: number, type: routed_building_type, items: Ref<number>) {
+    let direction_indices: number[][] = [
+        [0, 2, 6, 4],
+        [0, 2, 6, 4],
+        [2, 4, 0, 6],
+        [2, 4, 0, 6],
+        [4, 6, 2, 0],
+        [4, 6, 2, 0],
+        [6, 0, 4, 2],
+        [6, 0, 4, 2]
+    ];
+    items.v = 0;
+    let grid_offset: number = map_grid_offset(x_end, y_end);
+    let guard: number = 0;
+    while (1) {
+        if (++guard >= 400) {
+            return 0;
+        }
+        let distance = map_routing_distance(grid_offset);
+        if (distance <= 0) {
+            return 0;
+        }
+        switch (type) {
+            default:
+            case ROUTED_BUILDING_ROAD:
+                items.v += map_tiles_set_road(x_end, y_end);
+                break;
+            case ROUTED_BUILDING_WALL:
+                items.v += map_tiles_set_wall(x_end, y_end);
+                break;
+            case ROUTED_BUILDING_AQUEDUCT:
+                items.v += map_building_tiles_add_aqueduct(x_end, y_end);
+                break;
+            case ROUTED_BUILDING_AQUEDUCT_WITHOUT_GRAPHIC:
+                items.v += 1;
+                break;
+        }
+        let direction = calc_general_direction(x_end, y_end, x_start, y_start);
+        if (direction == DIR_8_NONE) {
+            return 1; // destination reached
+        }
+        let routed = 0;
+        for (let i = 0; i < 4; i++) {
+            let index = direction_indices[direction][i];
+            let new_grid_offset = grid_offset + map_grid_direction_delta(index);
+            let new_dist = map_routing_distance(new_grid_offset);
+            if (new_dist > 0 && new_dist < distance) {
+                grid_offset = new_grid_offset;
+                x_end = map_grid_offset_to_x(grid_offset);
+                y_end = map_grid_offset_to_y(grid_offset);
+                routed = 1;
+                break;
+            }
+        }
+        if (!routed) {
+            return 0;
         }
     }
-    if (!routed) {
-        return 0;
-    }
-}
 }
 export function building_construction_place_road(measure_only: number, x_start: number, y_start: number, x_end: number, y_end: number) {
     game_undo_restore_map(0);
@@ -141,13 +105,15 @@ export function building_construction_place_road(measure_only: number, x_start: 
         return 0;
     }
     let items_placed: number = 0;
+    let items_placed_ref: Ref<number> = new Ref(items_placed);
     if (map_routing_calculate_distances_for_building(ROUTED_BUILDING_ROAD, x_start, y_start) &&
-        place_routed_building(x_start, y_start, x_end, y_end, ROUTED_BUILDING_ROAD, items_placed)) {
+        place_routed_building(x_start, y_start, x_end, y_end, ROUTED_BUILDING_ROAD, items_placed_ref)) {
         if (!measure_only) {
             map_routing_update_land();
             window_invalidate();
         }
     }
+    items_placed = items_placed_ref.v;
     return items_placed;
 }
 export function building_construction_place_wall(measure_only: number, x_start: number, y_start: number, x_end: number, y_end: number) {
@@ -164,19 +130,21 @@ export function building_construction_place_wall(measure_only: number, x_start: 
         return 0;
     }
     let items_placed: number = 0;
-    if (place_routed_building(x_start, y_start, x_end, y_end, ROUTED_BUILDING_WALL, items_placed)) {
+    let items_placed_ref: Ref<number> = new Ref(items_placed);
+    if (place_routed_building(x_start, y_start, x_end, y_end, ROUTED_BUILDING_WALL, items_placed_ref)) {
         if (!measure_only) {
             map_routing_update_land();
             map_routing_update_walls();
             window_invalidate();
         }
     }
+    items_placed = items_placed_ref.v;
     return items_placed;
 }
-export function building_construction_place_aqueduct(x_start: number, y_start: number, x_end: number, y_end: number, cost: number) {
+export function building_construction_place_aqueduct(x_start: number, y_start: number, x_end: number, y_end: number, cost: Ref<number>) {
     game_undo_restore_map(0);
     let item_cost: number = model_get_building(BUILDING_AQUEDUCT).cost;
-    * cost = 0;
+    cost.v = 0;
     let blocked: number = 0;
     let grid_offset: number = map_grid_offset(x_start, y_start);
     if (map_terrain_is(grid_offset, TERRAIN_ROAD)) {
@@ -201,11 +169,13 @@ export function building_construction_place_aqueduct(x_start: number, y_start: n
         return 0;
     }
     let num_items: number;
-    place_routed_building(x_start, y_start, x_end, y_end, ROUTED_BUILDING_AQUEDUCT, num_items);
-    * cost = item_cost * num_items;
+    let num_items_ref: Ref<number> = new Ref(num_items);
+    place_routed_building(x_start, y_start, x_end, y_end, ROUTED_BUILDING_AQUEDUCT, num_items_ref);
+    num_items = num_items_ref.v;
+    cost.v = item_cost * num_items;
     return 1;
 }
-export function building_construction_place_aqueduct_for_reservoir(measure_only: number, x_start: number, y_start: number, x_end: number, y_end: number, items: number) {
+export function building_construction_place_aqueduct_for_reservoir(measure_only: number, x_start: number, y_start: number, x_end: number, y_end: number, items: Ref<number>) {
     let type: routed_building_type = measure_only ? ROUTED_BUILDING_AQUEDUCT_WITHOUT_GRAPHIC : ROUTED_BUILDING_AQUEDUCT;
     return place_routed_building(x_start, y_start, x_end, y_end, type, items);
 }

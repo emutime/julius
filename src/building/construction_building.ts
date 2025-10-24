@@ -25,6 +25,7 @@ import { map_routing_update_land, map_routing_update_walls } from 'map/routing_t
 import { map_terrain_add_gatehouse_roads, map_terrain_add_triumphal_arch_roads, map_terrain_remove_with_radius, terrain } from 'map/terrain';
 import { map_tiles_are_clear, map_tiles_update_all_plazas, map_tiles_update_area_roads, map_tiles_update_area_walls } from 'map/tiles';
 import { map_water_add_building, map_water_determine_orientation_size2, map_water_determine_orientation_size3 } from 'map/water';
+import { Ref } from '../../ext/crt';
 import BUILDING_HOUSE_LARGE_TENT = building_type.BUILDING_HOUSE_LARGE_TENT;
 import BUILDING_HOUSE_SMALL_SHACK = building_type.BUILDING_HOUSE_SMALL_SHACK;
 import BUILDING_HOUSE_LARGE_SHACK = building_type.BUILDING_HOUSE_LARGE_SHACK;
@@ -728,9 +729,9 @@ export function building_construction_place_building(type: building_type, x: num
             city_warning_show(WARNING_CLEAR_LAND_NEEDED);
             return 0;
         }
-        let warning_id: number;
-        if (!building_construction_can_place_on_terrain(x, y, warning_id)) {
-            city_warning_show(warning_id);
+        let warning_id_ref = new Ref(0);
+        if (!building_construction_can_place_on_terrain(x, y, warning_id_ref)) {
+            city_warning_show(warning_id_ref.v);
             return 0;
         }
     }

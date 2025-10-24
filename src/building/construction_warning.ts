@@ -115,11 +115,11 @@ function check_road_access(type: number, x: number, y: number, size: number) {
             return;
     }
     let has_road: number = 0;
-    if (map_has_road_access(x, y, size, 0)) {
+    if (map_has_road_access(x, y, size, null)) {
         has_road = 1;
-    } else if (type == BUILDING_WAREHOUSE && map_has_road_access(x, y, size, 0)) {
+    } else if (type == BUILDING_WAREHOUSE && map_has_road_access(x, y, size, null)) {
         has_road = 1;
-    } else if (type == BUILDING_HIPPODROME && map_has_road_access_hippodrome(x, y, 0)) {
+    } else if (type == BUILDING_HIPPODROME && map_has_road_access_hippodrome(x, y, null)) {
         has_road = 1;
     }
     if (!has_road) {

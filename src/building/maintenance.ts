@@ -1,103 +1,53 @@
-import { MAX_BUILDINGS } from 'building/building';
-import { building_type } from 'building/type';
+import { building, building_get, building_get_highest_id, building_main, MAX_BUILDINGS } from 'building/building';
+import { building_destroy_by_collapse, building_destroy_by_fire, building_destroy_last_placed } from 'building/destruction';
+import { building_list_burning_add, building_list_burning_clear, building_list_burning_items, building_list_burning_size } from 'building/list';
+import { building_state, building_type, house_level } from 'building/type';
+import { city_buildings_get_trade_center, city_buildings_set_trade_center } from 'city/buildings';
+import { city_map_entry_point, city_map_exit_point } from 'city/map';
+import { city_message_apply_sound_interval, city_message_post, city_message_post_with_popup_delay, city_message_type, message_category } from 'city/message';
+import { city_population } from 'city/population';
+import { city_sentiment_reset_protesters_criminals } from 'city/sentiment';
+import { city_view_go_to_grid_offset } from 'city/view';
+import { city_warning_show, warning_type } from 'city/warning';
+import { calc_maximum_distance } from 'core/calc';
+import { random_byte } from 'core/random';
+import { figure_create_homeless } from 'figuretype/migrant';
+import { tutorial_extra_damage_risk, tutorial_extra_fire_risk, tutorial_handle_collapse, tutorial_handle_fire } from 'game/tutorial';
+import { game_undo_disable } from 'game/undo';
+import { map_building_at } from 'map/building';
+import { map_building_tiles_set_rubble } from 'map/building_tiles';
+import { GRID, map_grid_direction_delta, map_grid_offset } from 'map/grid';
+import { map_tile } from 'map/point';
+import { map_random_get } from 'map/random';
+import { map_closest_reachable_road_within_radius, map_closest_road_within_radius, map_road_to_largest_network, map_road_to_largest_network_hippodrome } from 'map/road_access';
+import { map_road_network_get } from 'map/road_network';
+import { map_routing_calculate_distances, map_routing_delete_first_wall_or_aqueduct, map_routing_distance } from 'map/routing';
+import { map_routing_update_land, map_routing_update_walls } from 'map/routing_terrain';
+import { map_tiles_update_all_aqueducts, map_tiles_update_all_empty_land, map_tiles_update_all_meadow, map_tiles_update_all_walls } from 'map/tiles';
+import { scenario_climate, scenario_property_climate } from 'scenario/property';
+import { sound_effect, sound_effect_play } from 'sound/effect';
+import { Ref } from '../../ext/crt';
 import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;
 import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
 import BUILDING_WAREHOUSE_SPACE = building_type.BUILDING_WAREHOUSE_SPACE;
 import BUILDING_BURNING_RUIN = building_type.BUILDING_BURNING_RUIN;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
 import HOUSE_LARGE_TENT = house_level.HOUSE_LARGE_TENT;
 import HOUSE_LARGE_SHACK = house_level.HOUSE_LARGE_SHACK;
 import HOUSE_GRAND_INSULA = house_level.HOUSE_GRAND_INSULA;
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
 import BUILDING_STATE_UNDO = building_state.BUILDING_STATE_UNDO;
 import BUILDING_STATE_RUBBLE = building_state.BUILDING_STATE_RUBBLE;;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_main } from 'building/building';
-import { building_get_highest_id } from 'building/building';
-import { building_destroy_by_collapse } from 'building/destruction';
-import { building_destroy_by_fire } from 'building/destruction';
-import { building_destroy_last_placed } from 'building/destruction';
-import { building_list_burning_clear } from 'building/list';
-import { building_list_burning_add } from 'building/list';
-import { building_list_burning_size } from 'building/list';
-import { building_list_burning_items } from 'building/list';
-import { city_buildings_get_trade_center } from 'city/buildings';
-import { city_buildings_set_trade_center } from 'city/buildings';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { city_map_entry_point } from 'city/map';
-import { city_map_exit_point } from 'city/map';
-import { message_category } from 'city/message';
 import MESSAGE_CAT_FIRE = message_category.MESSAGE_CAT_FIRE;
 import MESSAGE_CAT_COLLAPSE = message_category.MESSAGE_CAT_COLLAPSE;
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
 import MESSAGE_FIRE = city_message_type.MESSAGE_FIRE;
 import MESSAGE_COLLAPSED_BUILDING = city_message_type.MESSAGE_COLLAPSED_BUILDING;
 import MESSAGE_ROAD_TO_ROME_OBSTRUCTED = city_message_type.MESSAGE_ROAD_TO_ROME_OBSTRUCTED;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_apply_sound_interval } from 'city/message';
-import { city_message_post } from 'city/message';
-import { city_message_post_with_popup_delay } from 'city/message';
-import { city_population } from 'city/population';
-import { city_sentiment_reset_protesters_criminals } from 'city/sentiment';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_go_to_grid_offset } from 'city/view';
-import { warning_type } from 'city/warning';
 import WARNING_CITY_BOXED_IN = warning_type.WARNING_CITY_BOXED_IN;
 import WARNING_CITY_BOXED_IN_PEOPLE_WILL_PERISH = warning_type.WARNING_CITY_BOXED_IN_PEOPLE_WILL_PERISH;
-import { warning_type } from 'city/warning';
-import { city_warning_show } from 'city/warning';
-import { direction_type } from 'core/direction';
-import { calc_maximum_distance } from 'core/calc';
-import { random_byte } from 'core/random';
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { figure_create_homeless } from 'figuretype/migrant';
-import { tutorial_availability } from 'game/tutorial';
-import { tutorial_build_buttons } from 'game/tutorial';
-import { tutorial_extra_fire_risk } from 'game/tutorial';
-import { tutorial_extra_damage_risk } from 'game/tutorial';
-import { tutorial_handle_fire } from 'game/tutorial';
-import { tutorial_handle_collapse } from 'game/tutorial';
-import { game_undo_disable } from 'game/undo';
-import { map_building_at } from 'map/building';
-import { map_building_tiles_set_rubble } from 'map/building_tiles';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_direction_delta } from 'map/grid';
-import { map_random_get } from 'map/random';
-import { map_closest_road_within_radius } from 'map/road_access';
-import { map_closest_reachable_road_within_radius } from 'map/road_access';
-import { map_road_to_largest_network } from 'map/road_access';
-import { map_road_to_largest_network_hippodrome } from 'map/road_access';
-import { map_road_network_get } from 'map/road_network';
-import { routed_building_type } from 'map/routing';
-import { map_routing_calculate_distances } from 'map/routing';
-import { map_routing_delete_first_wall_or_aqueduct } from 'map/routing';
-import { map_routing_distance } from 'map/routing';
-import { map_routing_update_land } from 'map/routing_terrain';
-import { map_routing_update_walls } from 'map/routing_terrain';
-import { map_tiles_update_all_walls } from 'map/tiles';
-import { map_tiles_update_all_empty_land } from 'map/tiles';
-import { map_tiles_update_all_meadow } from 'map/tiles';
-import { map_tiles_update_all_aqueducts } from 'map/tiles';
-import { scenario_climate } from 'scenario/property';
 import CLIMATE_NORTHERN = scenario_climate.CLIMATE_NORTHERN;
 import CLIMATE_DESERT = scenario_climate.CLIMATE_DESERT;
-import { scenario_climate } from 'scenario/property';
-import { scenario_property_climate } from 'scenario/property';
-import { sound_effect } from 'sound/effect';
 import SOUND_EFFECT_EXPLOSION = sound_effect.SOUND_EFFECT_EXPLOSION;
-import { sound_effect_play } from 'sound/effect';
 let fire_spread_direction: number = 0;
 export function building_maintenance_update_fire_direction() {
     fire_spread_direction = random_byte() & 7;
@@ -172,11 +122,11 @@ export function building_maintenance_update_burning_ruins() {
         map_routing_update_land();
     }
 }
-export function building_maintenance_get_closest_burning_ruin(x: number, y: number, distance: number) {
+export function building_maintenance_get_closest_burning_ruin(x: number, y: number, distance: Ref<number>) {
     let min_free_building_id: number = 0;
     let min_occupied_building_id: number = 0;
-    let min_occupied_dist: number = * distance = 10000;
-    let burning: number = building_list_burning_items();
+    let min_occupied_dist: number = distance.v = 10000;
+    let burning: number[] = building_list_burning_items();
     let burning_size: number = building_list_burning_size();
     for (let i: number = 0; i < burning_size; i++) {
         let building_id: number = burning[i];
@@ -189,15 +139,15 @@ export function building_maintenance_get_closest_burning_ruin(x: number, y: numb
                     min_occupied_dist = dist;
                     min_occupied_building_id = building_id;
                 }
-            } else if (dist < * distance) {
-                * distance = dist;
+            } else if (dist < distance.v) {
+                distance.v = dist;
                 min_free_building_id = building_id;
             }
         }
     }
     if (!min_free_building_id && min_occupied_dist <= 2) {
         min_free_building_id = min_occupied_building_id;
-        * distance = 2;
+        distance.v = 2;
     }
     return min_free_building_id;
 }

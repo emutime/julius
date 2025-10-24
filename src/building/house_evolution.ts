@@ -1,5 +1,17 @@
-import { MAX_BUILDINGS } from 'building/building';
-import { building_type } from 'building/type';
+import { building, building_get, building_is_house, MAX_BUILDINGS } from 'building/building';
+import { building_house_can_expand, building_house_change_to, building_house_check_for_corruption, building_house_devolve_from_large_insula, building_house_devolve_from_large_palace, building_house_devolve_from_large_villa, building_house_expand_to_large_insula, building_house_expand_to_large_palace, building_house_expand_to_large_villa, building_house_merge } from 'building/house';
+import { model_get_building, model_get_house, model_house } from 'building/model';
+import { building_state, building_type, house_level } from 'building/type';
+import { city_houses_demands, city_houses_reset_demands, house_demands } from 'city/houses';
+import { city_resource_multiple_wine_available } from 'city/resource';
+import { calc_maximum_distance } from 'core/calc';
+import { inventory_type, resource_type } from 'game/resource';
+import { game_time_day } from 'game/time';
+import { game_undo_disable } from 'game/undo';
+import { map_building_at } from 'map/building';
+import { map_grid_get_area, map_grid_offset } from 'map/grid';
+import { map_routing_update_land } from 'map/routing_terrain';
+import { map_tiles_update_all_gardens } from 'map/tiles';
 import BUILDING_HOUSE_VACANT_LOT = building_type.BUILDING_HOUSE_VACANT_LOT;
 import BUILDING_HOUSE_SMALL_TENT = building_type.BUILDING_HOUSE_SMALL_TENT;
 import BUILDING_HOUSE_LARGE_TENT = building_type.BUILDING_HOUSE_LARGE_TENT;
@@ -21,64 +33,23 @@ import BUILDING_HOUSE_SMALL_PALACE = building_type.BUILDING_HOUSE_SMALL_PALACE;
 import BUILDING_HOUSE_MEDIUM_PALACE = building_type.BUILDING_HOUSE_MEDIUM_PALACE;
 import BUILDING_HOUSE_LARGE_PALACE = building_type.BUILDING_HOUSE_LARGE_PALACE;
 import BUILDING_HOUSE_LUXURY_PALACE = building_type.BUILDING_HOUSE_LUXURY_PALACE;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
 import HOUSE_LUXURY_PALACE = house_level.HOUSE_LUXURY_PALACE;
-import { house_level } from 'building/type';
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_is_house } from 'building/building';
-import { building_house_change_to } from 'building/house';
-import { building_house_merge } from 'building/house';
-import { building_house_can_expand } from 'building/house';
-import { building_house_expand_to_large_insula } from 'building/house';
-import { building_house_expand_to_large_villa } from 'building/house';
-import { building_house_expand_to_large_palace } from 'building/house';
-import { building_house_devolve_from_large_insula } from 'building/house';
-import { building_house_devolve_from_large_villa } from 'building/house';
-import { building_house_devolve_from_large_palace } from 'building/house';
-import { building_house_check_for_corruption } from 'building/house';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_building } from 'building/model';
-import { model_get_house } from 'building/model';
-import { house_demands } from 'city/houses';
-import { city_houses_reset_demands } from 'city/houses';
-import { city_houses_demands } from 'city/houses';
-import { resource_trade_status } from 'city/constants';
-import { resource_type } from 'game/resource';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { inventory_type } from 'game/resource';
 import INVENTORY_WINE = inventory_type.INVENTORY_WINE;
 import INVENTORY_OIL = inventory_type.INVENTORY_OIL;
 import INVENTORY_FURNITURE = inventory_type.INVENTORY_FURNITURE;
 import INVENTORY_POTTERY = inventory_type.INVENTORY_POTTERY;
 import INVENTORY_MIN_FOOD = inventory_type.INVENTORY_MIN_FOOD;
 import INVENTORY_MAX_FOOD = inventory_type.INVENTORY_MAX_FOOD;
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_list } from 'city/resource';
-import { city_resource_multiple_wine_available } from 'city/resource';
-import { direction_type } from 'core/direction';
-import { calc_maximum_distance } from 'core/calc';
-import { game_time_day } from 'game/time';
-import { game_undo_disable } from 'game/undo';
-import { map_building_at } from 'map/building';
-import { GRID } from 'map/grid';
-import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_get_area } from 'map/grid';
-import { map_routing_update_land } from 'map/routing_terrain';
-import { map_tiles_update_all_gardens } from 'map/tiles';
 export const enum evolve_status {
     EVOLVE = 1,
     NONE = 0,
     DEVOLVE = -1,
 }
+import EVOLVE = evolve_status.EVOLVE;
+import NONE = evolve_status.NONE;
+import DEVOLVE = evolve_status.DEVOLVE;
 function check_evolve_desirability(house: building) {
     let level: number = house.subtype.house_level;
     let model: model_house = model_get_house(level);
@@ -494,13 +465,15 @@ function consume_resources(b: building) {
     consume_resource(b, INVENTORY_OIL, model.oil);
     consume_resource(b, INVENTORY_WINE, model.wine);
 }
-let evolve_callback: int ([] = new Array().fill({
+
+type evolve_callback_type = (house: building, demands: house_demands) => number;
+let evolve_callback: evolve_callback_type[] = [
     evolve_small_tent, evolve_large_tent, evolve_small_shack, evolve_large_shack,
     evolve_small_hovel, evolve_large_hovel, evolve_small_casa, evolve_large_casa,
     evolve_small_insula, evolve_medium_insula, evolve_large_insula, evolve_grand_insula,
     evolve_small_villa, evolve_medium_villa, evolve_large_villa, evolve_grand_villa,
     evolve_small_palace, evolve_medium_palace, evolve_large_palace, evolve_luxury_palace
-});
+];
 export function building_house_process_evolve_and_consume_goods() {
     city_houses_reset_demands();
     let demands: house_demands = city_houses_demands();

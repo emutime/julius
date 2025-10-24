@@ -4,18 +4,15 @@ import { city_buildings_get_working_dock, city_buildings_has_working_dock } from
 import { figure_action } from 'figure/action';
 import { figure, figure_get } from 'figure/figure';
 import { map_has_figure_at } from 'map/figure';
-import { GRID, map_grid_offset } from 'map/grid';
+import { map_grid_offset } from 'map/grid';
 import { map_point, map_point_store_result } from 'map/point';
 import { map_routing_calculate_distances_water_boat } from 'map/routing';
-import { map_terrain_is_adjacent_to_open_water, terrain } from 'map/terrain';
+import { map_terrain_is_adjacent_to_open_water } from 'map/terrain';
 import { scenario_map_river_entry } from 'scenario/map';
 import BUILDING_DOCK = building_type.BUILDING_DOCK;
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
 import FIGURE_ACTION_132_DOCKER_IDLING = figure_action.FIGURE_ACTION_132_DOCKER_IDLING;
 import FIGURE_ACTION_133_DOCKER_IMPORT_QUEUE = figure_action.FIGURE_ACTION_133_DOCKER_IMPORT_QUEUE;
-import GRID_SIZE = GRID.GRID_SIZE;
-import TERRAIN_WALL = terrain.TERRAIN_WALL;
-import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 export function building_dock_count_idle_dockers(dock: building) {
     let num_idle: number = 0;
     for (let i: number = 0; i < 3; i++) {

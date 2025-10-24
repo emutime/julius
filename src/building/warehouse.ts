@@ -1,29 +1,45 @@
-import { MAX_BUILDINGS } from 'building/building';
-import { building_type } from 'building/type';
+import { building, building_get, building_main, building_next, MAX_BUILDINGS } from 'building/building';
+import { building_count_active } from 'building/count';
+import { model_get_building } from 'building/model';
+import { building_storage, building_storage_get, building_storage_state } from 'building/storage';
+import { building_state, building_type } from 'building/type';
+import { city_buildings_get_barracks } from 'city/buildings';
+import { city_finance_process_export, city_finance_process_import } from 'city/finance';
+import { city_military_has_legionary_legions } from 'city/military';
+import { city_resource_add_to_warehouse, city_resource_count, city_resource_has_workshop_with_room, city_resource_is_stockpiled, city_resource_last_used_warehouse, city_resource_remove_from_warehouse, city_resource_set_last_used_warehouse } from 'city/resource';
+import { calc_distance_with_penalty, calc_percentage } from 'core/calc';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { trade_price_buy, trade_price_sell } from 'empire/trade_prices';
+import { resource_image_offset, resource_image_type, resource_to_workshop_type, resource_type, workshop_type } from 'game/resource';
+import { tutorial_on_add_to_warehouse } from 'game/tutorial';
+import { map_image_set } from 'map/image';
+import { map_point, map_point_store_result } from 'map/point';
+import { map_has_road_access } from 'map/road_access';
+import { scenario_property_rome_supplies_wheat } from 'scenario/property';
+import { Ref } from '../../ext/crt';
 import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
 import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
 import BUILDING_WAREHOUSE_SPACE = building_type.BUILDING_WAREHOUSE_SPACE;
 import BUILDING_BARRACKS = building_type.BUILDING_BARRACKS;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_main } from 'building/building';
-import { building_next } from 'building/building';
-import { map_point } from 'map/point';
-import { map_point_store_result } from 'map/point';
-import { warehouse } from 'building/warehouse';
+export const enum warehouse {
+    WAREHOUSE_ROOM = 0,
+    WAREHOUSE_FULL = 1,
+    WAREHOUSE_SOME_ROOM = 2
+};
+
+export const enum warehouse_task {
+    WAREHOUSE_TASK_NONE = -1,
+    WAREHOUSE_TASK_GETTING = 0,
+    WAREHOUSE_TASK_DELIVERING = 1
+};
 import WAREHOUSE_ROOM = warehouse.WAREHOUSE_ROOM;
 import WAREHOUSE_FULL = warehouse.WAREHOUSE_FULL;
 import WAREHOUSE_SOME_ROOM = warehouse.WAREHOUSE_SOME_ROOM;
-import { warehouse_task } from 'building/warehouse';
 import WAREHOUSE_TASK_NONE = warehouse_task.WAREHOUSE_TASK_NONE;
 import WAREHOUSE_TASK_GETTING = warehouse_task.WAREHOUSE_TASK_GETTING;
 import WAREHOUSE_TASK_DELIVERING = warehouse_task.WAREHOUSE_TASK_DELIVERING;
-import { resource_type } from 'game/resource';
 import RESOURCE_NONE = resource_type.RESOURCE_NONE;
 import RESOURCE_WHEAT = resource_type.RESOURCE_WHEAT;
 import RESOURCE_VEGETABLES = resource_type.RESOURCE_VEGETABLES;
@@ -33,59 +49,12 @@ import RESOURCE_WEAPONS = resource_type.RESOURCE_WEAPONS;
 import RESOURCE_MIN = resource_type.RESOURCE_MIN;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
 import WORKSHOP_NONE = workshop_type.WORKSHOP_NONE;
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
 import RESOURCE_IMAGE_STORAGE = resource_image_type.RESOURCE_IMAGE_STORAGE;
-import { resource_image_type } from 'game/resource';
-import { resource_image_offset } from 'game/resource';
-import { resource_to_workshop_type } from 'game/resource';
-import { building_count_active } from 'building/count';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_building } from 'building/model';
-import { building_storage_state } from 'building/storage';
 import BUILDING_STORAGE_STATE_NOT_ACCEPTING = building_storage_state.BUILDING_STORAGE_STATE_NOT_ACCEPTING;
 import BUILDING_STORAGE_STATE_GETTING = building_storage_state.BUILDING_STORAGE_STATE_GETTING;
-import { building_storage_state } from 'building/storage';
-import { building_storage } from 'building/storage';
-import { building_storage_get } from 'building/storage';
-import { city_buildings_get_barracks } from 'city/buildings';
-import { city_finance_process_import } from 'city/finance';
-import { city_finance_process_export } from 'city/finance';
-import { finance_overview } from 'city/finance';
-import { city_military_has_legionary_legions } from 'city/military';
-import { resource_trade_status } from 'city/constants';
-import { resource_list } from 'city/resource';
-import { city_resource_count } from 'city/resource';
-import { city_resource_last_used_warehouse } from 'city/resource';
-import { city_resource_set_last_used_warehouse } from 'city/resource';
-import { city_resource_is_stockpiled } from 'city/resource';
-import { city_resource_has_workshop_with_room } from 'city/resource';
-import { city_resource_add_to_warehouse } from 'city/resource';
-import { city_resource_remove_from_warehouse } from 'city/resource';
-import { direction_type } from 'core/direction';
-import { calc_percentage } from 'core/calc';
-import { calc_distance_with_penalty } from 'core/calc';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_BUILDING_WAREHOUSE_STORAGE_EMPTY = group_terrain.GROUP_BUILDING_WAREHOUSE_STORAGE_EMPTY;
 import GROUP_BUILDING_WAREHOUSE_STORAGE_FILLED = group_terrain.GROUP_BUILDING_WAREHOUSE_STORAGE_FILLED;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { trade_price_buy } from 'empire/trade_prices';
-import { trade_price_sell } from 'empire/trade_prices';
-import { tutorial_availability } from 'game/tutorial';
-import { tutorial_build_buttons } from 'game/tutorial';
-import { tutorial_on_add_to_warehouse } from 'game/tutorial';
-import { map_image_set } from 'map/image';
-import { map_has_road_access } from 'map/road_access';
-import { scenario_climate } from 'scenario/property';
-import { scenario_property_rome_supplies_wheat } from 'scenario/property';
 export function building_warehouse_get_space_info(warehouse: building) {
     let total_loads: number = 0;
     let empty_spaces: number = 0;
@@ -290,7 +259,7 @@ export function building_warehouses_remove_resource(resource: number, amount: nu
     }
     return amount - amount_left;
 }
-export function building_warehouse_for_storing(src_building_id: number, x: number, y: number, resource: number, distance_from_entry: number, road_network_id: number, understaffed: number, dst: map_point) {
+export function building_warehouse_for_storing(src_building_id: number, x: number, y: number, resource: number, distance_from_entry: number, road_network_id: number, understaffed: Ref<number>, dst: map_point) {
     let min_dist: number = 10000;
     let min_building_id: number = 0;
     for (let i: number = 1; i < MAX_BUILDINGS; i++) {
@@ -312,7 +281,7 @@ export function building_warehouse_for_storing(src_building_id: number, x: numbe
         let pct_workers: number = calc_percentage(building_dst.num_workers, model_get_building(building_dst.type).laborers);
         if (pct_workers < 100) {
             if (understaffed) {
-                * understaffed += 1
+                understaffed.v += 1
             }
             continue
         }
@@ -376,7 +345,7 @@ export function building_warehouse_for_getting(src: building, resource: number, 
         return 0;
     }
 }
-function determine_granary_accept_foods(resources: number) {
+function determine_granary_accept_foods(resources: number[]) {
     if (scenario_property_rome_supplies_wheat()) {
         return 0;
     }
@@ -404,7 +373,7 @@ function determine_granary_accept_foods(resources: number) {
     }
     return can_accept;
 }
-function determine_granary_get_foods(resources: number) {
+function determine_granary_get_foods(resources: number[]) {
     if (scenario_property_rome_supplies_wheat()) {
         return 0;
     }
@@ -432,7 +401,7 @@ function determine_granary_get_foods(resources: number) {
     }
     return can_get;
 }
-function contains_non_stockpiled_food(space: building, resources: number) {
+function contains_non_stockpiled_food(space: building, resources: number[]) {
     if (space.id <= 0) {
         return 0;
     }
@@ -451,7 +420,7 @@ function contains_non_stockpiled_food(space: building, resources: number) {
     }
     return 0;
 }
-export function building_warehouse_determine_worker_task(warehouse: building, resource: number) {
+export function building_warehouse_determine_worker_task(warehouse: building, resource: Ref<number>) {
     let pct_workers: number = calc_percentage(warehouse.num_workers, model_get_building(warehouse.type).laborers);
     if (pct_workers < 50) {
         return WAREHOUSE_TASK_NONE;
@@ -486,7 +455,7 @@ export function building_warehouse_determine_worker_task(warehouse: building, re
             }
         }
         if (room >= 8 && loads_stored <= 4 && city_resource_count(r) - loads_stored > 4) {
-            * resource = r;
+            resource.v = r;
             return WAREHOUSE_TASK_GETTING;
         }
     }
@@ -500,7 +469,7 @@ export function building_warehouse_determine_worker_task(warehouse: building, re
                 space = building_next(space);
                 if (space.id > 0 && space.loads_stored > 0 &&
                     space.subtype.warehouse_resource_id == RESOURCE_WEAPONS) {
-                    * resource = RESOURCE_WEAPONS;
+                    resource.v = RESOURCE_WEAPONS;
                     return WAREHOUSE_TASK_DELIVERING;
                 }
             }
@@ -513,7 +482,7 @@ export function building_warehouse_determine_worker_task(warehouse: building, re
             if (!city_resource_is_stockpiled(space.subtype.warehouse_resource_id)) {
                 let workshop_type: number = resource_to_workshop_type(space.subtype.warehouse_resource_id);
                 if (workshop_type != WORKSHOP_NONE && city_resource_has_workshop_with_room(workshop_type)) {
-                    * resource = space.subtype.warehouse_resource_id;
+                    resource.v = space.subtype.warehouse_resource_id;
                     return WAREHOUSE_TASK_DELIVERING;
                 }
             }
@@ -525,7 +494,7 @@ export function building_warehouse_determine_worker_task(warehouse: building, re
         for (let i: number = 0; i < 8; i++) {
             space = building_next(space);
             if (contains_non_stockpiled_food(space, granary_resources)) {
-                * resource = space.subtype.warehouse_resource_id;
+                resource.v = space.subtype.warehouse_resource_id;
                 return WAREHOUSE_TASK_DELIVERING;
             }
         }
@@ -535,7 +504,7 @@ export function building_warehouse_determine_worker_task(warehouse: building, re
         for (let i: number = 0; i < 8; i++) {
             space = building_next(space);
             if (contains_non_stockpiled_food(space, granary_resources)) {
-                * resource = space.subtype.warehouse_resource_id;
+                resource.v = space.subtype.warehouse_resource_id;
                 return WAREHOUSE_TASK_DELIVERING;
             }
         }
@@ -545,7 +514,7 @@ export function building_warehouse_determine_worker_task(warehouse: building, re
         for (let i: number = 0; i < 8; i++) {
             space = building_next(space);
             if (space.id > 0 && space.loads_stored > 0) {
-                * resource = space.subtype.warehouse_resource_id;
+                resource.v = space.subtype.warehouse_resource_id;
                 return WAREHOUSE_TASK_DELIVERING;
             }
         }

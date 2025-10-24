@@ -1,21 +1,16 @@
-import { MAX_BUILDINGS } from 'building/building';
-import { building_type } from 'building/type';
-import BUILDING_TOWER = building_type.BUILDING_TOWER;
-import { building_type } from 'building/type';
-import { building_state } from 'building/type';
-import BUILDING_STATE_UNUSED = building_state.BUILDING_STATE_UNUSED;
-import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { god_type } from 'city/constants';
+import { building, building_get, MAX_BUILDINGS } from 'building/building';
+import { building_state, building_type } from 'building/type';
 import { city_culture_coverage_average_entertainment } from 'city/culture';
+import BUILDING_TOWER = building_type.BUILDING_TOWER;
+import BUILDING_STATE_UNUSED = building_state.BUILDING_STATE_UNUSED;
+import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
 function decay(value: number) {
-    if (* value > 0) {
-        * value = * value - 1;
+    if (value > 0) {
+        value = value - 1;
     } else {
-        * value = 0;
+        value = 0;
     }
+    return value;
 }
 export function house_service_decay_culture() {
     for (let i: number = 1; i < MAX_BUILDINGS; i++) {
@@ -23,24 +18,24 @@ export function house_service_decay_culture() {
         if (b.state != BUILDING_STATE_IN_USE || !b.house_size) {
             continue
         }
-        decay(b.data.house.theater);
-        decay(b.data.house.amphitheater_actor);
-        decay(b.data.house.amphitheater_gladiator);
-        decay(b.data.house.colosseum_gladiator);
-        decay(b.data.house.colosseum_lion);
-        decay(b.data.house.hippodrome);
-        decay(b.data.house.school);
-        decay(b.data.house.library);
-        decay(b.data.house.academy);
-        decay(b.data.house.barber);
-        decay(b.data.house.clinic);
-        decay(b.data.house.bathhouse);
-        decay(b.data.house.hospital);
-        decay(b.data.house.temple_ceres);
-        decay(b.data.house.temple_neptune);
-        decay(b.data.house.temple_mercury);
-        decay(b.data.house.temple_mars);
-        decay(b.data.house.temple_venus);
+        b.data.house.theater = decay(b.data.house.theater);
+        b.data.house.amphitheater_actor = decay(b.data.house.amphitheater_actor);
+        b.data.house.amphitheater_gladiator = decay(b.data.house.amphitheater_gladiator);
+        b.data.house.colosseum_gladiator = decay(b.data.house.colosseum_gladiator);
+        b.data.house.colosseum_lion = decay(b.data.house.colosseum_lion);
+        b.data.house.hippodrome = decay(b.data.house.hippodrome);
+        b.data.house.school = decay(b.data.house.school);
+        b.data.house.library = decay(b.data.house.library);
+        b.data.house.academy = decay(b.data.house.academy);
+        b.data.house.barber = decay(b.data.house.barber);
+        b.data.house.clinic = decay(b.data.house.clinic);
+        b.data.house.bathhouse = decay(b.data.house.bathhouse);
+        b.data.house.hospital = decay(b.data.house.hospital);
+        b.data.house.temple_ceres = decay(b.data.house.temple_ceres);
+        b.data.house.temple_neptune = decay(b.data.house.temple_neptune);
+        b.data.house.temple_mercury = decay(b.data.house.temple_mercury);
+        b.data.house.temple_mars = decay(b.data.house.temple_mars);
+        b.data.house.temple_venus = decay(b.data.house.temple_venus);
     }
 }
 export function house_service_decay_tax_collector() {
