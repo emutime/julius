@@ -1,5 +1,5 @@
+import { Ptr, PtrBuffer } from "../../ext/crt";
 
-;
 export function string_equals(a: number, b: number) {
     while (* a && * b && * a == * b) {
         ++a;
@@ -11,24 +11,22 @@ export function string_equals(a: number, b: number) {
         return 0;
     }
 }
-export function string_copy(src: number, dst: number, maxlength: number) {
+export function string_copy(src: Uint8Array, dst: Uint8Array, maxlength: number) {
     let length: number = 0;
-    while (length < maxlength && * src) {
-            * dst = * src;
-        src++;
-        dst++;
+    maxlength = Math.min(maxlength, src.length, dst.length);
+    while (length < maxlength && src[length]) {
+        dst[length] = src[length];
         length++;
     }
     if (length == maxlength) {
-        dst--;
+        length--;
     }
-    * dst = 0;
+    dst[length] = 0;
 }
-export function string_length(str: number) {
+export function string_length(str: Uint8Array) {
     let length: number = 0;
-    while (* str) {
+    while (str[length]) {
         length++;
-        str++;
     }
     return length;
 }
@@ -42,31 +40,33 @@ export function string_from_ascii(str: char) {
     }
     return (const uint8_t *) str;
 }
-export function string_to_int(str: number) {
-    let multipliers: number[] = { 1, 10, 100, 1000, 10000, 100000, 1000000, 10000000};
-    let ptr: number = str;
+export function string_to_int(str: PtrBuffer) {
+    let multipliers: number[] = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000];
+    let ptr = new PtrBuffer(str.buffer, str.offset);
     let negative: number = 0;
     let num_chars: number = 0;
-    if (* ptr == '-') {
+    const charCode0 = '0'.charCodeAt(0);
+    const charCode9 = '9'.charCodeAt(0);
+    const charCodeHyphen = '-'.charCodeAt(0);
+    if (ptr.get() == charCodeHyphen) {
         negative = 1;
-        ptr++;
+        ptr.inc();
     }
-    while (* ptr >= '0' && * ptr <= '9') {
+    while (ptr.get() >= charCode0 && ptr.get() <= charCode9) {
         num_chars++;
-        ptr++;
+        ptr.inc();
     }
     if (num_chars > 8) {
         return 0;
     }
-    ptr = str;
-    if (* ptr == '-') {
-        ptr++;
+    ptr = new PtrBuffer(str.buffer, str.offset);
+    if (ptr.get() == charCodeHyphen) {
+        ptr.inc();
     }
     let result: number = 0;
     while (num_chars) {
-        --num_chars;
-        result += multipliers[num_chars] * (* ptr - '0');
-        ptr++;
+        result += multipliers[num_chars] * (ptr.get() - charCode0);
+        ptr.inc();
     }
     if (negative) {
         result = -result;

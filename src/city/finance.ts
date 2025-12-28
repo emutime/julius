@@ -5,6 +5,7 @@ import { calc_adjust_with_percentage, calc_bound, calc_percentage } from 'core/c
 import { difficulty_adjust_money } from 'game/difficulty';
 import { resource_type } from 'game/resource';
 import { game_time_month } from 'game/time';
+import { city_data_t } from './data_private';
 export const MAX_HOUSE_LEVELS = 20;
 class income {
     public taxes: number = 0;
@@ -146,7 +147,7 @@ export function city_finance_estimate_taxes() {
     for (let i: number = 1; i < MAX_BUILDINGS; i++) {
         let b: building = building_get(i);
         if (b.state == BUILDING_STATE_IN_USE && b.house_size && b.house_tax_coverage) {
-            let is_patrician: number = b.subtype.house_level >= HOUSE_SMALL_VILLA;
+            let is_patrician: boolean = b.subtype.house_level >= HOUSE_SMALL_VILLA;
             let trm: number = difficulty_adjust_money(
                 model_get_house(b.subtype.house_level).tax_multiplier);
             if (is_patrician) {
@@ -184,7 +185,7 @@ function collect_monthly_taxes() {
         if (b.state != BUILDING_STATE_IN_USE || !b.house_size) {
             continue
         }
-        let is_patrician: number = b.subtype.house_level >= HOUSE_SMALL_VILLA;
+        let is_patrician: boolean = b.subtype.house_level >= HOUSE_SMALL_VILLA;
         let population: number = b.house_population;
         let trm: number = difficulty_adjust_money(
             model_get_house(b.subtype.house_level).tax_multiplier);

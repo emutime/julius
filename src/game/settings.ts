@@ -1,16 +1,35 @@
 export const MAX_PLAYER_NAME = 32;
 export const MAX_PERSONAL_SAVINGS = 100;
 export const INF_SIZE = 560;
-;
-import { set_tooltips } from 'game/settings';
+
+export const enum set_tooltips {
+    TOOLTIPS_NONE = 0,
+    TOOLTIPS_SOME = 1,
+    TOOLTIPS_FULL = 2
+};
+
+export const enum set_difficulty {
+    DIFFICULTY_VERY_EASY = 0,
+    DIFFICULTY_EASY = 1,
+    DIFFICULTY_NORMAL = 2,
+    DIFFICULTY_HARD = 3,
+    DIFFICULTY_VERY_HARD = 4
+};
+
+export const enum set_sound_type {
+    SOUND_MUSIC = 1,
+    SOUND_SPEECH = 2,
+    SOUND_EFFECTS = 3,
+    SOUND_CITY = 4,
+};
 import TOOLTIPS_NONE = set_tooltips.TOOLTIPS_NONE;
 import TOOLTIPS_SOME = set_tooltips.TOOLTIPS_SOME;
 import TOOLTIPS_FULL = set_tooltips.TOOLTIPS_FULL;
-import { set_difficulty } from 'game/settings';
+
 import DIFFICULTY_VERY_EASY = set_difficulty.DIFFICULTY_VERY_EASY;
 import DIFFICULTY_HARD = set_difficulty.DIFFICULTY_HARD;
 import DIFFICULTY_VERY_HARD = set_difficulty.DIFFICULTY_VERY_HARD;
-import { set_sound_type } from 'game/settings';
+
 import SOUND_MUSIC = set_sound_type.SOUND_MUSIC;
 import SOUND_SPEECH = set_sound_type.SOUND_SPEECH;
 import SOUND_EFFECTS = set_sound_type.SOUND_EFFECTS;
@@ -236,7 +255,7 @@ function get_sound(type: set_sound_type) {
             return data.sound_speech;
         case SOUND_CITY:
             return data.sound_city;
-        default: return 0
+        default: return null;
     }
 }
 export function setting_sound(type: set_sound_type) {

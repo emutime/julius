@@ -1,17 +1,20 @@
 export const UNTIL_STOP = 0;
 export const GUARD = 50000;
 export const UNTIL_CONTINUE = 1;
-;
 import { buffer } from 'core/buffer';
 import { buffer_write_i32 } from 'core/buffer';
 import { buffer_read_i32 } from 'core/buffer';
 import { buffer_skip } from 'core/buffer';
-import { routed_building_type } from 'map/routing';
+export const enum routed_building_type {
+    ROUTED_BUILDING_ROAD = 0,
+    ROUTED_BUILDING_WALL = 1,
+    ROUTED_BUILDING_AQUEDUCT = 2,
+    ROUTED_BUILDING_AQUEDUCT_WITHOUT_GRAPHIC = 4,
+};
 import ROUTED_BUILDING_ROAD = routed_building_type.ROUTED_BUILDING_ROAD;
 import ROUTED_BUILDING_WALL = routed_building_type.ROUTED_BUILDING_WALL;
 import { building_type } from 'building/type';
 import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
-import { building_type } from 'building/type';
 import { building } from 'building/building';
 import { building_get } from 'building/building';
 import { map_building_at } from 'map/building';

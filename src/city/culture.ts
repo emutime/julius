@@ -8,12 +8,12 @@ import { city_population_academy_age, city_population_calculate_educational_age,
 import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
 import { calc_percentage } from 'core/calc';
 import { resource_type } from 'game/resource';
+import { city_data_t } from './data_private';
 import GOD_CERES = god_type.GOD_CERES;
 import GOD_NEPTUNE = god_type.GOD_NEPTUNE;
 import GOD_MERCURY = god_type.GOD_MERCURY;
 import GOD_MARS = god_type.GOD_MARS;
 import GOD_VENUS = god_type.GOD_VENUS;
-;
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
 import BUILDING_THEATER = building_type.BUILDING_THEATER;
 import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;

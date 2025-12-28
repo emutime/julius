@@ -5,8 +5,8 @@ import { buffer, buffer_read_i16, buffer_read_i32, buffer_read_i8, buffer_read_r
 import { difficulty_adjust_money } from 'game/difficulty';
 import { resource_type } from 'game/resource';
 import { scenario_initial_funds } from 'scenario/property';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-;
+import { memset } from '../../ext/crt';
+import { city_data_t } from './data_private';
 import FESTIVAL_SMALL = festival_size.FESTIVAL_SMALL;
 import GIFT_MODEST = gift.GIFT_MODEST;
 import GIFT_GENEROUS = gift.GIFT_GENEROUS;

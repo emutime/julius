@@ -1,8 +1,15 @@
 
-import { gift } from 'city/emperor';
+export const enum gift {
+    GIFT_MODEST = 0,
+    GIFT_GENEROUS = 1,
+    GIFT_LAVISH = 2
+};
+
 import GIFT_MODEST = gift.GIFT_MODEST;
 import GIFT_GENEROUS = gift.GIFT_GENEROUS;
 import GIFT_LAVISH = gift.GIFT_LAVISH;
+
+
 export class emperor_gift {
     public id: number = 0;
     public cost: number = 0;
@@ -11,27 +18,20 @@ export class emperor_gift {
         args.length >= 2 && (this.cost = args[1]);
     }
 };
-import { city_finance_process_donation } from 'city/finance';
-import { city_finance_calculate_totals } from 'city/finance';
-import { finance_overview } from 'city/finance';
-import { house_demands } from 'city/houses';
-import { labor_category_data } from 'city/labor';
-import { resource_trade_status } from 'city/constants';
+import { city_data_t } from 'city/data_private';
+import { city_finance_calculate_totals, city_finance_process_donation } from 'city/finance';
+import { city_message_post, city_message_type } from 'city/message';
+import { city_ratings_change_favor, city_ratings_limit_favor, city_ratings_reduce_prosperity_after_bailout } from 'city/ratings';
+import { calc_bound } from 'core/calc';
+import { formation_caesar_pause, formation_caesar_retreat } from 'figure/formation';
+import { difficulty_adjust_money } from 'game/difficulty';
 import { resource_type } from 'game/resource';
+import { game_time_day } from 'game/time';
+import { scenario_invasion_start_from_caesar } from 'scenario/invasion';
+import { scenario_is_custom, scenario_property_player_rank, scenario_rescue_loan, scenario_starting_favor, scenario_starting_personal_savings } from 'scenario/property';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_list } from 'city/resource';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { god_status } from 'city/data_private';
 export let city_data: city_data_t = new city_data_t();
-import { buffer } from 'core/buffer';
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
 import MESSAGE_CITY_IN_DEBT = city_message_type.MESSAGE_CITY_IN_DEBT;
 import MESSAGE_CITY_IN_DEBT_AGAIN = city_message_type.MESSAGE_CITY_IN_DEBT_AGAIN;
 import MESSAGE_CITY_STILL_IN_DEBT = city_message_type.MESSAGE_CITY_STILL_IN_DEBT;
@@ -41,31 +41,7 @@ import MESSAGE_CAESAR_ARMY_RETREAT = city_message_type.MESSAGE_CAESAR_ARMY_RETRE
 import MESSAGE_CAESAR_RESPECT_1 = city_message_type.MESSAGE_CAESAR_RESPECT_1;
 import MESSAGE_CAESAR_RESPECT_2 = city_message_type.MESSAGE_CAESAR_RESPECT_2;
 import MESSAGE_CAESAR_RESPECT_3 = city_message_type.MESSAGE_CAESAR_RESPECT_3;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_post } from 'city/message';
-import { building_type } from 'building/type';
-import { selected_rating } from 'city/ratings';
-import { city_ratings_reduce_prosperity_after_bailout } from 'city/ratings';
-import { city_ratings_change_favor } from 'city/ratings';
-import { city_ratings_limit_favor } from 'city/ratings';
-import { direction_type } from 'core/direction';
-import { calc_bound } from 'core/calc';
-import { figure_type } from 'figure/type';
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_caesar_pause } from 'figure/formation';
-import { formation_caesar_retreat } from 'figure/formation';
-import { difficulty_adjust_money } from 'game/difficulty';
-import { game_time_day } from 'game/time';
-import { scenario_climate } from 'scenario/property';
-import { scenario_is_custom } from 'scenario/property';
-import { scenario_starting_favor } from 'scenario/property';
-import { scenario_starting_personal_savings } from 'scenario/property';
-import { scenario_property_player_rank } from 'scenario/property';
-import { scenario_rescue_loan } from 'scenario/property';
-import { scenario_invasion_start_from_caesar } from 'scenario/invasion';
-export let SALARY_FOR_RANK: number[] = new Array(11).fill({ 0, 2, 5, 8, 12, 20, 30, 40, 60, 80, 100});
+export let SALARY_FOR_RANK: number[] = [0, 2, 5, 8, 12, 20, 30, 40, 60, 80, 100];
 export function city_emperor_init_scenario(rank: number) {
     city_data.ratings.favor = scenario_starting_favor();
     city_data.emperor.personal_savings = scenario_starting_personal_savings();

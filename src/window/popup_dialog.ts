@@ -1,67 +1,47 @@
 export const GROUP = 5;
 export const PROCEED_GROUP = 43;
 export const PROCEED_TEXT = 5;
-import { popup_dialog_type } from 'window/popup_dialog';
+export const enum popup_dialog_type {
+    POPUP_DIALOG_NONE = -1,
+    POPUP_DIALOG_QUIT = 0,
+    POPUP_DIALOG_OPEN_TRADE = 2,
+    POPUP_DIALOG_SEND_GOODS = 4,
+    POPUP_DIALOG_NOT_ENOUGH_GOODS = 6,
+    POPUP_DIALOG_NO_LEGIONS_AVAILABLE = 8,
+    POPUP_DIALOG_NO_LEGIONS_SELECTED = 10,
+    POPUP_DIALOG_SEND_TROOPS = 12,
+    POPUP_DIALOG_DELETE_FORT = 14,
+    POPUP_DIALOG_DELETE_BRIDGE = 18,
+    POPUP_DIALOG_EDITOR_QUIT_WITHOUT_SAVING = 20,
+};
+
 import POPUP_DIALOG_NONE = popup_dialog_type.POPUP_DIALOG_NONE;
 import { group_terrain } from 'core/image_group';
-import GROUP_OK_CANCEL_SCROLL_BUTTONS = group_terrain.GROUP_OK_CANCEL_SCROLL_BUTTONS;;
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
 import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { ib } from 'graphics/image_button';
-import IB_NORMAL = ib.IB_NORMAL;
-import { image_button } from 'graphics/image_button';
-import { image_buttons_draw } from 'graphics/image_button';
-import { image_buttons_handle_mouse } from 'graphics/image_button';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
 import { font_t } from 'graphics/font';
+import { graphics_in_dialog, graphics_reset_dialog } from 'graphics/graphics';
+import { ib, image_button, image_buttons_draw, image_buttons_handle_mouse } from 'graphics/image_button';
+import { lang_text_draw_centered, lang_text_draw_multiline, lang_text_get_width } from 'graphics/lang_text';
+import { outer_panel_draw } from 'graphics/panel';
+import { window_draw_underlying_window, window_go_back, window_id, window_is, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import GROUP_OK_CANCEL_SCROLL_BUTTONS = group_terrain.GROUP_OK_CANCEL_SCROLL_BUTTONS;;
+import IB_NORMAL = ib.IB_NORMAL;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { lang_text_get_width } from 'graphics/lang_text';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { lang_text_draw_multiline } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_POPUP_DIALOG = window_id.WINDOW_POPUP_DIALOG;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_draw_underlying_window } from 'graphics/window';
-import { window_is } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { window_go_back } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-let buttons: image_button[] = new Array().fill({
-    { 192, 100, 39, 26, IB_NORMAL, GROUP_OK_CANCEL_SCROLL_BUTTONS, 0, button_ok, button_none, 1, 0, 1},
-    { 256, 100, 39, 26, IB_NORMAL, GROUP_OK_CANCEL_SCROLL_BUTTONS, 4, button_cancel, button_none, 0, 0, 1},
-});
+let buttons: image_button[] = [
+    new image_button(192, 100, 39, 26, IB_NORMAL, GROUP_OK_CANCEL_SCROLL_BUTTONS, 0, button_ok, button_none, 1, 0, 1),
+    new image_button(256, 100, 39, 26, IB_NORMAL, GROUP_OK_CANCEL_SCROLL_BUTTONS, 4, button_cancel, button_none, 0, 0, 1),
+];
 export class unnamed25_8 {
     public type: popup_dialog_type = null;
     public custom_text_group: number = 0;
     public custom_text_id: number = 0;
     public ok_clicked: number = 0;
-    public close_func: void ( = null;
+    public close_func: (accepted: number) => void = null;
     public has_buttons: number = 0;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.type = args[0]);
@@ -73,7 +53,7 @@ export class unnamed25_8 {
     }
 }
 let data: unnamed25_8 = new unnamed25_8();
-function init(type: popup_dialog_type, custom_text_group: number, custom_text_id: number, close_func: void (, has_ok_cancel_buttons: number) {
+function init(type: popup_dialog_type, custom_text_group: number, custom_text_id: number, close_func: (accepted: number) => void, has_ok_cancel_buttons: number) {
     if (window_is(WINDOW_POPUP_DIALOG)) {
         return 0;
     }
@@ -134,7 +114,7 @@ function confirm() {
     window_go_back();
     data.close_func(1);
 }
-export function window_popup_dialog_show(type: popup_dialog_type, close_func: void (, has_ok_cancel_buttons: number) {
+export function window_popup_dialog_show(type: popup_dialog_type, close_func: (accepted: number) => void, has_ok_cancel_buttons: number) {
     if (init(type, 0, 0, close_func, has_ok_cancel_buttons)) {
         let window: window_type = {
             WINDOW_POPUP_DIALOG,
@@ -145,7 +125,7 @@ export function window_popup_dialog_show(type: popup_dialog_type, close_func: vo
         window_show(window);
     }
 }
-export function window_popup_dialog_show_confirmation(text_group: number, text_id: number, close_func: void () {
+export function window_popup_dialog_show_confirmation(text_group: number, text_id: number, close_func: (accepted: number) => void) {
     if (init(POPUP_DIALOG_NONE, text_group, text_id, close_func, 1)) {
         let window: window_type = {
             WINDOW_POPUP_DIALOG,

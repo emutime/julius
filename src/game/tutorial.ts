@@ -1,13 +1,35 @@
 
-;
-import { buffer } from 'core/buffer';
-import { buffer_write_i32 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
-import { tutorial_availability } from 'game/tutorial';
+import { building_menu_update } from 'building/menu';
+import { city_buildings_has_senate } from 'city/buildings';
+import { city_message_post, city_message_post_with_message_delay, city_message_type, message_category } from 'city/message';
+import { city_mission_tutorial_add_senate, city_mission_tutorial_has_senate, city_mission_tutorial_set_disease_message_shown, city_mission_tutorial_set_fire_message_shown, city_mission_tutorial_show_disease_message } from 'city/mission';
+import { city_population } from 'city/population';
+import { city_resource_count } from 'city/resource';
+import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
+import { resource_type } from 'game/resource';
+import { game_time_day, game_time_month, game_time_year } from 'game/time';
+import { scenario_criteria_population } from 'scenario/criteria';
+import { scenario_is_tutorial_1, scenario_is_tutorial_2, scenario_is_tutorial_3 } from 'scenario/property';
+import { Ref } from '../../ext/crt';
+export const enum tutorial_availability {
+    AVAILABLE,
+    NOT_AVAILABLE,
+    NOT_AVAILABLE_YET,
+};
+
+export const enum tutorial_build_buttons {
+    TUT_BUILD_NORMAL,
+    TUT1_BUILD_START,
+    TUT1_BUILD_AFTER_FIRE,
+    TUT1_BUILD_AFTER_COLLAPSE,
+    TUT2_BUILD_START,
+    TUT2_BUILD_UP_TO_250,
+    TUT2_BUILD_UP_TO_450,
+    TUT2_BUILD_AFTER_450
+};
 import AVAILABLE = tutorial_availability.AVAILABLE;
 import NOT_AVAILABLE = tutorial_availability.NOT_AVAILABLE;
 import NOT_AVAILABLE_YET = tutorial_availability.NOT_AVAILABLE_YET;
-import { tutorial_build_buttons } from 'game/tutorial';
 import TUT_BUILD_NORMAL = tutorial_build_buttons.TUT_BUILD_NORMAL;
 import TUT1_BUILD_START = tutorial_build_buttons.TUT1_BUILD_START;
 import TUT1_BUILD_AFTER_FIRE = tutorial_build_buttons.TUT1_BUILD_AFTER_FIRE;
@@ -16,16 +38,7 @@ import TUT2_BUILD_START = tutorial_build_buttons.TUT2_BUILD_START;
 import TUT2_BUILD_UP_TO_250 = tutorial_build_buttons.TUT2_BUILD_UP_TO_250;
 import TUT2_BUILD_UP_TO_450 = tutorial_build_buttons.TUT2_BUILD_UP_TO_450;
 import TUT2_BUILD_AFTER_450 = tutorial_build_buttons.TUT2_BUILD_AFTER_450;
-import { building_type } from 'building/type';
-import { build_menu_group } from 'building/menu';
-import { building_menu_update } from 'building/menu';
-import { building } from 'building/building';
-import { city_buildings_has_senate } from 'city/buildings';
-import { message_category } from 'city/message';
 import MESSAGE_CAT_TUTORIAL3 = message_category.MESSAGE_CAT_TUTORIAL3;
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
 import MESSAGE_TUTORIAL_FIRE = city_message_type.MESSAGE_TUTORIAL_FIRE;
 import MESSAGE_TUTORIAL_COLLAPSE = city_message_type.MESSAGE_TUTORIAL_COLLAPSE;
 import MESSAGE_TUTORIAL_WATER = city_message_type.MESSAGE_TUTORIAL_WATER;
@@ -35,33 +48,8 @@ import MESSAGE_TUTORIAL_RELIGION = city_message_type.MESSAGE_TUTORIAL_RELIGION;
 import MESSAGE_TUTORIAL_TAXES_INDUSTRY = city_message_type.MESSAGE_TUTORIAL_TAXES_INDUSTRY;
 import MESSAGE_TUTORIAL_TRADE = city_message_type.MESSAGE_TUTORIAL_TRADE;
 import MESSAGE_TUTORIAL_HEALTH = city_message_type.MESSAGE_TUTORIAL_HEALTH;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_post } from 'city/message';
-import { city_message_post_with_message_delay } from 'city/message';
-import { city_mission_tutorial_set_fire_message_shown } from 'city/mission';
-import { city_mission_tutorial_set_disease_message_shown } from 'city/mission';
-import { city_mission_tutorial_show_disease_message } from 'city/mission';
-import { city_mission_tutorial_add_senate } from 'city/mission';
-import { city_mission_tutorial_has_senate } from 'city/mission';
-import { city_population } from 'city/population';
-import { resource_trade_status } from 'city/constants';
-import { resource_type } from 'game/resource';
 import RESOURCE_POTTERY = resource_type.RESOURCE_POTTERY;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_list } from 'city/resource';
-import { city_resource_count } from 'city/resource';
-import { game_time_year } from 'game/time';
-import { game_time_month } from 'game/time';
-import { game_time_day } from 'game/time';
-import { scenario_criteria_population } from 'scenario/criteria';
-import { scenario_climate } from 'scenario/property';
-import { scenario_is_tutorial_1 } from 'scenario/property';
-import { scenario_is_tutorial_2 } from 'scenario/property';
-import { scenario_is_tutorial_3 } from 'scenario/property';
 class tutorial1 {
     public fire: number = 0;
     public crime: number = 0;
@@ -202,12 +190,12 @@ export function tutorial_get_immediate_goal_text() {
     }
     return 0;
 }
-export function tutorial_adjust_request_year(year: number) {
+export function tutorial_adjust_request_year(year: Ref<number>) {
     if (scenario_is_tutorial_2()) {
         if (!data.tutorial2.pottery_made) {
             return 0;
         }
-        * year = data.tutorial2.pottery_made_year;
+        year.v = data.tutorial2.pottery_made_year;
     }
     return 1;
 }
@@ -284,7 +272,7 @@ export function tutorial_on_day_tick() {
         }
     }
     if (data.tutorial1.fire && !data.tutorial1.senate_built) {
-        let population_almost: number = city_population() >= scenario_criteria_population() - 20;
+        let population_almost: boolean = city_population() >= scenario_criteria_population() - 20;
         if (!game_time_day() || population_almost) {
             if (city_buildings_has_senate()) {
                 city_mission_tutorial_add_senate();

@@ -12,17 +12,7 @@ export class buffer {
         args.length >= 4 && (this.overflow = args[3]);
     }
 }
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
+
 export function buffer_init(buf: buffer, data: void, size: number) {
     buf.data = data;
     buf.size = size;
@@ -81,7 +71,7 @@ export function buffer_write_i32(buf: buffer, value: number) {
         buf.data[buf.index++] = (value >> 24) & 0xff;
     }
 }
-export function buffer_write_raw(buf: buffer, value: void, size: number) {
+export function buffer_write_raw(buf: buffer, value: ArrayBuffer, size: number) {
     if (check_size(buf, size)) {
         memcpy(buf.data[buf.index], value, size);
         buf.index += size
@@ -141,7 +131,7 @@ export function buffer_read_i32(buf: buffer) {
         return 0;
     }
 }
-export function buffer_read_raw(buf: buffer, value: void, max_size: number) {
+export function buffer_read_raw(buf: buffer, value: ArrayBuffer, max_size: number) {
     let size: number = buf.size - buf.index;
     if (size > max_size) {
         size = max_size;

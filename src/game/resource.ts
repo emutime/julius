@@ -1,7 +1,64 @@
 
 import { building_type } from 'building/type';
-import { resource_image_type, resource_type, workshop_type } from 'game/resource';
 import { scenario_building_allowed } from 'scenario/building';
+export const enum resource_type {
+    RESOURCE_NONE = 0,
+    RESOURCE_WHEAT = 1,
+    RESOURCE_VEGETABLES = 2,
+    RESOURCE_FRUIT = 3,
+    RESOURCE_OLIVES = 4,
+    RESOURCE_VINES = 5,
+    RESOURCE_MEAT = 6,
+    RESOURCE_WINE = 7,
+    RESOURCE_OIL = 8,
+    RESOURCE_IRON = 9,
+    RESOURCE_TIMBER = 10,
+    RESOURCE_CLAY = 11,
+    RESOURCE_MARBLE = 12,
+    RESOURCE_WEAPONS = 13,
+    RESOURCE_FURNITURE = 14,
+    RESOURCE_POTTERY = 15,
+    RESOURCE_DENARII = 16,
+    RESOURCE_TROOPS = 17,
+    // helper constants
+    RESOURCE_MIN = 1,
+    RESOURCE_MAX = 16,
+    RESOURCE_MIN_FOOD = 1,
+    RESOURCE_MAX_FOOD = 7
+}
+export const enum inventory_type {
+    INVENTORY_WHEAT = 0,
+    INVENTORY_VEGETABLES = 1,
+    INVENTORY_FRUIT = 2,
+    INVENTORY_MEAT = 3,
+    INVENTORY_WINE = 4,
+    INVENTORY_OIL = 5,
+    INVENTORY_FURNITURE = 6,
+    INVENTORY_POTTERY = 7,
+    // helper constants
+    INVENTORY_MIN_FOOD = 0,
+    INVENTORY_MAX_FOOD = 4,
+    INVENTORY_MIN_GOOD = 4,
+    INVENTORY_MAX_GOOD = 8,
+    INVENTORY_MAX = 8
+};
+
+export const enum workshop_type {
+    WORKSHOP_NONE = 0,
+    WORKSHOP_OLIVES_TO_OIL = 1,
+    WORKSHOP_VINES_TO_WINE = 2,
+    WORKSHOP_IRON_TO_WEAPONS = 3,
+    WORKSHOP_TIMBER_TO_FURNITURE = 4,
+    WORKSHOP_CLAY_TO_POTTERY = 5
+};
+
+export const enum resource_image_type {
+    RESOURCE_IMAGE_STORAGE = 0,
+    RESOURCE_IMAGE_CART = 1,
+    RESOURCE_IMAGE_FOOD_CART = 2,
+    RESOURCE_IMAGE_ICON = 3
+};
+
 import RESOURCE_WHEAT = resource_type.RESOURCE_WHEAT;
 import RESOURCE_VEGETABLES = resource_type.RESOURCE_VEGETABLES;
 import RESOURCE_FRUIT = resource_type.RESOURCE_FRUIT;

@@ -3,6 +3,7 @@
 import { resource_type } from 'game/resource';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
+import { city_data_t } from './data_private';
 export let city_data: city_data_t = new city_data_t();
 export function city_mission_reset_save_start() {
     city_data.mission.start_saved_game_written = 0;

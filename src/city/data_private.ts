@@ -1,5 +1,3 @@
-
-;
 import { emperor_gift } from 'city/emperor';
 import { finance_overview } from 'city/finance';
 import { house_demands } from 'city/houses';
@@ -238,7 +236,7 @@ class yearly {
         args.length >= 4 && (this.uncollected_patricians = args[3]);
     }
 }
-class monthly {
+class monthlyTaxes {
     public collected_plebs: number = 0;
     public collected_patricians: number = 0;
     public uncollected_plebs: number = 0;
@@ -259,7 +257,7 @@ class taxes {
     public percentage_taxed_patricians: number = 0;
     public percentage_taxed_people: number = 0;
     public yearly: yearly = null;
-    public monthly: monthly = null;
+    public monthly: monthlyTaxes = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.taxed_plebs = args[0]);
         args.length >= 2 && (this.taxed_patricians = args[1]);
@@ -272,7 +270,7 @@ class taxes {
         args.length >= 9 && (this.monthly = args[8]);
     }
 }
-class monthly {
+class monthlyPopulation {
     public values: number[] = new Array(2400).fill(0);
     public next_index: number = 0;
     public count: number = 0;
@@ -288,7 +286,7 @@ class population {
     public school_age: number = 0;
     public academy_age: number = 0;
     public working_age: number = 0;
-    public monthly: monthly = null;
+    public monthly: monthlyPopulation = null;
     public at_age: number[] = new Array(100).fill(0);
     public at_level: number[] = new Array(20).fill(0);
     public yearly_update_requested: number = 0;
@@ -696,7 +694,7 @@ class trade {
         args.length >= 8 && (this.docker_export_resource = args[7]);
     }
 }
-class unnamed366_9 {
+class largest_road_networks {
     public id: number = 0;
     public size: number = 0;
     public constructor(...args: any[]) {
@@ -709,7 +707,7 @@ class map {
     public exit_point: map_tile = null;
     public entry_flag: map_tile = null;
     public exit_flag: map_tile = null;
-    public largest_road_networks: largest_road_networks = new Array(10).fill(null);
+    public largest_road_networks: largest_road_networks[] = new Array(10).fill(null);
     public constructor(...args: any[]) {
         args.length >= 1 && (this.entry_point = args[0]);
         args.length >= 2 && (this.exit_point = args[1]);
@@ -741,7 +739,7 @@ class mission {
     }
 }
 class unused {
-    public other_player: number[] = new Array(18068).fill(0);
+    public other_player: ArrayBuffer = new ArrayBuffer(18068);
     public unknown_00a0: number = 0;
     public unknown_00a1: number = 0;
     public unknown_00a2: number = 0;

@@ -3,7 +3,6 @@ import { building_construction_clear_type } from 'building/construction';
 import { city_figures_total_invading_enemies } from 'city/figures';
 import { city_finance_update_salary } from 'city/finance';
 import { city_message_post, city_message_type } from 'city/message';
-import { victory_state } from 'city/victory';
 import { resource_type } from 'game/resource';
 import { game_time_year } from 'game/time';
 import { scenario_criteria_culture, scenario_criteria_culture_enabled, scenario_criteria_favor, scenario_criteria_favor_enabled, scenario_criteria_max_year, scenario_criteria_peace, scenario_criteria_peace_enabled, scenario_criteria_population, scenario_criteria_population_enabled, scenario_criteria_prosperity, scenario_criteria_prosperity_enabled, scenario_criteria_survival_enabled, scenario_criteria_time_limit_enabled } from 'scenario/criteria';
@@ -11,10 +10,17 @@ import { scenario_is_open_play } from 'scenario/property';
 import { sound_music_stop } from 'sound/music';
 import { window_mission_end_show_fired, window_mission_end_show_won } from 'window/mission_end';
 import { window_victory_dialog_show } from 'window/victory_dialog';
+import { city_data_t } from './data_private';
+
+export const enum victory_state {
+    VICTORY_STATE_LOST = -1,
+    VICTORY_STATE_NONE = 0,
+    VICTORY_STATE_WON = 1
+};
+
 import VICTORY_STATE_LOST = victory_state.VICTORY_STATE_LOST;
 import VICTORY_STATE_NONE = victory_state.VICTORY_STATE_NONE;
 import VICTORY_STATE_WON = victory_state.VICTORY_STATE_WON;
-;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
 export let city_data: city_data_t = new city_data_t();

@@ -1,4 +1,5 @@
 export const MAX_FORMATIONS = 50;
+export const MAX_LEGIONS = 6;
 export const MAX_FORMATION_FIGURES = 16;
 import { city_military_add_legionary_legion, city_military_clear_legionary_legions, city_military_update_totals } from 'city/military';
 import { buffer, buffer_read_i16, buffer_read_i32, buffer_read_u8, buffer_skip, buffer_write_i16, buffer_write_i32, buffer_write_u8 } from 'core/buffer';
@@ -14,8 +15,8 @@ import { figure_properties_for_type } from 'figure/properties';
 import { enemy_type, figure_state, figure_type } from 'figure/type';
 import { GRID, map_grid_offset } from 'map/grid';
 import { sound_effect, sound_effect_play } from 'sound/effect';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-;
+import { memset } from '../../ext/crt';
+
 import FIGURE_FORT_JAVELIN = figure_type.FIGURE_FORT_JAVELIN;
 import FIGURE_FORT_MOUNTED = figure_type.FIGURE_FORT_MOUNTED;
 import FIGURE_FORT_LEGIONARY = figure_type.FIGURE_FORT_LEGIONARY;
@@ -37,6 +38,12 @@ import FORMATION_SINGLE_LINE_2 = formation.FORMATION_SINGLE_LINE_2;
 import FORMATION_TORTOISE = formation.FORMATION_TORTOISE;
 import FORMATION_HERD = formation.FORMATION_HERD;
 import FORMATION_ENEMY_DOUBLE_LINE = formation.FORMATION_ENEMY_DOUBLE_LINE;
+export const enum legion_recruit {
+    LEGION_RECRUIT_NONE = 0,
+    LEGION_RECRUIT_MOUNTED = 1,
+    LEGION_RECRUIT_JAVELIN = 2,
+    LEGION_RECRUIT_LEGIONARY = 3
+};
 export class formation_state {
     public duration_halt: number = 0;
     public duration_advance: number = 0;

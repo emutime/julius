@@ -1,23 +1,161 @@
-export const  = 1;
 export const MAX_MESSAGES = 1000;
 export const MAX_QUEUE = 20;
 export const MAX_MESSAGE_CATEGORIES = 20;
-import { FILE_NAME_MAX } from 'core/file';
-import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';
-import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';;
-import { buffer } from 'core/buffer';
-import { buffer_write_u8 } from 'core/buffer';
-import { buffer_write_i16 } from 'core/buffer';
-import { buffer_write_i32 } from 'core/buffer';
-import { buffer_read_u8 } from 'core/buffer';
-import { buffer_read_i16 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
-import { buffer_skip } from 'core/buffer';
-import { message_category } from 'city/message';
+import { buffer, buffer_read_i16, buffer_read_i32, buffer_read_u8, buffer_skip, buffer_write_i16, buffer_write_i32, buffer_write_u8 } from 'core/buffer';
+import { localized } from 'core/dir';
+import { encoding_to_utf8 } from 'core/encoding';
+import { file_exists, FILE_NAME_MAX } from 'core/file';
+import { lang_get_message, lang_message, lang_message_type } from 'core/lang';
+import { time_get_millis, time_millis } from 'core/time';
+import { formation_grid_offset_for_invasion } from 'figure/formation';
+import { game_time_month, game_time_year } from 'game/time';
+import { window_id, window_invalidate, window_is } from 'graphics/window';
+import { sound_effect, sound_effect_play } from 'sound/effect';
+import { window_message_dialog_show_city_message } from 'window/message_dialog';
+export const enum message_category {
+    MESSAGE_CAT_RIOT = 0,
+    MESSAGE_CAT_FIRE = 1,
+    MESSAGE_CAT_COLLAPSE = 2,
+    MESSAGE_CAT_RIOT_COLLAPSE = 3,
+    MESSAGE_CAT_BLOCKED_DOCK = 4,
+    MESSAGE_CAT_WORKERS_NEEDED = 8,
+    MESSAGE_CAT_TUTORIAL3 = 9,
+    MESSAGE_CAT_NO_WORKING_DOCK = 10,
+    MESSAGE_CAT_FISHING_BLOCKED = 11,
+};
+
+export const enum message_advisor {
+    MESSAGE_ADVISOR_NONE = 0,
+    MESSAGE_ADVISOR_LABOR = 1,
+    MESSAGE_ADVISOR_TRADE = 2,
+    MESSAGE_ADVISOR_POPULATION = 3,
+    MESSAGE_ADVISOR_IMPERIAL = 4,
+    MESSAGE_ADVISOR_MILITARY = 5,
+    MESSAGE_ADVISOR_HEALTH = 6,
+    MESSAGE_ADVISOR_RELIGION = 7,
+};
+
+export const enum city_message_type {
+    MESSAGE_POPULATION_500 = 2,
+    MESSAGE_POPULATION_1000 = 3,
+    MESSAGE_POPULATION_2000 = 4,
+    MESSAGE_POPULATION_3000 = 5,
+    MESSAGE_POPULATION_5000 = 6,
+    MESSAGE_POPULATION_10000 = 7,
+    MESSAGE_POPULATION_15000 = 8,
+    MESSAGE_POPULATION_20000 = 9,
+    MESSAGE_POPULATION_25000 = 10,
+    MESSAGE_RIOT = 11,
+    MESSAGE_FIRE = 12,
+    MESSAGE_COLLAPSED_BUILDING = 13,
+    MESSAGE_DESTROYED_BUILDING = 14,
+    MESSAGE_NAVIGATION_IMPOSSIBLE = 15,
+    MESSAGE_CITY_IN_DEBT = 16,
+    MESSAGE_CITY_IN_DEBT_AGAIN = 17,
+    MESSAGE_CITY_STILL_IN_DEBT = 18,
+    MESSAGE_CAESAR_WRATH = 19,
+    MESSAGE_CAESAR_ARMY_CONTINUE = 20,
+    MESSAGE_CAESAR_ARMY_RETREAT = 21,
+    MESSAGE_LOCAL_UPRISING = 22,
+    MESSAGE_BARBARIAN_ATTACK = 23,
+    MESSAGE_CAESAR_ARMY_ATTACK = 24,
+    MESSAGE_DISTANT_BATTLE = 25,
+    MESSAGE_ENEMIES_CLOSING = 26,
+    MESSAGE_ENEMIES_AT_THE_DOOR = 27,
+    MESSAGE_CAESAR_REQUESTS_GOODS = 28,
+    MESSAGE_CAESAR_REQUESTS_MONEY = 29,
+    MESSAGE_CAESAR_REQUESTS_ARMY = 30,
+    MESSAGE_REQUEST_REMINDER = 31,
+    MESSAGE_REQUEST_RECEIVED = 32,
+    MESSAGE_REQUEST_REFUSED = 33,
+    MESSAGE_REQUEST_REFUSED_OVERDUE = 34,
+    MESSAGE_REQUEST_RECEIVED_LATE = 35,
+    MESSAGE_UNEMPLOYMENT = 36,
+    MESSAGE_WORKERS_NEEDED = 37,
+    MESSAGE_SMALL_FESTIVAL = 38,
+    MESSAGE_LARGE_FESTIVAL = 39,
+    MESSAGE_GRAND_FESTIVAL = 40,
+    MESSAGE_WRATH_OF_CERES = 41,
+    MESSAGE_WRATH_OF_NEPTUNE_NO_SEA_TRADE = 42,
+    MESSAGE_WRATH_OF_MERCURY = 43,
+    MESSAGE_WRATH_OF_MARS_NO_MILITARY = 44,
+    MESSAGE_WRATH_OF_VENUS = 45,
+    MESSAGE_PEOPLE_DISGRUNTLED = 46,
+    MESSAGE_PEOPLE_UNHAPPY = 47,
+    MESSAGE_PEOPLE_ANGRY = 48,
+    MESSAGE_NOT_ENOUGH_FOOD = 49,
+    MESSAGE_FOOD_NOT_DELIVERED = 50,
+    MESSAGE_THEFT = 52,
+    MESSAGE_TUTORIAL_FIRE = 53,
+    MESSAGE_TUTORIAL_COLLAPSE = 54,
+    MESSAGE_GODS_UNHAPPY = 55,
+    MESSAGE_TUTORIAL_WATER = 56,
+    MESSAGE_TUTORIAL_GROWING_YOUR_CITY = 57,
+    MESSAGE_TUTORIAL_HUNGER_HALTS_IMMIGRANTS = 58,
+    MESSAGE_TUTORIAL_RELIGION = 59,
+    MESSAGE_TUTORIAL_TAXES_INDUSTRY = 60,
+    MESSAGE_TUTORIAL_TRADE = 61,
+    MESSAGE_EARTHQUAKE = 62,
+    MESSAGE_GLADIATOR_REVOLT = 63,
+    MESSAGE_EMPEROR_CHANGE = 64,
+    MESSAGE_LAND_TRADE_DISRUPTED_SANDSTORMS = 65,
+    MESSAGE_SEA_TRADE_DISRUPTED = 66,
+    MESSAGE_LAND_TRADE_DISRUPTED_LANDSLIDES = 67,
+    MESSAGE_ROME_RAISES_WAGES = 68,
+    MESSAGE_ROME_LOWERS_WAGES = 69,
+    MESSAGE_CONTAMINATED_WATER = 70,
+    MESSAGE_IRON_MINE_COLLAPED = 71,
+    MESSAGE_CLAY_PIT_FLOODED = 72,
+    MESSAGE_GLADIATOR_REVOLT_FINISHED = 73,
+    MESSAGE_INCREASED_TRADING = 74,
+    MESSAGE_DECREASED_TRADING = 75,
+    MESSAGE_TRADE_STOPPED = 76,
+    MESSAGE_PRICE_INCREASED = 78,
+    MESSAGE_PRICE_DECREASED = 79,
+    MESSAGE_EMPIRE_HAS_EXPANDED = 77,
+    MESSAGE_ROAD_TO_ROME_BLOCKED = 80,
+    MESSAGE_WRATH_OF_NEPTUNE = 81,
+    MESSAGE_WRATH_OF_MARS = 82,
+    MESSAGE_DISTANT_BATTLE_LOST_NO_TROOPS = 84,
+    MESSAGE_DISTANT_BATTLE_LOST_TOO_LATE = 85,
+    MESSAGE_DISTANT_BATTLE_LOST_TOO_WEAK = 86,
+    MESSAGE_DISTANT_BATTLE_WON = 87,
+    MESSAGE_TROOPS_RETURN_FAILED = 88,
+    MESSAGE_TROOPS_RETURN_VICTORIOUS = 89,
+    MESSAGE_DISTANT_BATTLE_CITY_RETAKEN = 90,
+    MESSAGE_CERES_IS_UPSET = 91,
+    MESSAGE_NEPTUNE_IS_UPSET = 92,
+    MESSAGE_MERCURY_IS_UPSET = 93,
+    MESSAGE_MARS_IS_UPSET = 94,
+    MESSAGE_VENUS_IS_UPSET = 95,
+    MESSAGE_BLESSING_FROM_CERES = 96,
+    MESSAGE_BLESSING_FROM_NEPTUNE = 97,
+    MESSAGE_BLESSING_FROM_MERCURY = 98,
+    MESSAGE_BLESSING_FROM_MARS = 99,
+    MESSAGE_BLESSING_FROM_VENUS = 100,
+    MESSAGE_GODS_WRATHFUL = 101,
+    MESSAGE_HEALTH_ILLNESS = 102,
+    MESSAGE_HEALTH_DISEASE = 103,
+    MESSAGE_HEALTH_PESTILENCE = 104,
+    MESSAGE_SPIRIT_OF_MARS = 105,
+    MESSAGE_CAESAR_RESPECT_1 = 106,
+    MESSAGE_CAESAR_RESPECT_2 = 107,
+    MESSAGE_CAESAR_RESPECT_3 = 108,
+    MESSAGE_WORKING_HIPPODROME = 109,
+    MESSAGE_WORKING_COLOSSEUM = 110,
+    MESSAGE_EMIGRATION = 111,
+    MESSAGE_FIRED = 112,
+    MESSAGE_ENEMY_ARMY_ATTACK = 114,
+    MESSAGE_REQUEST_CAN_COMPLY = 115,
+    MESSAGE_ROAD_TO_ROME_OBSTRUCTED = 116,
+    MESSAGE_NO_WORKING_DOCK = 117,
+    MESSAGE_FISHING_BOAT_BLOCKED = 118,
+    MESSAGE_TUTORIAL_HEALTH = 119,
+    MESSAGE_LOCAL_UPRISING_MARS = 121,
+};
 import MESSAGE_CAT_RIOT_COLLAPSE = message_category.MESSAGE_CAT_RIOT_COLLAPSE;
 import MESSAGE_CAT_NO_WORKING_DOCK = message_category.MESSAGE_CAT_NO_WORKING_DOCK;
 import MESSAGE_CAT_FISHING_BLOCKED = message_category.MESSAGE_CAT_FISHING_BLOCKED;
-import { message_advisor } from 'city/message';
 import MESSAGE_ADVISOR_NONE = message_advisor.MESSAGE_ADVISOR_NONE;
 import MESSAGE_ADVISOR_LABOR = message_advisor.MESSAGE_ADVISOR_LABOR;
 import MESSAGE_ADVISOR_POPULATION = message_advisor.MESSAGE_ADVISOR_POPULATION;
@@ -25,7 +163,6 @@ import MESSAGE_ADVISOR_IMPERIAL = message_advisor.MESSAGE_ADVISOR_IMPERIAL;
 import MESSAGE_ADVISOR_MILITARY = message_advisor.MESSAGE_ADVISOR_MILITARY;
 import MESSAGE_ADVISOR_HEALTH = message_advisor.MESSAGE_ADVISOR_HEALTH;
 import MESSAGE_ADVISOR_RELIGION = message_advisor.MESSAGE_ADVISOR_RELIGION;
-import { city_message_type } from 'city/message';
 import MESSAGE_LOCAL_UPRISING = city_message_type.MESSAGE_LOCAL_UPRISING;
 import MESSAGE_BARBARIAN_ATTACK = city_message_type.MESSAGE_BARBARIAN_ATTACK;
 import MESSAGE_CAESAR_ARMY_ATTACK = city_message_type.MESSAGE_CAESAR_ARMY_ATTACK;
@@ -71,112 +208,12 @@ export class city_message {
         args.length >= 7 && (this.is_read = args[6]);
     }
 }
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { encoding_to_utf8 } from 'core/encoding';
-import { localized } from 'core/dir';
 import MAY_BE_LOCALIZED = localized.MAY_BE_LOCALIZED;
-import { dir_listing } from 'core/dir';
-import { __local_stdio_printf_options } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_stdio_config';
-import { __local_stdio_scanf_options } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_stdio_config';
-import { __acrt_iob_func } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vsnwprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_c_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __vswprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vscwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vscwprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsnprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_c_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsscanf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { file_exists } from 'core/file';
-import { lang_type } from 'core/lang';
-import { lang_message_type } from 'core/lang';
 import MESSAGE_TYPE_DISASTER = lang_message_type.MESSAGE_TYPE_DISASTER;
 import MESSAGE_TYPE_INVASION = lang_message_type.MESSAGE_TYPE_INVASION;
-import { lang_message_type } from 'core/lang';
-import { lang_message } from 'core/lang';
-import { lang_get_message } from 'core/lang';
-import { time_millis } from 'core/time';
-import { time_get_millis } from 'core/time';
-import { figure_type } from 'figure/type';
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_grid_offset_for_invasion } from 'figure/formation';
-import { game_time_year } from 'game/time';
-import { game_time_month } from 'game/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_CITY = window_id.WINDOW_CITY;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-import { window_is } from 'graphics/window';
-import { sound_effect } from 'sound/effect';
 import SOUND_EFFECT_FANFARE = sound_effect.SOUND_EFFECT_FANFARE;
 import SOUND_EFFECT_FANFARE_URGENT = sound_effect.SOUND_EFFECT_FANFARE_URGENT;
-import { sound_effect_play } from 'sound/effect';
-import { window_message_dialog_show_city_message } from 'window/message_dialog';
 class population_shown {
     public pop500: number = 0;
     public pop1000: number = 0;
@@ -280,7 +317,7 @@ function has_video(text_id: number) {
     if (!msg.video.text) {
         return 0;
     }
-    let video_file: char[];
+    let video_file: string;
     encoding_to_utf8(msg.video.text, video_file, FILE_NAME_MAX, 0);
     return file_exists(video_file, MAY_BE_LOCALIZED);
 }
@@ -496,42 +533,36 @@ export function city_message_decrease_delays() {
     }
 }
 export function city_message_mark_population_shown(population: number) {
-    let field: number;
     switch (population) {
         case 500:
-            field = data.population_shown.pop500;
-            break
+            data.population_shown.pop500 = 1;
+            return 1;
         case 1000:
-            field = data.population_shown.pop1000;
-            break
+            data.population_shown.pop1000 = 1;
+            return 1;
         case 2000:
-            field = data.population_shown.pop2000;
-            break
+            data.population_shown.pop2000 = 1;
+            return 1;
         case 3000:
-            field = data.population_shown.pop3000;
-            break
+            data.population_shown.pop3000 = 1;
+            return 1;
         case 5000:
-            field = data.population_shown.pop5000;
-            break
+            data.population_shown.pop5000 = 1;
+            return 1;
         case 10000:
-            field = data.population_shown.pop10000;
-            break
+            data.population_shown.pop10000 = 1;
+            return 1;
         case 15000:
-            field = data.population_shown.pop15000;
-            break
+            data.population_shown.pop15000 = 1;
+            return 1;
         case 20000:
-            field = data.population_shown.pop20000;
-            break
+            data.population_shown.pop20000 = 1;
+            return 1;
         case 25000:
-            field = data.population_shown.pop25000;
-            break
-        default: return 0
+            data.population_shown.pop25000 = 1;
+            return 1;
+        default: return 0;
     }
-    if (!* field) {
-        * field = 1;
-        return 1;
-    }
-    return 0;
 }
 export function city_message_get(message_id: number) {
     return data.messages[message_id];

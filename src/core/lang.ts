@@ -1,4 +1,13 @@
-export const  = 1;
+export const enum lang_message_type {
+    MESSAGE_TYPE_GENERAL = 0,
+    MESSAGE_TYPE_DISASTER = 1,
+    MESSAGE_TYPE_IMPERIAL = 2,
+    MESSAGE_TYPE_EMIGRATION = 3,
+    MESSAGE_TYPE_TUTORIAL = 4,
+    MESSAGE_TYPE_TRADE_CHANGE = 5,
+    MESSAGE_TYPE_PRICE_CHANGE = 6,
+    MESSAGE_TYPE_INVASION = 7
+};
 import { FILE_NAME_MAX } from 'core/file';
 export const MAX_TEXT_ENTRIES = 1000;
 export const MAX_TEXT_DATA = 200000;
@@ -148,17 +157,13 @@ import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/Buil
 import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
 import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
 import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-class unnamed33_5 {
+class text_entries {
     public offset: number = 0;
     public in_use: number = 0;
-    public constructor(...args: any[]) {
-        args.length >= 1 && (this.offset = args[0]);
-        args.length >= 2 && (this.in_use = args[1]);
-    }
 }
-export class unnamed32_8 {
-    public text_entries: text_entries = new Array(MAX_TEXT_ENTRIES).fill(null);
-    public text_data: number[] = new Array(MAX_TEXT_DATA).fill(0);
+export class Data {
+    public text_entries: text_entries[] = new Array(MAX_TEXT_ENTRIES);
+    public text_data: Uint8Array = new Uint8Array(MAX_TEXT_DATA);
     public message_entries: lang_message[] = new Array(MAX_MESSAGE_ENTRIES).fill(null);
     public message_data: number[] = new Array(MAX_MESSAGE_DATA).fill(0);
     public constructor(...args: any[]) {
@@ -168,7 +173,7 @@ export class unnamed32_8 {
         args.length >= 4 && (this.message_data = args[3]);
     }
 }
-let data: unnamed32_8 = new unnamed32_8();
+let data: Data = new Data();
 function file_exists_in_dir(dir: char, file: char) {
     let path: char[];
     path[2 * FILE_NAME_MAX - 1] = 0;
@@ -263,30 +268,31 @@ function load_files(text_filename: char, message_filename: char, localizable: nu
 }
 export function lang_load(is_editor: number) {
     if (is_editor) {
-        return
-        load_files(FILE_EDITOR_TEXT_RUS, FILE_EDITOR_MM_RUS, MAY_BE_LOCALIZED) ||
+        return load_files(FILE_EDITOR_TEXT_RUS, FILE_EDITOR_MM_RUS, MAY_BE_LOCALIZED) ||
             load_files(FILE_EDITOR_TEXT_ENG, FILE_EDITOR_MM_ENG, MAY_BE_LOCALIZED);
     }
-    return
-    load_files(FILE_TEXT_ENG, FILE_MM_ENG, MUST_BE_LOCALIZED) ||
+    return load_files(FILE_TEXT_ENG, FILE_MM_ENG, MUST_BE_LOCALIZED) ||
         load_files(FILE_TEXT_RUS, FILE_MM_RUS, MUST_BE_LOCALIZED) ||
         load_files(FILE_TEXT_ENG, FILE_MM_ENG, NOT_LOCALIZED) ||
         load_files(FILE_TEXT_RUS, FILE_MM_RUS, NOT_LOCALIZED);
 }
 export function lang_get_string(group: number, index: number) {
-    let str: number = data.text_data[data.text_entries[group].offset];
+    let strIdx = data.text_data[data.text_entries[group].offset];
+    let str: number;
     let prev: number = 0;
+    const charCodeSpace = ' '.charCodeAt(0);
     while (index > 0) {
-        if (!* str && (prev >= ' ' || prev == 0)) {
+        str = data.text_data[strIdx++];
+        if (!str && (prev >= charCodeSpace || prev == 0)) {
             --index;
         }
-        prev = * str;
-        ++str;
+        prev = str;
+        ++strIdx;
     }
-    while (* str < ' ') { // skip non-printables
-        ++str;
+    while (str < charCodeSpace) { // skip non-printables
+        ++strIdx;
     }
-    return str;
+    return new Uint8Array(data.text_data.buffer, strIdx);
 }
 export function lang_get_message(id: number) {
     return data.message_entries[id];

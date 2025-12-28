@@ -1,5 +1,15 @@
 export const MAX_CATS = 10;
-import { MAX_BUILDINGS } from 'building/building';
+import { building, building_get, MAX_BUILDINGS } from 'building/building';
+import { model_get_building } from 'building/model';
+import { building_state, building_type } from 'building/type';
+import { city_data_t } from 'city/data_private';
+import { city_message_post_with_message_delay, city_message_type, message_category } from 'city/message';
+import { city_population_people_of_working_age } from 'city/population';
+import { calc_adjust_with_percentage, calc_bound, calc_percentage } from 'core/calc';
+import { random_byte_alt } from 'core/random';
+import { resource_type } from 'game/resource';
+import { game_time_year } from 'game/time';
+import { scenario_property_start_year } from 'scenario/property';
 export class labor_category_data {
     public workers_needed: number = 0;
     public workers_allocated: number = 0;
@@ -14,53 +24,15 @@ export class labor_category_data {
         args.length >= 5 && (this.total_houses_covered = args[4]);
     }
 }
-import { building_type } from 'building/type';
 import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;
 import BUILDING_WHEAT_FARM = building_type.BUILDING_WHEAT_FARM;
 import BUILDING_POTTERY_WORKSHOP = building_type.BUILDING_POTTERY_WORKSHOP;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
-import { building_state } from 'building/type';
-import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_building } from 'building/model';
-import { emperor_gift } from 'city/emperor';
-import { finance_overview } from 'city/finance';
-import { house_demands } from 'city/houses';
-import { resource_trade_status } from 'city/constants';
-import { resource_type } from 'game/resource';
+import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_list } from 'city/resource';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { god_status } from 'city/data_private';
 export let city_data: city_data_t = new city_data_t();
-import { message_category } from 'city/message';
 import MESSAGE_CAT_WORKERS_NEEDED = message_category.MESSAGE_CAT_WORKERS_NEEDED;
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
 import MESSAGE_WORKERS_NEEDED = city_message_type.MESSAGE_WORKERS_NEEDED;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_post_with_message_delay } from 'city/message';
-import { city_population_people_of_working_age } from 'city/population';
-import { direction_type } from 'core/direction';
-import { calc_adjust_with_percentage } from 'core/calc';
-import { calc_percentage } from 'core/calc';
-import { calc_bound } from 'core/calc';
-import { random_byte_alt } from 'core/random';
-import { game_time_year } from 'game/time';
-import { scenario_climate } from 'scenario/property';
-import { scenario_property_start_year } from 'scenario/property';
 export const enum labor_category {
     LABOR_CATEGORY_INDUSTRY_COMMERCE = 0,
     LABOR_CATEGORY_FOOD_PRODUCTION = 1,
@@ -72,8 +44,19 @@ export const enum labor_category {
     LABOR_CATEGORY_HEALTH_EDUCATION = 7,
     LABOR_CATEGORY_GOVERNANCE_RELIGION = 8,
 }
-let CATEGORY_FOR_BUILDING_TYPE: number[] = new Array().fill({
-    - 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 0
+
+import LABOR_CATEGORY_INDUSTRY_COMMERCE = labor_category.LABOR_CATEGORY_INDUSTRY_COMMERCE
+import LABOR_CATEGORY_FOOD_PRODUCTION = labor_category.LABOR_CATEGORY_INDUSTRY_COMMERCE
+import LABOR_CATEGORY_ENGINEERING = labor_category.LABOR_CATEGORY_INDUSTRY_COMMERCE
+import LABOR_CATEGORY_WATER = labor_category.LABOR_CATEGORY_INDUSTRY_COMMERCE
+import LABOR_CATEGORY_PREFECTURES = labor_category.LABOR_CATEGORY_INDUSTRY_COMMERCE
+import LABOR_CATEGORY_MILITARY = labor_category.LABOR_CATEGORY_INDUSTRY_COMMERCE
+import LABOR_CATEGORY_ENTERTAINMENT = labor_category.LABOR_CATEGORY_INDUSTRY_COMMERCE
+import LABOR_CATEGORY_HEALTH_EDUCATION = labor_category.LABOR_CATEGORY_INDUSTRY_COMMERCE
+import LABOR_CATEGORY_GOVERNANCE_RELIGION = labor_category.LABOR_CATEGORY_INDUSTRY_COMMERCE
+
+let CATEGORY_FOR_BUILDING_TYPE: number[] = [
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 0
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 10
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, // 20
     6, 6, 6, 6, 6, 6, 6, 6, -1, -1, // 30
@@ -85,8 +68,8 @@ let CATEGORY_FOR_BUILDING_TYPE: number[] = new Array().fill({
     -1, 3, -1, -1, 5, 5, -1, -1, 8, -1, // 90
     1, 1, 1, 0, 0, 1, 0, 0, 0, 0, // 100
     0, 0, 0, 0, 0, -1, -1, -1, -1, -1, // 110
-    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 //120
-});
+    -1, -1, -1, -1, -1, -1, -1, -1, -1, -1 // 120
+];
 export class unnamed43_8 {
     public category: labor_category = null;
     public workers: number = 0;
@@ -95,17 +78,17 @@ export class unnamed43_8 {
         args.length >= 2 && (this.workers = args[1]);
     }
 }
-let DEFAULT_PRIORITY: unnamed43_8[] = new Array(MAX_CATS).fill({
-    { LABOR_CATEGORY_ENGINEERING, 3},
-    { LABOR_CATEGORY_WATER, 1},
-    { LABOR_CATEGORY_PREFECTURES, 3},
-    { LABOR_CATEGORY_MILITARY, 2},
-    { LABOR_CATEGORY_FOOD_PRODUCTION, 4},
-    { LABOR_CATEGORY_INDUSTRY_COMMERCE, 2},
-    { LABOR_CATEGORY_ENTERTAINMENT, 1},
-    { LABOR_CATEGORY_HEALTH_EDUCATION, 1},
-    { LABOR_CATEGORY_GOVERNANCE_RELIGION, 1},
-});
+let DEFAULT_PRIORITY: unnamed43_8[] = [
+    { category: LABOR_CATEGORY_ENGINEERING, workers: 3 },
+    { category: LABOR_CATEGORY_WATER, workers: 1 },
+    { category: LABOR_CATEGORY_PREFECTURES, workers: 3 },
+    { category: LABOR_CATEGORY_MILITARY, workers: 2 },
+    { category: LABOR_CATEGORY_FOOD_PRODUCTION, workers: 4 },
+    { category: LABOR_CATEGORY_INDUSTRY_COMMERCE, workers: 2 },
+    { category: LABOR_CATEGORY_ENTERTAINMENT, workers: 1 },
+    { category: LABOR_CATEGORY_HEALTH_EDUCATION, workers: 1 },
+    { category: LABOR_CATEGORY_GOVERNANCE_RELIGION, workers: 1 }
+];
 export function city_labor_unemployment_percentage() {
     return city_data.labor.unemployment_percentage;
 }
@@ -243,13 +226,13 @@ function allocate_workers_to_categories() {
             if (guard >= city_data.labor.workers_available) {
                 break;
             }
-            for (int p = 0; p < 9; p++) {
-                        int cat = DEFAULT_PRIORITY[p].category;
+            for (let p = 0; p < 9; p++) {
+                let cat = DEFAULT_PRIORITY[p].category;
                 if (!city_data.labor.categories[cat].priority) {
-                            int needed = city_data.labor.categories[cat].workers_needed
+                    let needed = city_data.labor.categories[cat].workers_needed
                         - city_data.labor.categories[cat].workers_allocated;
                     if (needed > 0) {
-                                int to_allocate = DEFAULT_PRIORITY[p].workers;
+                        let to_allocate = DEFAULT_PRIORITY[p].workers;
                         if (to_allocate > available) {
                             to_allocate = available;
                         }
@@ -356,8 +339,8 @@ function allocate_workers_to_water() {
     }
 }
 function allocate_workers_to_non_water_buildings() {
-    let category_workers_needed: number[];
-    let category_workers_allocated: number[];
+    let category_workers_needed: number[] = new Array(MAX_CATS).fill(0);
+    let category_workers_allocated: number[] = new Array(MAX_CATS).fill(0);
     for (let i: number = 0; i < MAX_CATS; i++) {
         category_workers_allocated[i] = 0;
         category_workers_needed[i] =

@@ -2,7 +2,7 @@
 import { resource_type } from 'game/resource';
 import { GRID, map_grid_offset } from 'map/grid';
 import { map_tile } from 'map/point';
-;
+import { city_data_t } from './data_private';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
 export let city_data: city_data_t = new city_data_t();

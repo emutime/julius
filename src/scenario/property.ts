@@ -1,6 +1,10 @@
 import { string_copy } from 'core/string';
-import { MAX_PLAYER_NAME, MAX_SCENARIO_NAME } from 'scenario/data';
-;
+import { MAX_PLAYER_NAME, MAX_SCENARIO_NAME, scenario_t } from 'scenario/data';
+export const  enum scenario_climate {
+    CLIMATE_CENTRAL = 0,
+    CLIMATE_NORTHERN = 1,
+    CLIMATE_DESERT = 2
+};
 export let scenario: scenario_t = new scenario_t();
 export function scenario_is_custom() {
     return scenario.settings.is_custom;

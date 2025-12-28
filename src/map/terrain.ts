@@ -1,7 +1,32 @@
 
-;
+
 import { buffer } from 'core/buffer';
-import { terrain } from 'map/terrain';
+export const enum terrain {
+    TERRAIN_TREE = 1,
+    TERRAIN_ROCK = 2,
+    TERRAIN_WATER = 4,
+    TERRAIN_BUILDING = 8,
+    TERRAIN_SHRUB = 0x10,
+    TERRAIN_GARDEN = 0x20,
+    TERRAIN_ROAD = 0x40,
+    TERRAIN_RESERVOIR_RANGE = 0x80,
+    TERRAIN_AQUEDUCT = 0x100,
+    TERRAIN_ELEVATION = 0x200,
+    TERRAIN_ACCESS_RAMP = 0x400,
+    TERRAIN_MEADOW = 0x800,
+    TERRAIN_RUBBLE = 0x1000,
+    TERRAIN_FOUNTAIN_RANGE = 0x2000,
+    TERRAIN_WALL = 0x4000,
+    TERRAIN_GATEHOUSE = 0x8000,
+    // combined
+    TERRAIN_WALL_OR_GATEHOUSE = TERRAIN_WALL | TERRAIN_GATEHOUSE,
+    TERRAIN_NOT_CLEAR = 0xd77f,
+    TERRAIN_CLEARABLE = 0xd17f,
+    TERRAIN_IMPASSABLE = 0xc75f,
+    TERRAIN_IMPASSABLE_ENEMY = 0x1237,
+    TERRAIN_IMPASSABLE_WOLF = 0xd73f,
+    TERRAIN_ALL = 0xffff
+};
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_ROCK = terrain.TERRAIN_ROCK;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
@@ -32,7 +57,6 @@ import { map_ring_start } from 'map/ring';
 import { map_ring_end } from 'map/ring';
 import { map_ring_is_inside_map } from 'map/ring';
 import { map_ring_tile } from 'map/ring';
-import { routed_building_type } from 'map/routing';
 import { map_routing_distance } from 'map/routing';
 let terrain_grid: grid_u16;
 let terrain_grid_backup: grid_u16;

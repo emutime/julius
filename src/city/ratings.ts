@@ -2,12 +2,19 @@ import { building, building_get, MAX_BUILDINGS } from 'building/building';
 import { model_get_house } from 'building/model';
 import { building_type } from 'building/type';
 import { city_culture_coverage_academy, city_culture_coverage_library, city_culture_coverage_school, city_culture_coverage_theater } from 'city/culture';
-import { selected_rating } from 'city/ratings';
 import { calc_adjust_with_percentage, calc_bound, calc_percentage } from 'core/calc';
 import { resource_type } from 'game/resource';
 import { game_time_year } from 'game/time';
 import { scenario_criteria_culture, scenario_criteria_culture_enabled, scenario_criteria_favor, scenario_criteria_favor_enabled, scenario_criteria_milestone_year, scenario_criteria_peace, scenario_criteria_peace_enabled, scenario_criteria_population, scenario_criteria_population_enabled, scenario_criteria_prosperity, scenario_criteria_prosperity_enabled } from 'scenario/criteria';
 import { scenario_is_open_play, scenario_is_tutorial_1, scenario_is_tutorial_2, scenario_property_start_year } from 'scenario/property';
+import { city_data_t } from './data_private';
+export const enum selected_rating {
+    SELECTED_RATING_NONE = 0,
+    SELECTED_RATING_CULTURE = 1,
+    SELECTED_RATING_PROSPERITY = 2,
+    SELECTED_RATING_PEACE = 3,
+    SELECTED_RATING_FAVOR = 4
+};
 import BUILDING_HOUSE_SMALL_TENT = building_type.BUILDING_HOUSE_SMALL_TENT;
 import BUILDING_HOUSE_LARGE_TENT = building_type.BUILDING_HOUSE_LARGE_TENT;
 import BUILDING_FORT_GROUND = building_type.BUILDING_FORT_GROUND;

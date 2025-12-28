@@ -5,7 +5,9 @@ import { buffer_write_u16 } from 'core/buffer';
 import { buffer_write_raw } from 'core/buffer';
 import { buffer_read_u16 } from 'core/buffer';
 import { buffer_read_raw } from 'core/buffer';
-import { GRID } from 'map/grid';
+export const enum GRID {
+    GRID_SIZE = 162
+};
 import GRID_SIZE = GRID.GRID_SIZE;
 export class grid_u8 {
     public items: number[] = new Array(GRID_SIZE * GRID_SIZE).fill(0);

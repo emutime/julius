@@ -1,13 +1,12 @@
 export const MAX_GODS = 5;
 export const TIE = 10;
-;
 import { building_count_total } from 'building/count';
 import { building_granary_bless, building_granary_warehouse_curse } from 'building/granary';
 import { building_bless_farms, building_curse_farms } from 'building/industry';
 import { building_type } from 'building/type';
 import { god_type } from 'city/constants';
 import { city_culture_coverage_religion } from 'city/culture';
-import { god_status } from 'city/data_private';
+import { city_data_t, god_status } from 'city/data_private';
 import { city_health_change } from 'city/health';
 import { city_message_post, city_message_type } from 'city/message';
 import { city_sentiment_change_happiness, city_sentiment_set_max_happiness, city_sentiment_update } from 'city/sentiment';

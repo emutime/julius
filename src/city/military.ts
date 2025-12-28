@@ -8,7 +8,7 @@ import { formation, formation_get, MAX_FORMATIONS } from 'figure/formation';
 import { formation_legions_kill_in_distant_battle, formation_legions_return_from_distant_battle } from 'figure/formation_legion';
 import { resource_type } from 'game/resource';
 import { scenario_distant_battle_enemy_travel_months, scenario_distant_battle_roman_travel_months } from 'scenario/distant_battle';
-;
+import { city_data_t } from './data_private';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
 export let city_data: city_data_t = new city_data_t();

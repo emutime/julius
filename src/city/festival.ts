@@ -5,7 +5,7 @@ import { city_finance_process_sundry } from 'city/finance';
 import { city_message_post, city_message_type } from 'city/message';
 import { city_sentiment_change_happiness } from 'city/sentiment';
 import { resource_type } from 'game/resource';
-;
+import { city_data_t } from './data_private';
 import FESTIVAL_NONE = festival_size.FESTIVAL_NONE;
 import FESTIVAL_SMALL = festival_size.FESTIVAL_SMALL;
 import FESTIVAL_LARGE = festival_size.FESTIVAL_LARGE;

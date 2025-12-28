@@ -1,6 +1,20 @@
 
 import { map_point } from 'map/point';
-;
+export const MAX_REQUESTS = 20;
+export const MAX_INVASIONS = 20;
+export const MAX_DEMAND_CHANGES = 20;
+export const MAX_PRICE_CHANGES = 20;
+
+export const MAX_HERD_POINTS = 4;
+export const MAX_FISH_POINTS = 8;
+export const MAX_INVASION_POINTS = 8;
+
+export const MAX_ALLOWED_BUILDINGS = 50;
+
+export const MAX_PLAYER_NAME = 32;
+export const MAX_SCENARIO_NAME = 65;
+export const MAX_BRIEF_DESCRIPTION = 64;
+export const MAX_BRIEFING = 522;
 export const enum event {
     EVENT_NOT_STARTED = 0,
     EVENT_IN_PROGRESS = 1,

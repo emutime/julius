@@ -1,63 +1,33 @@
-import { MAX_BUILDINGS } from 'building/building';
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
-import { building_state } from 'building/type';
-import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
+import { building, building_get, MAX_BUILDINGS } from 'building/building';
 import { model_get_house } from 'building/model';
+import { building_state } from 'building/type';
 import { low_mood_cause } from 'city/constants';
+import { city_data_t } from 'city/data_private';
+import { city_message_post, city_message_type } from 'city/message';
+import { city_population_check_consistency } from 'city/population';
+import { calc_bound, calc_percentage } from 'core/calc';
+import { config_get, config_key } from 'core/config';
+import { difficulty_sentiment } from 'game/difficulty';
+import { resource_type } from 'game/resource';
+import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
 import LOW_MOOD_CAUSE_NONE = low_mood_cause.LOW_MOOD_CAUSE_NONE;
 import LOW_MOOD_CAUSE_NO_FOOD = low_mood_cause.LOW_MOOD_CAUSE_NO_FOOD;
 import LOW_MOOD_CAUSE_NO_JOBS = low_mood_cause.LOW_MOOD_CAUSE_NO_JOBS;
 import LOW_MOOD_CAUSE_HIGH_TAXES = low_mood_cause.LOW_MOOD_CAUSE_HIGH_TAXES;
 import LOW_MOOD_CAUSE_LOW_WAGES = low_mood_cause.LOW_MOOD_CAUSE_LOW_WAGES;
 import LOW_MOOD_CAUSE_MANY_TENTS = low_mood_cause.LOW_MOOD_CAUSE_MANY_TENTS;
-import { resource_trade_status } from 'city/constants';
-import { emperor_gift } from 'city/emperor';
-import { finance_overview } from 'city/finance';
-import { house_demands } from 'city/houses';
-import { labor_category_data } from 'city/labor';
-import { resource_type } from 'game/resource';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_list } from 'city/resource';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { god_status } from 'city/data_private';
 export let city_data: city_data_t = new city_data_t();
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
 import MESSAGE_PEOPLE_DISGRUNTLED = city_message_type.MESSAGE_PEOPLE_DISGRUNTLED;
 import MESSAGE_PEOPLE_UNHAPPY = city_message_type.MESSAGE_PEOPLE_UNHAPPY;
 import MESSAGE_PEOPLE_ANGRY = city_message_type.MESSAGE_PEOPLE_ANGRY;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_post } from 'city/message';
-import { city_population_check_consistency } from 'city/population';
-import { direction_type } from 'core/direction';
-import { calc_percentage } from 'core/calc';
-import { calc_bound } from 'core/calc';
-import { config_key } from 'core/config';
 import CONFIG_GP_FIX_IMMIGRATION_BUG = config_key.CONFIG_GP_FIX_IMMIGRATION_BUG;
-import { config_key } from 'core/config';
-import { config_string_key } from 'core/config';
-import { config_get } from 'core/config';
-import { difficulty_sentiment } from 'game/difficulty';
-import { tutorial_availability } from 'game/tutorial';
-import { tutorial_build_buttons } from 'game/tutorial';
-let SENTIMENT_PER_TAX_RATE: number[] = new Array(26).fill({
+let SENTIMENT_PER_TAX_RATE: number[] = [
     3, 2, 2, 2, 1, 1, 1, 0, 0, - 1,
     -2, -2, -3, -3, -3, -5, -5, -5, -5, -6,
     -6, -6, -6, -6, -6, -6
-});
+];
 export function city_sentiment() {
     return city_data.sentiment.value;
 }

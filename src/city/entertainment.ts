@@ -1,6 +1,7 @@
 import { building, building_get, MAX_BUILDINGS } from 'building/building';
 import { building_state, building_type } from 'building/type';
 import { resource_type } from 'game/resource';
+import { city_data_t } from './data_private';
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
 import BUILDING_THEATER = building_type.BUILDING_THEATER;
 import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;

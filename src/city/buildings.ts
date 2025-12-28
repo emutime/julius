@@ -1,22 +1,10 @@
 
-import { building_type } from 'building/type';;
-import { buffer } from 'core/buffer';
 import { building } from 'building/building';
-import { emperor_gift } from 'city/emperor';
-import { finance_overview } from 'city/finance';
-import { house_demands } from 'city/houses';
-import { labor_category_data } from 'city/labor';
-import { resource_trade_status } from 'city/constants';
+import { city_data_t } from 'city/data_private';
 import { resource_type } from 'game/resource';
+import { Ref } from '../../ext/crt';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_list } from 'city/resource';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { god_status } from 'city/data_private';
 export let city_data: city_data_t = new city_data_t();
 export function city_buildings_has_senate() {
     return city_data.building.senate_placed;
@@ -118,7 +106,7 @@ export function city_buildings_reset_dock_wharf_counters() {
     }
     city_data.building.working_docks = 0;
 }
-export function city_buildings_add_working_wharf(needs_fishing_boat: number) {
+export function city_buildings_add_working_wharf(needs_fishing_boat: boolean) {
     ++city_data.building.working_wharfs;
     if (needs_fishing_boat) {
         ++city_data.building.shipyard_boats_requested;
@@ -139,9 +127,9 @@ export function city_buildings_has_working_dock() {
 export function city_buildings_get_working_dock(index: number) {
     return city_data.building.working_dock_ids[index];
 }
-export function city_buildings_main_native_meeting_center(x: number, y: number) {
-    * x = city_data.building.main_native_meeting.x;
-    * y = city_data.building.main_native_meeting.y;
+export function city_buildings_main_native_meeting_center(x: Ref<number>, y: Ref<number>) {
+    x.v = city_data.building.main_native_meeting.x;
+    y.v = city_data.building.main_native_meeting.y;
 }
 export function city_buildings_set_main_native_meeting_center(x: number, y: number) {
     city_data.building.main_native_meeting.x = x;

@@ -4,11 +4,9 @@ export const TILE_WIDTH_PIXELS = 60;
 export const TILE_HEIGHT_PIXELS = 30;
 export const HALF_TILE_HEIGHT_PIXELS = 15;
 export const HALF_TILE_WIDTH_PIXELS = 30;
+import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
 import { TOP_MENU_HEIGHT } from 'graphics/menu';
 ;
-import { buffer } from 'core/buffer';
-import { buffer_write_i32 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
 export class pixel_offset {
     public x: number = 0;
     public y: number = 0;
@@ -17,31 +15,22 @@ export class pixel_offset {
         args.length >= 2 && (this.y = args[1]);
     }
 }
+type view_tile = pixel_offset;
+
 import { direction_type } from 'core/direction';
+import { GRID, map_grid_add_delta, map_grid_delta, map_grid_height, map_grid_width } from 'map/grid';
+import { map_image_at } from 'map/image';
+import { widget_minimap_invalidate } from 'widget/minimap';
+import { Ref } from '../../ext/crt';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
 import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
 import DIR_6_LEFT = direction_type.DIR_6_LEFT;
 import DIR_8_NONE = direction_type.DIR_8_NONE;
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { menu_item } from 'graphics/menu';
-import { menu_bar_item } from 'graphics/menu';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_delta } from 'map/grid';
-import { map_grid_add_delta } from 'map/grid';
-import { map_grid_width } from 'map/grid';
-import { map_grid_height } from 'map/grid';
-import { map_image_at } from 'map/image';
-import { widget_minimap_invalidate } from 'widget/minimap';
-let X_DIRECTION_FOR_ORIENTATION: number[] = new Array().fill({ 1, 1, - 1, -1});
-let Y_DIRECTION_FOR_ORIENTATION: number[] = new Array().fill({ 1, - 1, -1, 1});
+type map_callback = (x: number, y: number, grid_offset: number) => void;
+let X_DIRECTION_FOR_ORIENTATION: number[] = [1, 1, - 1, -1];
+let Y_DIRECTION_FOR_ORIENTATION: number[] = [1, - 1, -1, 1];
 class camera {
     public tile: view_tile = null;
     public pixel: pixel_offset = null;
@@ -212,50 +201,50 @@ export function city_view_reset_orientation() {
     data.orientation = 0;
     calculate_lookup();
 }
-export function city_view_get_camera(x: number, y: number) {
-    * x = data.camera.tile.x;
-    * y = data.camera.tile.y;
+export function city_view_get_camera(x: Ref<number>, y: Ref<number>) {
+    x.v = data.camera.tile.x;
+    y.v = data.camera.tile.y;
 }
-export function city_view_get_pixel_offset(x: number, y: number) {
-    * x = data.camera.pixel.x;
-    * y = data.camera.pixel.y;
+export function city_view_get_pixel_offset(x: Ref<number>, y: Ref<number>) {
+    x.v = data.camera.pixel.x;
+    y.v = data.camera.pixel.y;
 }
-export function city_view_get_camera_in_pixels(x: number, y: number) {
-    * x = data.camera.tile.x * TILE_WIDTH_PIXELS + data.camera.pixel.x;
-    * y = data.camera.tile.y * HALF_TILE_HEIGHT_PIXELS + data.camera.pixel.y;
+export function city_view_get_camera_in_pixels(x: Ref<number>, y: Ref<number>) {
+    x.v = data.camera.tile.x * TILE_WIDTH_PIXELS + data.camera.pixel.x;
+    y.v = data.camera.tile.y * HALF_TILE_HEIGHT_PIXELS + data.camera.pixel.y;
 }
-function adjust_for_orientation(x: number, y: number, orientation: number, x_out: number, y_out: number) {
+function adjust_for_orientation(x: number, y: number, orientation: number, x_out: Ref<number>, y_out: Ref<number>) {
     switch (orientation) {
         default:
         case DIR_0_TOP:
-                    * x_out = x
-                * y_out = y;
+            x_out.v = x
+            y_out.v = y;
             break
         case DIR_2_RIGHT:
-            * x_out = y / 2;
-        * y_out = (VIEW_X_MAX - x) * 2;
+            x_out.v = y / 2;
+            y_out.v = (VIEW_X_MAX - x) * 2;
             break
         case DIR_4_BOTTOM:
-            * x_out = VIEW_X_MAX - x;
-        * y_out = VIEW_Y_MAX - y;
+            x_out.v = VIEW_X_MAX - x;
+            y_out.v = VIEW_Y_MAX - y;
             break
         case DIR_6_LEFT:
-            * x_out = (VIEW_Y_MAX - y) / 2;
-        * y_out = x * 2;
+            x_out.v = (VIEW_Y_MAX - y) / 2;
+            y_out.v = x * 2;
             break
     }
 }
-export function city_view_get_camera_absolute(x_abs: number, y_abs: number) {
+export function city_view_get_camera_absolute(x_abs: Ref<number>, y_abs: Ref<number>) {
     let x_offset: number = data.viewport.width_tiles / 2;
     let y_offset: number = data.viewport.height_tiles / 2;
     let x_center: number = data.camera.tile.x + x_offset;
     let y_center: number = data.camera.tile.y + y_offset;
-    let x_center_abs: number
-    let y_center_abs: number;
+    let x_center_abs: Ref<number> = new Ref<number>(0);
+    let y_center_abs: Ref<number> = new Ref<number>(0);
     let to_rotate: number = (DIR_8_NONE - data.orientation) % DIR_8_NONE;
     adjust_for_orientation(x_center, y_center, to_rotate, x_center_abs, y_center_abs);
-    * x_abs = x_center_abs - x_offset;
-    * y_abs = y_center_abs - y_offset;
+    x_abs.v = x_center_abs.v - x_offset;
+    y_abs.v = y_center_abs.v - y_offset;
 }
 export function city_view_set_camera(x: number, y: number) {
     data.camera.tile.x = x;
@@ -267,10 +256,10 @@ export function city_view_set_camera_absolute(x_abs: number, y_abs: number) {
     let y_offset: number = data.viewport.height_tiles / 2;
     let x_center_abs: number = x_abs + x_offset;
     let y_center_abs: number = y_abs + y_offset;
-    let x_center: number
-    let y_center: number;
+    let x_center: Ref<number> = new Ref<number>(0);
+    let y_center: Ref<number> = new Ref<number>(0);
     adjust_for_orientation(x_center_abs, y_center_abs, data.orientation, x_center, y_center);
-    city_view_set_camera(x_center - x_offset, y_center - y_offset);
+    city_view_set_camera(x_center.v - x_offset, y_center.v - y_offset);
 }
 export function city_view_set_camera_from_pixel_position(x: number, y: number) {
     x = x < 0 ? 0 : x;
@@ -287,21 +276,21 @@ export function city_view_scroll(x: number, y: number) {
     adjust_camera_position_for_pixels();
     check_camera_boundaries();
 }
-export function city_view_grid_offset_to_xy_view(grid_offset: number, x_view: number, y_view: number) {
-    * x_view = * y_view = 0;
+export function city_view_grid_offset_to_xy_view(grid_offset: number, x_view: Ref<number>, y_view: Ref<number>) {
+    x_view.v = y_view.v = 0;
     for (let y: number = 0; y < VIEW_Y_MAX; y++) {
         for (let x: number = 0; x < VIEW_X_MAX; x++) {
             if (view_to_grid_offset_lookup[x][y] == grid_offset) {
-                * x_view = x;
-                * y_view = y;
+                x_view.v = x;
+                y_view.v = y;
                 return;
             }
         }
     }
 }
-export function city_view_get_selected_tile_pixels(x_pixels: number, y_pixels: number) {
-    * x_pixels = data.selected_tile.x_pixels;
-    * y_pixels = data.selected_tile.y_pixels;
+export function city_view_get_selected_tile_pixels(x_pixels: Ref<number>, y_pixels: Ref<number>) {
+    x_pixels.v = data.selected_tile.x_pixels;
+    y_pixels.v = data.selected_tile.y_pixels;
 }
 export function city_view_pixels_to_view_tile(x_pixels: number, y_pixels: number, tile: view_tile) {
     if (x_pixels < data.viewport.x ||
@@ -355,7 +344,11 @@ export function city_view_tile_to_grid_offset(tile: view_tile) {
 export function city_view_go_to_grid_offset(grid_offset: number) {
     let x: number
     let y: number;
-    city_view_grid_offset_to_xy_view(grid_offset, x, y);
+    let x_ref: Ref<number> = new Ref<number>(0);
+    let y_ref: Ref<number> = new Ref<number>(0);
+    city_view_grid_offset_to_xy_view(grid_offset, x_ref, y_ref);
+    x = x_ref.v;
+    y = y_ref.v;
     data.camera.tile.x = x - data.viewport.width_tiles / 2;
     data.camera.tile.y = y - data.viewport.height_tiles / 2;
     data.camera.tile.y &= ~1
@@ -376,7 +369,11 @@ export function city_view_rotate_left() {
     if (center_grid_offset >= 0) {
         let x: number
         let y: number;
-        city_view_grid_offset_to_xy_view(center_grid_offset, x, y);
+        let x_ref: Ref<number> = new Ref<number>(0);
+        let y_ref: Ref<number> = new Ref<number>(0);
+        city_view_grid_offset_to_xy_view(center_grid_offset, x_ref, y_ref);
+        x = x_ref.v;
+        y = y_ref.v;
         data.camera.tile.x = x - data.viewport.width_tiles / 2;
         data.camera.tile.y = y - data.viewport.height_tiles / 2;
     }
@@ -390,11 +387,11 @@ export function city_view_rotate_right() {
     }
     calculate_lookup();
     if (center_grid_offset >= 0) {
-        let x: number
-        let y: number;
+        let x: Ref<number> = new Ref<number>(0);
+        let y: Ref<number> = new Ref<number>(0);
         city_view_grid_offset_to_xy_view(center_grid_offset, x, y);
-        data.camera.tile.x = x - data.viewport.width_tiles / 2;
-        data.camera.tile.y = y - data.viewport.height_tiles / 2;
+        data.camera.tile.x = x.v - data.viewport.width_tiles / 2;
+        data.camera.tile.y = y.v - data.viewport.height_tiles / 2;
     }
     check_camera_boundaries();
 }
@@ -422,15 +419,15 @@ export function city_view_set_viewport(screen_width: number, screen_height: numb
     }
     check_camera_boundaries();
 }
-export function city_view_get_viewport(x: number, y: number, width: number, height: number) {
-    * x = data.viewport.x;
-    * y = data.viewport.y;
-    * width = data.viewport.width_pixels;
-    * height = data.viewport.height_pixels;
+export function city_view_get_viewport(x: Ref<number>, y: Ref<number>, width: Ref<number>, height: Ref<number>) {
+    x.v = data.viewport.x;
+    y.v = data.viewport.y;
+    width.v = data.viewport.width_pixels;
+    height.v = data.viewport.height_pixels;
 }
-export function city_view_get_viewport_size_tiles(width: number, height: number) {
-    * width = data.viewport.width_tiles;
-    * height = data.viewport.height_tiles;
+export function city_view_get_viewport_size_tiles(width: Ref<number>, height: Ref<number>) {
+    width.v = data.viewport.width_tiles;
+    height.v = data.viewport.height_tiles;
 }
 export function city_view_is_sidebar_collapsed() {
     return data.sidebar_collapsed;
@@ -606,7 +603,11 @@ function do_valid_callback(view_x: number, view_y: number, grid_offset: number, 
 export function city_view_foreach_tile_in_range(grid_offset: number, size: number, radius: number, callback: map_callback) {
     let x: number
     let y: number;
-    city_view_grid_offset_to_xy_view(grid_offset, x, y);
+    let x_ref: Ref<number> = new Ref<number>(0);
+    let y_ref: Ref<number> = new Ref<number>(0);
+    city_view_grid_offset_to_xy_view(grid_offset, x_ref, y_ref);
+    x = x_ref.v;
+    y = y_ref.v;
     x = (x - data.camera.tile.x) * TILE_WIDTH_PIXELS
         - (y & 1) * HALF_TILE_WIDTH_PIXELS - data.camera.pixel.x + data.viewport.x;
     y = (y - data.camera.tile.y - 1) * HALF_TILE_HEIGHT_PIXELS - data.camera.pixel.y + data.viewport.y;

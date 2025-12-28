@@ -9,6 +9,7 @@ import RESOURCE_MIN = resource_type.RESOURCE_MIN;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
 import TRADE_STATUS_IMPORT = resource_trade_status.TRADE_STATUS_IMPORT;
+import { city_data_t } from './data_private';
 export let city_data: city_data_t = new city_data_t();
 export function city_trade_update() {
     city_data.trade.num_sea_routes = 0;

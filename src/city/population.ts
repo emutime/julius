@@ -1,60 +1,39 @@
-import { MAX_BUILDINGS } from 'building/building';
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
+import { building, building_get, MAX_BUILDINGS } from 'building/building';
+import { house_population_add_to_city, house_population_remove_from_city } from 'building/house_population';
+import { building_state, house_level } from 'building/type';
+import { calc_adjust_with_percentage } from 'core/calc';
+import { config_get, config_key } from 'core/config';
+import { random_from_pool } from 'core/random';
+import { resource_type } from 'game/resource';
+import { city_data_t } from './data_private';
 import HOUSE_LARGE_TENT = house_level.HOUSE_LARGE_TENT;
 import HOUSE_LARGE_SHACK = house_level.HOUSE_LARGE_SHACK;
 import HOUSE_LARGE_INSULA = house_level.HOUSE_LARGE_INSULA;
 import HOUSE_SMALL_VILLA = house_level.HOUSE_SMALL_VILLA;
-import { building_state } from 'building/type';
 import BUILDING_STATE_UNUSED = building_state.BUILDING_STATE_UNUSED;
 import BUILDING_STATE_UNDO = building_state.BUILDING_STATE_UNDO;
 import BUILDING_STATE_DELETED_BY_GAME = building_state.BUILDING_STATE_DELETED_BY_GAME;
 import BUILDING_STATE_DELETED_BY_PLAYER = building_state.BUILDING_STATE_DELETED_BY_PLAYER;;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { house_population_add_to_city } from 'building/house_population';
-import { house_population_remove_from_city } from 'building/house_population';
-import { emperor_gift } from 'city/emperor';
-import { finance_overview } from 'city/finance';
-import { house_demands } from 'city/houses';
-import { labor_category_data } from 'city/labor';
-import { resource_trade_status } from 'city/constants';
-import { resource_type } from 'game/resource';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_MAX_FOOD = resource_type.RESOURCE_MAX_FOOD;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_list } from 'city/resource';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { god_status } from 'city/data_private';
 export let city_data: city_data_t = new city_data_t();
-import { direction_type } from 'core/direction';
-import { calc_adjust_with_percentage } from 'core/calc';
-import { config_key } from 'core/config';
 import CONFIG_GP_FIX_100_YEAR_GHOSTS = config_key.CONFIG_GP_FIX_100_YEAR_GHOSTS;
-import { config_key } from 'core/config';
-import { config_string_key } from 'core/config';
-import { config_get } from 'core/config';
-import { random_from_pool } from 'core/random';
-let BIRTHS_PER_AGE_DECENNIUM: number[] = new Array(10).fill({
+let BIRTHS_PER_AGE_DECENNIUM: number[] = new Array(10).fill([
     0, 3, 16, 9, 2, 0, 0, 0, 0, 0
-});
-let DEATHS_PER_HEALTH_PER_AGE_DECENNIUM: number[] = new Array(11).fill({
-    { 20, 10, 5, 10, 20, 30, 50, 85, 100, 100},
-    { 15, 8, 4, 8, 16, 25, 45, 70, 90, 100},
-    { 10, 6, 2, 6, 12, 20, 30, 55, 80, 90},
-    { 5, 4, 0, 4, 8, 15, 25, 40, 65, 80},
-    { 3, 2, 0, 2, 6, 12, 20, 30, 50, 70},
-    { 2, 0, 0, 0, 4, 8, 15, 25, 40, 60},
-    { 1, 0, 0, 0, 2, 6, 12, 20, 30, 50},
-    { 0, 0, 0, 0, 0, 4, 8, 15, 20, 40},
-    { 0, 0, 0, 0, 0, 2, 6, 10, 15, 30},
-    { 0, 0, 0, 0, 0, 0, 4, 5, 10, 20},
-    { 0, 0, 0, 0, 0, 0, 0, 2, 5, 10}
-});
+]);
+let DEATHS_PER_HEALTH_PER_AGE_DECENNIUM: number[] = new Array(11).fill([
+    [20, 10, 5, 10, 20, 30, 50, 85, 100, 100],
+    [15, 8, 4, 8, 16, 25, 45, 70, 90, 100],
+    [10, 6, 2, 6, 12, 20, 30, 55, 80, 90],
+    [5, 4, 0, 4, 8, 15, 25, 40, 65, 80],
+    [3, 2, 0, 2, 6, 12, 20, 30, 50, 70],
+    [2, 0, 0, 0, 4, 8, 15, 25, 40, 60],
+    [1, 0, 0, 0, 2, 6, 12, 20, 30, 50],
+    [0, 0, 0, 0, 0, 4, 8, 15, 20, 40],
+    [0, 0, 0, 0, 0, 2, 6, 10, 15, 30],
+    [0, 0, 0, 0, 0, 0, 4, 5, 10, 20],
+    [0, 0, 0, 0, 0, 0, 0, 2, 5, 1]
+]);
 export function city_population() {
     return city_data.population.population;
 }
@@ -110,7 +89,7 @@ function remove_from_census(num_people: number) {
     let index: number = 0;
     let empty_buckets: number = 0;
     while (num_people > 0 && empty_buckets < 100) {
-            int age = random_from_pool(index++) & 0x3f;
+        let age: number = random_from_pool(index++) & 0x3f;
         if (city_data.population.at_age[age] <= 0) {
             empty_buckets++;
         } else {
@@ -191,8 +170,7 @@ export function city_population_remove_for_troop_request(num_people: number) {
     recalculate_population();
 }
 export function city_population_people_of_working_age() {
-    return
-    get_people_in_age_decennium(2) +
+    return get_people_in_age_decennium(2) +
         get_people_in_age_decennium(3) +
         get_people_in_age_decennium(4);
 }

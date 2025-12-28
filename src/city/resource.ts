@@ -10,6 +10,7 @@ import { tutorial_on_filled_granary } from 'game/tutorial';
 import { map_has_road_access, map_has_road_access_granary } from 'map/road_access';
 import { scenario_building_allowed } from 'scenario/building';
 import { scenario_property_rome_supplies_wheat } from 'scenario/property';
+import { city_data_t } from './data_private';
 import TRADE_STATUS_NONE = resource_trade_status.TRADE_STATUS_NONE;
 import TRADE_STATUS_IMPORT = resource_trade_status.TRADE_STATUS_IMPORT;
 import TRADE_STATUS_EXPORT = resource_trade_status.TRADE_STATUS_EXPORT;
@@ -37,8 +38,7 @@ import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
 import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
 import BUILDING_WAREHOUSE_SPACE = building_type.BUILDING_WAREHOUSE_SPACE;
 import BUILDING_WHARF = building_type.BUILDING_WHARF;
-import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
-export let city_data: city_data_t = new city_data_t();
+import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE; export let city_data: city_data_t = new city_data_t();
 export class unnamed14_8 {
     public resource_list: resource_list = null;
     public food_list: resource_list = null;
@@ -155,9 +155,9 @@ export function city_resource_calculate_warehouse_stocks() {
         let b: building = building_get(i);
         if (b.state == BUILDING_STATE_IN_USE && b.type == BUILDING_WAREHOUSE) {
             b.has_road_access = 0;
-            if (map_has_road_access(b.x, b.y, b.size, 0)) {
+            if (map_has_road_access(b.x, b.y, b.size, null)) {
                 b.has_road_access = 1;
-            } else if (map_has_road_access(b.x, b.y, 3, 0)) {
+            } else if (map_has_road_access(b.x, b.y, 3, null)) {
                 b.has_road_access = 2;
             }
         }
@@ -221,7 +221,7 @@ function calculate_available_food() {
             continue
         }
         b.has_road_access = 0;
-        if (map_has_road_access_granary(b.x, b.y, 0)) {
+        if (map_has_road_access_granary(b.x, b.y, null)) {
             b.has_road_access = 1;
             let pct_workers: number = calc_percentage(
                 b.num_workers, model_get_building(b.type).laborers);
@@ -290,7 +290,7 @@ export function city_resource_calculate_workshop_stocks() {
             continue
         }
         b.has_road_access = 0;
-        if (map_has_road_access(b.x, b.y, b.size, 0)) {
+        if (map_has_road_access(b.x, b.y, b.size, null)) {
             b.has_road_access = 1;
             let room: number = 2 - b.loads_stored;
             if (room < 0) {

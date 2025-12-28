@@ -1,4 +1,4 @@
-export const  = 1;
+export const FILE_NAME_MAX = 300;
 import { dir_listing } from 'core/dir';
 import { dir_get_file } from 'core/dir';
 import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';

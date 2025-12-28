@@ -6,7 +6,7 @@ import { city_message_post, city_message_type } from 'city/message';
 import { calc_adjust_with_percentage } from 'core/calc';
 import { resource_type } from 'game/resource';
 import { tutorial_get_population_cap } from 'game/tutorial';
-;
+import { city_data_t } from './data_private';
 import LOW_MOOD_CAUSE_NO_FOOD = low_mood_cause.LOW_MOOD_CAUSE_NO_FOOD;
 import LOW_MOOD_CAUSE_NO_JOBS = low_mood_cause.LOW_MOOD_CAUSE_NO_JOBS;
 import LOW_MOOD_CAUSE_HIGH_TAXES = low_mood_cause.LOW_MOOD_CAUSE_HIGH_TAXES;

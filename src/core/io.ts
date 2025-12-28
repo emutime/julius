@@ -72,8 +72,9 @@ import { _vsscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.
 import { vsscanf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
 import { file_open } from 'core/file';
 import { file_close } from 'core/file';
-export function io_read_file_into_buffer(filepath: char, localizable: number, buffer: void, max_size: number) {
-    let cased_file: char = dir_get_file(filepath, localizable);
+import { Ptr } from '../../ext/crt';
+export function io_read_file_into_buffer(filepath: string, localizable: number, buffer: Uint8Array, max_size: number) {
+    let cased_file = dir_get_file(filepath, localizable);
     if (!cased_file) {
         return 0;
     }

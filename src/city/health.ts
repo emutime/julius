@@ -7,6 +7,7 @@ import { random_byte } from 'core/random';
 import { resource_type } from 'game/resource';
 import { tutorial_on_disease } from 'game/tutorial';
 import { scenario_is_tutorial_1, scenario_is_tutorial_2 } from 'scenario/property';
+import { city_data_t } from './data_private';
 import HOUSE_LARGE_TENT = house_level.HOUSE_LARGE_TENT;
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
