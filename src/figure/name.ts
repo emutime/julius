@@ -1,9 +1,7 @@
 
-;
-import { buffer } from 'core/buffer';
-import { buffer_write_i32 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
-import { figure_type } from 'figure/type';
+import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
+import { random_byte, random_generate_next } from 'core/random';
+import { enemy_type, figure_type } from 'figure/type';
 import FIGURE_EXPLOSION = figure_type.FIGURE_EXPLOSION;
 import FIGURE_TAX_COLLECTOR = figure_type.FIGURE_TAX_COLLECTOR;
 import FIGURE_ENGINEER = figure_type.FIGURE_ENGINEER;
@@ -54,17 +52,12 @@ import FIGURE_MISSIONARY = figure_type.FIGURE_MISSIONARY;
 import FIGURE_FISH_GULLS = figure_type.FIGURE_FISH_GULLS;
 import FIGURE_DELIVERY_BOY = figure_type.FIGURE_DELIVERY_BOY;
 import FIGURE_HIPPODROME_HORSES = figure_type.FIGURE_HIPPODROME_HORSES;
-import { figure_type } from 'figure/type';
-import { enemy_type } from 'figure/type';
 import ENEMY_1_NUMIDIAN = enemy_type.ENEMY_1_NUMIDIAN;
 import ENEMY_5_PERGAMUM = enemy_type.ENEMY_5_PERGAMUM;
 import ENEMY_7_ETRUSCAN = enemy_type.ENEMY_7_ETRUSCAN;
 import ENEMY_8_GREEK = enemy_type.ENEMY_8_GREEK;
 import ENEMY_9_EGYPTIAN = enemy_type.ENEMY_9_EGYPTIAN;
 import ENEMY_10_CARTHAGINIAN = enemy_type.ENEMY_10_CARTHAGINIAN;
-import { enemy_type } from 'figure/type';
-import { random_generate_next } from 'core/random';
-import { random_byte } from 'core/random';
 export class unnamed5_8 {
     public citizen_male: number = 0;
     public patrician: number = 0;
@@ -139,47 +132,49 @@ export function figure_name_init() {
     data.warship = init_name();
     data.enemy_warship = init_name();
 }
-function get_next_name(field: number, offset: number, max: number) {
-    let name: number = offset + * field;
-    * field = * field + 1;
-    if (* field >= max) {
-        * field = 0;
+function get_next_name(field_name: string, offset: number, max: number) {
+    let field_value: number = (data as any)[field_name];
+    let name: number = offset + field_value;
+    field_value = field_value + 1;
+    if (field_value >= max) {
+        field_value = 0;
     }
+    (data as any)[field_name] = field_value;
     return name;
 }
 export function figure_name_get(type: figure_type, enemy: enemy_type) {
     switch (type) {
         case FIGURE_TAX_COLLECTOR:
-            return get_next_name(data.tax_collector, 132, 32);
+            return get_next_name("tax_collector", 132, 32);
         case FIGURE_ENGINEER:
-            return get_next_name(data.engineer, 165, 32);
+            return get_next_name("engineer", 165, 32);
         case FIGURE_PREFECT:
         case FIGURE_TOWER_SENTRY:
-            return get_next_name(data.prefect, 198, 32);
+            return get_next_name("prefect", 198, 32);
         case FIGURE_ACTOR:
-            return get_next_name(data.actor, 330, 32);
+            return get_next_name("actor", 330, 32);
         case FIGURE_GLADIATOR:
-            return get_next_name(data.gladiator, 363, 32);
+            return get_next_name("gladiator", 363, 32);
         case FIGURE_LION_TAMER:
-            return get_next_name(data.lion_tamer, 396, 16);
+            return get_next_name("lion_tamer", 396, 16);
         case FIGURE_CHARIOTEER:
-            return get_next_name(data.charioteer, 413, 16);
+            return get_next_name("charioteer", 413, 16);
         case FIGURE_TRADE_CARAVAN:
         case FIGURE_TRADE_CARAVAN_DONKEY:
-            return get_next_name(data.trader, 562, 16);
+            return get_next_name("trader", 562, 16);
         case FIGURE_TRADE_SHIP:
         case FIGURE_FISHING_BOAT:
-            return get_next_name(data.ship, 579, 16);
+            return get_next_name("ship", 579, 16);
         case FIGURE_MARKET_TRADER:
         case FIGURE_MARKET_BUYER:
         case FIGURE_BATHHOUSE_WORKER:
-            return get_next_name(data.citizen_female, 99, 32);
+            return get_next_name("citizen_female", 99, 32);
         case FIGURE_SCHOOL_CHILD:
         case FIGURE_DELIVERY_BOY:
         case FIGURE_BARBER:
         case FIGURE_WORKER:
         default:
-            return get_next_name(data.citizen_male, 1, 64)
+            return get_next_name("citizen_male", 1, 64)
         case FIGURE_PRIEST:
         case FIGURE_TEACHER:
         case FIGURE_MISSIONARY:
@@ -187,19 +182,19 @@ export function figure_name_get(type: figure_type, enemy: enemy_type) {
         case FIGURE_DOCTOR:
         case FIGURE_SURGEON:
         case FIGURE_PATRICIAN:
-            return get_next_name(data.patrician, 66, 32);
+            return get_next_name("patrician", 66, 32);
         case FIGURE_FORT_JAVELIN:
         case FIGURE_ENEMY_CAESAR_JAVELIN:
-            return get_next_name(data.javelin_thrower, 231, 32);
+            return get_next_name("javelin_thrower", 231, 32);
         case FIGURE_FORT_MOUNTED:
         case FIGURE_ENEMY_CAESAR_MOUNTED:
-            return get_next_name(data.cavalry, 264, 32);
+            return get_next_name("cavalry", 264, 32);
         case FIGURE_FORT_LEGIONARY:
         case FIGURE_ENEMY_CAESAR_LEGIONARY:
-            return get_next_name(data.legionary, 297, 32);
+            return get_next_name("legionary", 297, 32);
         case FIGURE_INDIGENOUS_NATIVE:
         case FIGURE_NATIVE_TRADER:
-            return get_next_name(data.barbarian, 430, 32);
+            return get_next_name("barbarian", 430, 32);
         case FIGURE_ENEMY43_SPEAR:
         case FIGURE_ENEMY44_SWORD:
         case FIGURE_ENEMY45_SWORD:
@@ -213,17 +208,17 @@ export function figure_name_get(type: figure_type, enemy: enemy_type) {
         case FIGURE_ENEMY53_AXE:
             switch (enemy) {
                 case ENEMY_8_GREEK:
-                    return get_next_name(data.enemy_greek, 463, 32);
+                    return get_next_name("enemy_greek", 463, 32);
                 case ENEMY_9_EGYPTIAN:
-                    return get_next_name(data.enemy_egyptian, 496, 32);
+                    return get_next_name("enemy_egyptian", 496, 32);
                 case ENEMY_1_NUMIDIAN:
                 case ENEMY_5_PERGAMUM:
                 case ENEMY_10_CARTHAGINIAN:
-                    return get_next_name(data.enemy_arabian, 529, 32);
+                    return get_next_name("enemy_arabian", 529, 32);
                 case ENEMY_7_ETRUSCAN:
-                    return get_next_name(data.prefect, 198, 32);
+                    return get_next_name("prefect", 198, 32);
                 default:
-                    return get_next_name(data.barbarian, 430, 32)
+                    return get_next_name("barbarian", 430, 32)
             }
         case FIGURE_EXPLOSION:
         case FIGURE_FORT_STANDARD:

@@ -5,7 +5,6 @@ import { figure, figure_get, MAX_FIGURES } from 'figure/figure';
 import { figure_state, terrain_usage } from 'figure/type';
 import { map_routing_calculate_distances_water_boat, map_routing_calculate_distances_water_flotsam, map_routing_can_travel_over_walls, map_routing_citizen_can_travel_over_land, map_routing_citizen_can_travel_over_road_garden, map_routing_noncitizen_can_travel_over_land, map_routing_noncitizen_can_travel_through_everything } from 'map/routing';
 import { map_routing_get_path, map_routing_get_path_on_water } from 'map/routing_path';
-;
 import FIGURE_STATE_ALIVE = figure_state.FIGURE_STATE_ALIVE;
 import TERRAIN_USAGE_ROADS = terrain_usage.TERRAIN_USAGE_ROADS;
 import TERRAIN_USAGE_ENEMY = terrain_usage.TERRAIN_USAGE_ENEMY;
@@ -14,7 +13,7 @@ import TERRAIN_USAGE_WALLS = terrain_usage.TERRAIN_USAGE_WALLS;
 import TERRAIN_USAGE_ANIMAL = terrain_usage.TERRAIN_USAGE_ANIMAL;
 export class unnamed9_8 {
     public figure_ids: number[] = new Array(MAX_ROUTES).fill(0);
-    public direction_paths: number[] = new Array(MAX_ROUTES).fill(0);
+    public direction_paths: ArrayBuffer = new ArrayBuffer(MAX_ROUTES);
     public constructor(...args: any[]) {
         args.length >= 1 && (this.figure_ids = args[0]);
         args.length >= 2 && (this.direction_paths = args[1]);
@@ -68,7 +67,7 @@ export function figure_route_add(f: figure) {
                 f.destination_x, f.destination_y, 0);
         }
     } else {
-        let can_travel: number;
+        let can_travel: boolean;
         switch (f.terrain_usage) {
             case TERRAIN_USAGE_ENEMY:
                 can_travel = map_routing_noncitizen_can_travel_over_land(f.x, f.y,

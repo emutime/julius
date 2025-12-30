@@ -1,10 +1,20 @@
-import { MAX_FORMATION_FIGURES } from 'figure/formation';
-import { MAX_FORMATIONS } from 'figure/formation';
 import { city_figures_animals } from 'city/figures';
-import { city_sound_update_march_wolf } from 'city/sound';;
-import { buffer } from 'core/buffer';
-import { random_byte } from 'core/random';
+import { city_sound_update_march_wolf } from 'city/sound';
 import { direction_type } from 'core/direction';
+import { random_byte } from 'core/random';
+import { figure_action } from 'figure/action';
+import { figure_combat_get_target_for_wolf } from 'figure/combat';
+import { figure, figure_create, figure_get } from 'figure/figure';
+import { formation, formation_get, formation_set_destination, formation_set_home, MAX_FORMATION_FIGURES, MAX_FORMATIONS } from 'figure/formation';
+import { formation_enemy_move_formation_to } from 'figure/formation_enemy';
+import { figure_route_remove } from 'figure/route';
+import { figure_state, figure_type } from 'figure/type';
+import { map_desirability_get } from 'map/desirability';
+import { GRID, map_grid_get_area, map_grid_height, map_grid_offset, map_grid_width } from 'map/grid';
+import { map_soldier_strength_get } from 'map/soldier_strength';
+import { map_terrain_is, terrain } from 'map/terrain';
+import { sound_effect, sound_effect_play } from 'sound/effect';
+import { Ref } from '../../ext/crt';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_1_TOP_RIGHT = direction_type.DIR_1_TOP_RIGHT;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
@@ -13,50 +23,22 @@ import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
 import DIR_5_BOTTOM_LEFT = direction_type.DIR_5_BOTTOM_LEFT;
 import DIR_6_LEFT = direction_type.DIR_6_LEFT;
 import DIR_7_TOP_LEFT = direction_type.DIR_7_TOP_LEFT;
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_ACTION_150_ATTACK = figure_action.FIGURE_ACTION_150_ATTACK;
 import FIGURE_ACTION_196_HERD_ANIMAL_AT_REST = figure_action.FIGURE_ACTION_196_HERD_ANIMAL_AT_REST;
 import FIGURE_ACTION_199_WOLF_ATTACKING = figure_action.FIGURE_ACTION_199_WOLF_ATTACKING;
-import { figure_type } from 'figure/type';
 import FIGURE_SHEEP = figure_type.FIGURE_SHEEP;
 import FIGURE_WOLF = figure_type.FIGURE_WOLF;
 import FIGURE_ZEBRA = figure_type.FIGURE_ZEBRA;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_ALIVE = figure_state.FIGURE_STATE_ALIVE;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_create } from 'figure/figure';
-import { map_point } from 'map/point';
-import { figure_combat_get_target_for_wolf } from 'figure/combat';
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_get } from 'figure/formation';
-import { formation_set_destination } from 'figure/formation';
-import { formation_set_home } from 'figure/formation';
-import { formation_enemy_move_formation_to } from 'figure/formation_enemy';
-import { figure_route_remove } from 'figure/route';
-import { map_desirability_get } from 'map/desirability';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_width } from 'map/grid';
-import { map_grid_height } from 'map/grid';
-import { map_grid_get_area } from 'map/grid';
-import { map_soldier_strength_get } from 'map/soldier_strength';
-import { terrain } from 'map/terrain';
 import TERRAIN_ACCESS_RAMP = terrain.TERRAIN_ACCESS_RAMP;
 import TERRAIN_MEADOW = terrain.TERRAIN_MEADOW;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 import TERRAIN_IMPASSABLE_WOLF = terrain.TERRAIN_IMPASSABLE_WOLF;
-import { map_terrain_is } from 'map/terrain';
-import { sound_effect } from 'sound/effect';
 import SOUND_EFFECT_WOLF_HOWL = sound_effect.SOUND_EFFECT_WOLF_HOWL;
-import { sound_effect_play } from 'sound/effect';
-function get_free_tile(x: number, y: number, allow_negative_desirability: number, x_tile: number, y_tile: number) {
+function get_free_tile(x: number, y: number, allow_negative_desirability: number, x_tile: Ref<number>, y_tile: Ref<number>) {
     let disallowed_terrain: number = ~(TERRAIN_ACCESS_RAMP | TERRAIN_MEADOW);
     let tile_found: number = 0;
     let x_found: number = 0
@@ -87,11 +69,11 @@ function get_free_tile(x: number, y: number, allow_negative_desirability: number
             }
         }
     }
-    * x_tile = x_found;
-    * y_tile = y_found;
+    x_tile.v = x_found;
+    y_tile.v = y_found;
     return tile_found;
 }
-function get_roaming_destination(formation_id: number, allow_negative_desirability: number, x: number, y: number, distance: number, direction: number, x_tile: number, y_tile: number) {
+function get_roaming_destination(formation_id: number, allow_negative_desirability: number, x: number, y: number, distance: number, direction: number, x_tile: Ref<number>, y_tile: Ref<number>) {
     let target_direction: number = (formation_id + random_byte()) & 6;
     if (direction) {
         target_direction = direction;
@@ -251,13 +233,13 @@ function update_herd_formation(m: formation) {
             formation_set_destination(m, m.x_home, m.y_home);
             move_animals(m, attacking_animals);
         } else {
-            let x_tile: number
-            let y_tile: number;
+            let x_tile = new Ref(0);
+            let y_tile = new Ref(0);
             if (get_roaming_destination(m.id, allow_negative_desirability, m.x_home, m.y_home,
                 roam_distance, m.herd_direction, x_tile, y_tile)) {
                 m.herd_direction = 0;
-                if (formation_enemy_move_formation_to(m, x_tile, y_tile, x_tile, y_tile)) {
-                    formation_set_destination(m, x_tile, y_tile);
+                if (formation_enemy_move_formation_to(m, x_tile.v, y_tile.v, x_tile, y_tile)) {
+                    formation_set_destination(m, x_tile.v, y_tile.v);
                     if (m.figure_type == FIGURE_WOLF && city_sound_update_march_wolf()) {
                         sound_effect_play(SOUND_EFFECT_WOLF_HOWL);
                     }

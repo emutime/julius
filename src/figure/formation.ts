@@ -7,7 +7,6 @@ import { calc_bound, calc_general_direction, calc_maximum_distance, calc_percent
 import { direction_type } from 'core/direction';
 import { enemy_army_totals_add_enemy_formation, enemy_army_totals_add_legion_formation, enemy_army_totals_clear } from 'figure/enemy_army';
 import { figure, figure_get, figure_is_enemy, figure_is_herd, figure_is_legion, MAX_FIGURES } from 'figure/figure';
-import { formation } from 'figure/formation';
 import { formation_enemy_update } from 'figure/formation_enemy';
 import { formation_herd_update } from 'figure/formation_herd';
 import { formation_legion_decrease_damage, formation_legion_restore_layout, formation_legion_update } from 'figure/formation_legion';
@@ -16,6 +15,30 @@ import { enemy_type, figure_state, figure_type } from 'figure/type';
 import { GRID, map_grid_offset } from 'map/grid';
 import { sound_effect, sound_effect_play } from 'sound/effect';
 import { memset } from '../../ext/crt';
+export const enum formation_type {
+    FORMATION_COLUMN = 0,
+    FORMATION_DOUBLE_LINE_1 = 1,
+    FORMATION_DOUBLE_LINE_2 = 2,
+    FORMATION_SINGLE_LINE_1 = 3,
+    FORMATION_SINGLE_LINE_2 = 4,
+    FORMATION_TORTOISE = 5,
+    FORMATION_MOP_UP = 6,
+    FORMATION_AT_REST = 7,
+    FORMATION_ENEMY_MOB = 8,
+    FORMATION_HERD = 9,
+    FORMATION_ENEMY_DOUBLE_LINE = 10,
+    FORMATION_ENEMY_WIDE_COLUMN = 11,
+    FORMATION_ENEMY12 = 12,
+    FORMATION_MAX = 13
+};
+
+export const enum formation_attack {
+    FORMATION_ATTACK_FOOD_CHAIN = 0,
+    FORMATION_ATTACK_GOLD_STORES = 1,
+    FORMATION_ATTACK_BEST_BUILDINGS = 2,
+    FORMATION_ATTACK_TROOPS = 3,
+    FORMATION_ATTACK_RANDOM = 4
+};
 
 import FIGURE_FORT_JAVELIN = figure_type.FIGURE_FORT_JAVELIN;
 import FIGURE_FORT_MOUNTED = figure_type.FIGURE_FORT_MOUNTED;
@@ -30,14 +53,14 @@ import ENEMY_4_GOTH = enemy_type.ENEMY_4_GOTH;
 import ENEMY_8_GREEK = enemy_type.ENEMY_8_GREEK;
 import ENEMY_10_CARTHAGINIAN = enemy_type.ENEMY_10_CARTHAGINIAN;
 import FIGURE_STATE_ALIVE = figure_state.FIGURE_STATE_ALIVE;
-import FORMATION_COLUMN = formation.FORMATION_COLUMN;
-import FORMATION_DOUBLE_LINE_1 = formation.FORMATION_DOUBLE_LINE_1;
-import FORMATION_DOUBLE_LINE_2 = formation.FORMATION_DOUBLE_LINE_2;
-import FORMATION_SINGLE_LINE_1 = formation.FORMATION_SINGLE_LINE_1;
-import FORMATION_SINGLE_LINE_2 = formation.FORMATION_SINGLE_LINE_2;
-import FORMATION_TORTOISE = formation.FORMATION_TORTOISE;
-import FORMATION_HERD = formation.FORMATION_HERD;
-import FORMATION_ENEMY_DOUBLE_LINE = formation.FORMATION_ENEMY_DOUBLE_LINE;
+import FORMATION_COLUMN = formation_type.FORMATION_COLUMN;
+import FORMATION_DOUBLE_LINE_1 = formation_type.FORMATION_DOUBLE_LINE_1;
+import FORMATION_DOUBLE_LINE_2 = formation_type.FORMATION_DOUBLE_LINE_2;
+import FORMATION_SINGLE_LINE_1 = formation_type.FORMATION_SINGLE_LINE_1;
+import FORMATION_SINGLE_LINE_2 = formation_type.FORMATION_SINGLE_LINE_2;
+import FORMATION_TORTOISE = formation_type.FORMATION_TORTOISE;
+import FORMATION_HERD = formation_type.FORMATION_HERD;
+import FORMATION_ENEMY_DOUBLE_LINE = formation_type.FORMATION_ENEMY_DOUBLE_LINE;
 export const enum legion_recruit {
     LEGION_RECRUIT_NONE = 0,
     LEGION_RECRUIT_MOUNTED = 1,
@@ -546,7 +569,7 @@ function clear_figures() {
         f.max_total_damage = 0;
     }
 }
-function add_figure(formation_id: number, figure_id: number, deployed: number, damage: number, max_damage: number) {
+function add_figure(formation_id: number, figure_id: number, deployed: boolean, damage: number, max_damage: number) {
     let f: formation = formations[formation_id];
     f.num_figures++;
     f.total_damage += damage

@@ -1,13 +1,20 @@
-import { MAX_FIGURES } from 'figure/figure';
-;
-import { buffer } from 'core/buffer';
-import { direction_type } from 'core/direction';
+import { calc_general_direction, calc_maximum_distance } from 'core/calc';
 import { figure_action } from 'figure/action';
+import { figure, figure_get, figure_is_dead, figure_is_enemy, figure_is_herd, figure_is_legion, MAX_FIGURES } from 'figure/figure';
+import { formation, formation_get, formation_type, formation_update_morale_after_death } from 'figure/formation';
+import { figure_movement_advance_attack, figure_movement_can_launch_cross_country_missile } from 'figure/movement';
+import { figure_category, figure_properties, figure_properties_for_type } from 'figure/properties';
+import { figure_route_remove } from 'figure/route';
+import { figure_play_die_sound, figure_play_hit_sound } from 'figure/sound';
+import { figure_state, figure_type } from 'figure/type';
+import { difficulty_adjust_wolf_attack } from 'game/difficulty';
+import { map_figure_at } from 'map/figure';
+import { map_point, map_point_store_result } from 'map/point';
+import { sound_effect, sound_effect_play } from 'sound/effect';
 import FIGURE_ACTION_80_SOLDIER_AT_REST = figure_action.FIGURE_ACTION_80_SOLDIER_AT_REST;
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_ACTION_150_ATTACK = figure_action.FIGURE_ACTION_150_ATTACK;
 import FIGURE_ACTION_159_NATIVE_ATTACKING = figure_action.FIGURE_ACTION_159_NATIVE_ATTACKING;
-import { figure_type } from 'figure/type';
 import FIGURE_EXPLOSION = figure_type.FIGURE_EXPLOSION;
 import FIGURE_FORT_LEGIONARY = figure_type.FIGURE_FORT_LEGIONARY;
 import FIGURE_FORT_STANDARD = figure_type.FIGURE_FORT_STANDARD;
@@ -31,31 +38,11 @@ import FIGURE_SHEEP = figure_type.FIGURE_SHEEP;
 import FIGURE_WOLF = figure_type.FIGURE_WOLF;
 import FIGURE_ZEBRA = figure_type.FIGURE_ZEBRA;
 import FIGURE_SPEAR = figure_type.FIGURE_SPEAR;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_ALIVE = figure_state.FIGURE_STATE_ALIVE;
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_is_dead } from 'figure/figure';
-import { figure_is_enemy } from 'figure/figure';
-import { figure_is_legion } from 'figure/figure';
-import { figure_is_herd } from 'figure/figure';
-import { map_point } from 'map/point';
-import { map_point_store_result } from 'map/point';
-import { calc_maximum_distance } from 'core/calc';
-import { calc_general_direction } from 'core/calc';
-import { formation } from 'figure/formation';
-import FORMATION_COLUMN = formation.FORMATION_COLUMN;
-import FORMATION_DOUBLE_LINE_1 = formation.FORMATION_DOUBLE_LINE_1;
-import FORMATION_DOUBLE_LINE_2 = formation.FORMATION_DOUBLE_LINE_2;
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_get } from 'figure/formation';
-import { formation_update_morale_after_death } from 'figure/formation';
-import { figure_movement_advance_attack } from 'figure/movement';
-import { figure_movement_can_launch_cross_country_missile } from 'figure/movement';
-import { figure_category } from 'figure/properties';
+import FORMATION_COLUMN = formation_type.FORMATION_COLUMN;
+import FORMATION_DOUBLE_LINE_1 = formation_type.FORMATION_DOUBLE_LINE_1;
+import FORMATION_DOUBLE_LINE_2 = formation_type.FORMATION_DOUBLE_LINE_2;
 import FIGURE_CATEGORY_INACTIVE = figure_category.FIGURE_CATEGORY_INACTIVE;
 import FIGURE_CATEGORY_CITIZEN = figure_category.FIGURE_CATEGORY_CITIZEN;
 import FIGURE_CATEGORY_ARMED = figure_category.FIGURE_CATEGORY_ARMED;
@@ -63,17 +50,7 @@ import FIGURE_CATEGORY_HOSTILE = figure_category.FIGURE_CATEGORY_HOSTILE;
 import FIGURE_CATEGORY_CRIMINAL = figure_category.FIGURE_CATEGORY_CRIMINAL;
 import FIGURE_CATEGORY_NATIVE = figure_category.FIGURE_CATEGORY_NATIVE;
 import FIGURE_CATEGORY_ANIMAL = figure_category.FIGURE_CATEGORY_ANIMAL;
-import { figure_category } from 'figure/properties';
-import { figure_properties } from 'figure/properties';
-import { figure_properties_for_type } from 'figure/properties';
-import { figure_route_remove } from 'figure/route';
-import { figure_play_die_sound } from 'figure/sound';
-import { figure_play_hit_sound } from 'figure/sound';
-import { difficulty_adjust_wolf_attack } from 'game/difficulty';
-import { map_figure_at } from 'map/figure';
-import { sound_effect } from 'sound/effect';
 import SOUND_EFFECT_SWORD_SWING = sound_effect.SOUND_EFFECT_SWORD_SWING;
-import { sound_effect_play } from 'sound/effect';
 function is_attacking_native(f: figure) {
     return f.type == FIGURE_INDIGENOUS_NATIVE && f.action_state == FIGURE_ACTION_159_NATIVE_ATTACKING;
 }
@@ -391,14 +368,14 @@ export function figure_combat_attack_figure_at(f: figure, grid_offset: number) {
         if (++guard >= MAX_FIGURES || opponent_id <= 0) {
             break;
         }
-        figure * opponent = figure_get(opponent_id);
+        let opponent: figure = figure_get(opponent_id);
         if (opponent_id == f.id) {
             opponent_id = opponent.next_figure_id_on_same_tile;
             continue;
         }
-    
-            int opponent_category = figure_properties_for_type(opponent.type).category;
-            int attack = 0;
+
+        let opponent_category: number = figure_properties_for_type(opponent.type).category;
+        let attack: number = 0;
         if (opponent.state != FIGURE_STATE_ALIVE) {
             attack = 0;
         } else if (opponent.action_state == FIGURE_ACTION_149_CORPSE) {

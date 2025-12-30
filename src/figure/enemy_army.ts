@@ -2,7 +2,6 @@ export const MAX_ENEMY_ARMIES = 25;
 import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
 import { formation, formation_get, MAX_FORMATIONS } from 'figure/formation';
 import { map_soldier_strength_add, map_soldier_strength_clear } from 'map/soldier_strength';
-;
 export class enemy_army {
     public formation_id: number = 0;
     public layout: number = 0;

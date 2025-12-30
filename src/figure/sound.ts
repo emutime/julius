@@ -1,5 +1,4 @@
 
-;
 import { city_figures_enemies, city_figures_soldiers } from 'city/figures';
 import { city_sound_update_die_citizen, city_sound_update_die_soldier, city_sound_update_hit_axe, city_sound_update_hit_club, city_sound_update_hit_elephant, city_sound_update_hit_soldier, city_sound_update_hit_spear, city_sound_update_hit_wolf } from 'city/sound';
 import { figure, figure_is_enemy, figure_is_legion } from 'figure/figure';

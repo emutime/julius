@@ -1,5 +1,4 @@
 export const MAX_FIGURES = 1000;
-;
 import { building, building_get } from 'building/building';
 import { city_emperor_mark_soldier_killed } from 'city/emperor';
 import { buffer, buffer_read_i16, buffer_read_i32, buffer_read_i8, buffer_read_u16, buffer_read_u8, buffer_write_i16, buffer_write_i32, buffer_write_i8, buffer_write_u16, buffer_write_u8 } from 'core/buffer';
@@ -14,7 +13,7 @@ import { figure_state, figure_type } from 'figure/type';
 import { resource_type } from 'game/resource';
 import { map_figure_add, map_figure_delete } from 'map/figure';
 import { GRID, map_grid_offset } from 'map/grid';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { memset } from '../../ext/crt';
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_LABOR_SEEKER = figure_type.FIGURE_LABOR_SEEKER;
 import FIGURE_EXPLOSION = figure_type.FIGURE_EXPLOSION;

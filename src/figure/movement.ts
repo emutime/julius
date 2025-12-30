@@ -1,7 +1,24 @@
 
-;
-import { buffer } from 'core/buffer';
+import { building, building_get } from 'building/building';
+import { building_destroy_increase_enemy_damage } from 'building/destruction';
+import { building_type } from 'building/type';
+import { calc_general_direction, calc_missile_direction } from 'core/calc';
 import { direction_type } from 'core/direction';
+import { figure_combat_attack_figure_at } from 'figure/combat';
+import { figure, figure_get } from 'figure/figure';
+import { figure_route_add, figure_route_get_direction, figure_route_remove } from 'figure/route';
+import { figure_service_provide_coverage } from 'figure/service';
+import { terrain_usage } from 'figure/type';
+import { game_time_tick } from 'game/time';
+import { map_bridge_height } from 'map/bridge';
+import { map_building_at } from 'map/building';
+import { map_figure_add, map_figure_delete } from 'map/figure';
+import { GRID, map_grid_bound, map_grid_direction_delta, map_grid_offset } from 'map/grid';
+import { map_property_multi_tile_size } from 'map/property';
+import { map_random_get } from 'map/random';
+import { map_closest_road_within_radius, map_get_adjacent_road_tiles_for_roaming, map_get_diagonal_road_tiles_for_roaming } from 'map/road_access';
+import { destroyable, map_routing_get_destroyable, map_routing_is_destroyable, map_routing_is_wall_passable, map_routing_noncitizen_is_passable } from 'map/routing_terrain';
+import { map_terrain_is, terrain } from 'map/terrain';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_1_TOP_RIGHT = direction_type.DIR_1_TOP_RIGHT;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
@@ -14,56 +31,18 @@ import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;
 import DIR_FIGURE_ATTACK = direction_type.DIR_FIGURE_ATTACK;
-import { direction_type } from 'core/direction';
-import { figure_type } from 'figure/type';
-import { terrain_usage } from 'figure/type';
 import TERRAIN_USAGE_ENEMY = terrain_usage.TERRAIN_USAGE_ENEMY;
 import TERRAIN_USAGE_WALLS = terrain_usage.TERRAIN_USAGE_WALLS;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { building_type } from 'building/type';
 import BUILDING_FORT_GROUND = building_type.BUILDING_FORT_GROUND;
 import BUILDING_TRIUMPHAL_ARCH = building_type.BUILDING_TRIUMPHAL_ARCH;
 import BUILDING_GATEHOUSE = building_type.BUILDING_GATEHOUSE;
 import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
 import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
-import { building_type } from 'building/type';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_destroy_increase_enemy_damage } from 'building/destruction';
-import { calc_general_direction } from 'core/calc';
-import { calc_missile_direction } from 'core/calc';
-import { map_point } from 'map/point';
-import { figure_combat_attack_figure_at } from 'figure/combat';
-import { figure_route_add } from 'figure/route';
-import { figure_route_remove } from 'figure/route';
-import { figure_route_get_direction } from 'figure/route';
-import { figure_service_provide_coverage } from 'figure/service';
-import { game_time_tick } from 'game/time';
-import { map_bridge_height } from 'map/bridge';
-import { map_building_at } from 'map/building';
-import { map_figure_add } from 'map/figure';
-import { map_figure_delete } from 'map/figure';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_direction_delta } from 'map/grid';
-import { map_grid_bound } from 'map/grid';
-import { map_property_multi_tile_size } from 'map/property';
-import { map_random_get } from 'map/random';
-import { map_closest_road_within_radius } from 'map/road_access';
-import { map_get_adjacent_road_tiles_for_roaming } from 'map/road_access';
-import { map_get_diagonal_road_tiles_for_roaming } from 'map/road_access';
-import { map_routing_is_wall_passable } from 'map/routing_terrain';
-import { map_routing_noncitizen_is_passable } from 'map/routing_terrain';
-import { map_routing_is_destroyable } from 'map/routing_terrain';
-import { destroyable } from 'map/routing_terrain';
 import DESTROYABLE_BUILDING = destroyable.DESTROYABLE_BUILDING;
 import DESTROYABLE_AQUEDUCT_GARDEN = destroyable.DESTROYABLE_AQUEDUCT_GARDEN;
 import DESTROYABLE_WALL = destroyable.DESTROYABLE_WALL;
 import DESTROYABLE_GATEHOUSE = destroyable.DESTROYABLE_GATEHOUSE;
-import { map_routing_get_destroyable } from 'map/routing_terrain';
-import { terrain } from 'map/terrain';
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
 import TERRAIN_BUILDING = terrain.TERRAIN_BUILDING;
@@ -75,7 +54,6 @@ import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 import TERRAIN_WALL_OR_GATEHOUSE = terrain.TERRAIN_WALL_OR_GATEHOUSE;
 import TERRAIN_IMPASSABLE = terrain.TERRAIN_IMPASSABLE;
-import { map_terrain_is } from 'map/terrain';
 function advance_tick(f: figure) {
     switch (f.direction) {
         case DIR_0_TOP:
@@ -333,8 +311,7 @@ function roam_set_direction(f: figure) {
     }
     let road_offset_dir1: number = 0;
     let road_dir1: number = 0;
-    for (let i: number = 0
-let dir: number = direction; i < 8; i++) {
+    for (let i: number = 0, dir: number = direction; i < 8; i++) {
         if (dir % 2 == 0 && map_terrain_is(grid_offset + map_grid_direction_delta(dir), TERRAIN_ROAD)) {
             road_dir1 = dir;
             break
@@ -347,8 +324,7 @@ let dir: number = direction; i < 8; i++) {
     }
     let road_offset_dir2: number = 0;
     let road_dir2: number = 0;
-    for (let i: number = 0
-let dir: number = direction; i < 8; i++) {
+    for (let i: number = 0, dir: number = direction; i < 8; i++) {
         if (dir % 2 == 0 && map_terrain_is(grid_offset + map_grid_direction_delta(dir), TERRAIN_ROAD)) {
             road_dir2 = dir;
             break
@@ -430,12 +406,12 @@ export function figure_movement_roam_ticks(f: figure, num_ticks: number) {
         } else {
             f.progress_on_tile = 15;
             f.roam_random_counter++;
-                int came_from_direction = (f.previous_tile_direction + 4) % 8;
+            let came_from_direction: number = (f.previous_tile_direction + 4) % 8;
             if (figure_service_provide_coverage(f)) {
                 return;
             }
-                int road_tiles[8];
-                int adjacent_road_tiles = map_get_adjacent_road_tiles_for_roaming(f.grid_offset, road_tiles);
+            let road_tiles: number[] = new Array(8);
+            let adjacent_road_tiles: number = map_get_adjacent_road_tiles_for_roaming(f.grid_offset, road_tiles);
             if (adjacent_road_tiles == 3 && map_get_diagonal_road_tiles_for_roaming(f.grid_offset, road_tiles) >= 5) {
                 // go in the straight direction of a double-wide road
                 adjacent_road_tiles = 2;
@@ -467,7 +443,7 @@ export function figure_movement_roam_ticks(f: figure, num_ticks: number) {
                 return;
             }
             if (adjacent_road_tiles == 1) {
-                    int dir = 0;
+                let dir: number = 0;
                 do {
                     f.direction = 2 * dir;
                 } while (!road_tiles[f.direction] && dir++ < 4);
@@ -476,9 +452,9 @@ export function figure_movement_roam_ticks(f: figure, num_ticks: number) {
                     roam_set_direction(f);
                     came_from_direction = -1;
                 }
-                    // 1. continue in the same direction
-                    // 2. turn in the direction given by roam_turn_direction
-                    int dir = 0;
+                // 1. continue in the same direction
+                // 2. turn in the direction given by roam_turn_direction
+                let dir: number = 0;
                 do {
                     if (road_tiles[f.direction] && f.direction != came_from_direction) {
                         break;
@@ -495,7 +471,7 @@ export function figure_movement_roam_ticks(f: figure, num_ticks: number) {
                         roam_set_direction(f);
                         came_from_direction = -1;
                     }
-                        int dir = 0;
+                    let dir: number = 0;
                     do {
                         if (road_tiles[f.direction] && f.direction != came_from_direction) {
                             break;

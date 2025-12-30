@@ -1,11 +1,16 @@
 export const MAX_COVERAGE = 96;
-;
-import { buffer } from 'core/buffer';
-import { direction_type } from 'core/direction';
+import { building, building_get, building_main } from 'building/building';
+import { model_get_house, model_house } from 'building/model';
+import { building_type, house_level } from 'building/type';
 import { figure_action } from 'figure/action';
+import { figure } from 'figure/figure';
+import { figure_type } from 'figure/type';
+import { figure_rioter_collapse_building } from 'figuretype/crime';
+import { inventory_type } from 'game/resource';
+import { map_building_at } from 'map/building';
+import { GRID, map_grid_get_area, map_grid_offset } from 'map/grid';
 import FIGURE_ACTION_94_ENTERTAINER_ROAMING = figure_action.FIGURE_ACTION_94_ENTERTAINER_ROAMING;
 import FIGURE_ACTION_95_ENTERTAINER_RETURNING = figure_action.FIGURE_ACTION_95_ENTERTAINER_RETURNING;
-import { figure_type } from 'figure/type';
 import FIGURE_LABOR_SEEKER = figure_type.FIGURE_LABOR_SEEKER;
 import FIGURE_TAX_COLLECTOR = figure_type.FIGURE_TAX_COLLECTOR;
 import FIGURE_ENGINEER = figure_type.FIGURE_ENGINEER;
@@ -27,9 +32,6 @@ import FIGURE_SURGEON = figure_type.FIGURE_SURGEON;
 import FIGURE_MARKET_BUYER = figure_type.FIGURE_MARKET_BUYER;
 import FIGURE_PATRICIAN = figure_type.FIGURE_PATRICIAN;
 import FIGURE_MISSIONARY = figure_type.FIGURE_MISSIONARY;
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { building_type } from 'building/type';
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
 import BUILDING_THEATER = building_type.BUILDING_THEATER;
 import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;
@@ -46,33 +48,15 @@ import BUILDING_LARGE_TEMPLE_MARS = building_type.BUILDING_LARGE_TEMPLE_MARS;
 import BUILDING_LARGE_TEMPLE_VENUS = building_type.BUILDING_LARGE_TEMPLE_VENUS;
 import BUILDING_NATIVE_HUT = building_type.BUILDING_NATIVE_HUT;
 import BUILDING_NATIVE_MEETING = building_type.BUILDING_NATIVE_MEETING;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
 import HOUSE_LUXURY_PALACE = house_level.HOUSE_LUXURY_PALACE;
-import { house_level } from 'building/type';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_main } from 'building/building';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_house } from 'building/model';
-import { figure_rioter_collapse_building } from 'figuretype/crime';
-import { resource_type } from 'game/resource';
-import { inventory_type } from 'game/resource';
 import INVENTORY_WINE = inventory_type.INVENTORY_WINE;
 import INVENTORY_OIL = inventory_type.INVENTORY_OIL;
 import INVENTORY_FURNITURE = inventory_type.INVENTORY_FURNITURE;
 import INVENTORY_POTTERY = inventory_type.INVENTORY_POTTERY;
 import INVENTORY_MIN_FOOD = inventory_type.INVENTORY_MIN_FOOD;
 import INVENTORY_MAX_FOOD = inventory_type.INVENTORY_MAX_FOOD;
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { map_building_at } from 'map/building';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_get_area } from 'map/grid';
-function provide_culture(x: number, y: number, callback: void () {
+function provide_culture(x: number, y: number, callback: (b: building) => void) {
     let serviced: number = 0;
     let x_min: number
     let y_min: number
@@ -94,7 +78,7 @@ function provide_culture(x: number, y: number, callback: void () {
     }
     return serviced;
 }
-function provide_entertainment(x: number, y: number, shows: number, callback: void () {
+function provide_entertainment(x: number, y: number, shows: number, callback: (b: building, shows: number) => void) {
     let serviced: number = 0;
     let x_min: number
     let y_min: number
@@ -191,7 +175,7 @@ function provide_missionary_coverage(x: number, y: number) {
     }
     return 1;
 }
-function provide_service(x: number, y: number, data: number, callback: void () {
+function provide_service(x: number, y: number, data: any, callback: (b: building, data: any) => void): number {
     let serviced: number = 0;
     let x_min: number
     let y_min: number
@@ -213,29 +197,29 @@ function provide_service(x: number, y: number, data: number, callback: void () {
     }
     return serviced;
 }
-function engineer_coverage(b: building, max_damage_seen: number) {
+function engineer_coverage(b: building, max_damage_seen: { value: number }) {
     if (b.type == BUILDING_HIPPODROME) {
         b = building_main(b);
     }
-    if (b.damage_risk > * max_damage_seen) {
-        * max_damage_seen = b.damage_risk;
+    if (b.damage_risk > max_damage_seen.value) {
+        max_damage_seen.value = b.damage_risk;
     }
     b.damage_risk = 0;
 }
-function prefect_coverage(b: building, min_happiness_seen: number) {
+function prefect_coverage(b: building, min_happiness_seen: { value: number }) {
     if (b.type == BUILDING_HIPPODROME) {
         b = building_main(b);
     }
     b.fire_risk = 0;
-    if (b.sentiment.house_happiness < * min_happiness_seen) {
-        * min_happiness_seen = b.sentiment.house_happiness;
+    if (b.sentiment.house_happiness < min_happiness_seen.value) {
+        min_happiness_seen.value = b.sentiment.house_happiness;
     }
 }
-function tax_collector_coverage(b: building, max_tax_multiplier: number) {
+function tax_collector_coverage(b: building, max_tax_multiplier: { value: number }) {
     if (b.house_size && b.house_population > 0) {
         let tax_multiplier: number = model_get_house(b.subtype.house_level).tax_multiplier;
-        if (tax_multiplier > * max_tax_multiplier) {
-            * max_tax_multiplier = tax_multiplier;
+        if (tax_multiplier > max_tax_multiplier.value) {
+            max_tax_multiplier.value = tax_multiplier;
         }
         b.house_tax_coverage = 50;
     }
@@ -342,9 +326,9 @@ export function figure_service_provide_coverage(f: figure) {
             break
         case FIGURE_TAX_COLLECTOR:
             {
-                let max_tax_rate: number = 0;
+                let max_tax_rate = { value: 0 };
                 houses_serviced = provide_service(x, y, max_tax_rate, tax_collector_coverage);
-                f.min_max_seen = max_tax_rate;
+                f.min_max_seen = max_tax_rate.value;
                 break
             }
         case FIGURE_MARKET_TRADER:
@@ -430,10 +414,10 @@ export function figure_service_provide_coverage(f: figure) {
             break
         case FIGURE_ENGINEER:
             {
-                let max_damage: number = 0;
+                let max_damage = { value: 0 };
                 houses_serviced = provide_service(x, y, max_damage, engineer_coverage);
-                if (max_damage > f.min_max_seen) {
-                    f.min_max_seen = max_damage;
+                if (max_damage.value > f.min_max_seen) {
+                    f.min_max_seen = max_damage.value;
                 } else if (f.min_max_seen <= 10) {
                     f.min_max_seen = 0;
                 } else {
@@ -443,9 +427,9 @@ export function figure_service_provide_coverage(f: figure) {
             }
         case FIGURE_PREFECT:
             {
-                let min_happiness: number = 100;
+                let min_happiness = { value: 100 };
                 houses_serviced = provide_service(x, y, min_happiness, prefect_coverage);
-                f.min_max_seen = min_happiness;
+                f.min_max_seen = min_happiness.value;
                 break
             }
         case FIGURE_RIOTER:

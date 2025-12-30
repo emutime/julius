@@ -1,31 +1,31 @@
-import { MAX_BUILDINGS } from 'building/building';
-import { MAX_FORMATION_FIGURES } from 'figure/formation';
-import { MAX_FIGURES } from 'figure/figure';
-import { MAX_FORMATIONS } from 'figure/formation';
-;
-import { buffer } from 'core/buffer';
-import { figure_type } from 'figure/type';
+import { building, building_get, MAX_BUILDINGS } from 'building/building';
+import { building_state, building_type } from 'building/type';
+import { city_buildings_main_native_meeting_center } from 'city/buildings';
+import { city_figures_soldiers } from 'city/figures';
+import { city_god_spirit_of_mars_mark_used, city_god_spirit_of_mars_power } from 'city/gods';
+import { city_message_post, city_message_type } from 'city/message';
+import { calc_maximum_distance } from 'core/calc';
+import { random_byte } from 'core/random';
+import { figure_action } from 'figure/action';
+import { enemy_armies_clear_formations, enemy_armies_clear_ignore_roman_soldiers, enemy_army, enemy_army_calculate_roman_influence, enemy_army_get, enemy_army_get_editable, enemy_army_is_stronger_than_legions, enemy_army_total_enemy_formations } from 'figure/enemy_army';
+import { figure, figure_get, figure_is_dead, figure_is_enemy, figure_is_legion, MAX_FIGURES } from 'figure/figure';
+import { formation, formation_attack, formation_clear_monthly_counters, formation_decrease_monthly_counters, formation_get, formation_has_low_morale, formation_record_fight, formation_set_destination, formation_set_destination_building, formation_set_home, formation_state, formation_type, MAX_FORMATION_FIGURES, MAX_FORMATIONS } from 'figure/formation';
+import { formation_layout_position_x, formation_layout_position_y } from 'figure/formation_layout';
+import { figure_route_remove } from 'figure/route';
+import { figure_state, figure_type } from 'figure/type';
+import { map_figure_at, map_has_figure_at } from 'map/figure';
+import { GRID, map_grid_bound, map_grid_get_area, map_grid_is_valid_offset, map_grid_offset } from 'map/grid';
+import { map_routing_distance, map_routing_noncitizen_can_travel_over_land, map_routing_noncitizen_can_travel_through_everything } from 'map/routing';
+import { map_routing_get_closest_tile_within_range } from 'map/routing_path';
+import { map_soldier_strength_get, map_soldier_strength_get_max } from 'map/soldier_strength';
+import { map_terrain_is, terrain } from 'map/terrain';
+import { Ref } from '../../ext/crt';
 import FIGURE_FORT_JAVELIN = figure_type.FIGURE_FORT_JAVELIN;
 import FIGURE_ENEMY54_GLADIATOR = figure_type.FIGURE_ENEMY54_GLADIATOR;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_ALIVE = figure_state.FIGURE_STATE_ALIVE;
-import { formation_attack } from 'figure/formation';
 import FORMATION_ATTACK_RANDOM = formation_attack.FORMATION_ATTACK_RANDOM;
-import { formation } from 'figure/formation';
-import FORMATION_ENEMY_MOB = formation.FORMATION_ENEMY_MOB;
-import FORMATION_ENEMY12 = formation.FORMATION_ENEMY12;
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_get } from 'figure/formation';
-import { formation_record_fight } from 'figure/formation';
-import { formation_has_low_morale } from 'figure/formation';
-import { formation_decrease_monthly_counters } from 'figure/formation';
-import { formation_clear_monthly_counters } from 'figure/formation';
-import { formation_set_destination } from 'figure/formation';
-import { formation_set_destination_building } from 'figure/formation';
-import { formation_set_home } from 'figure/formation';
-import { building_type } from 'building/type';
+import FORMATION_ENEMY_MOB = formation_type.FORMATION_ENEMY_MOB;
+import FORMATION_ENEMY12 = formation_type.FORMATION_ENEMY12;
 import BUILDING_HOUSE_SMALL_TENT = building_type.BUILDING_HOUSE_SMALL_TENT;
 import BUILDING_HOUSE_LARGE_TENT = building_type.BUILDING_HOUSE_LARGE_TENT;
 import BUILDING_HOUSE_SMALL_SHACK = building_type.BUILDING_HOUSE_SMALL_SHACK;
@@ -69,77 +69,27 @@ import BUILDING_FRUIT_FARM = building_type.BUILDING_FRUIT_FARM;
 import BUILDING_OLIVE_FARM = building_type.BUILDING_OLIVE_FARM;
 import BUILDING_VINES_FARM = building_type.BUILDING_VINES_FARM;
 import BUILDING_PIG_FARM = building_type.BUILDING_PIG_FARM;
-import { building_type } from 'building/type';
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { city_buildings_main_native_meeting_center } from 'city/buildings';
-import { city_figures_soldiers } from 'city/figures';
-import { city_god_spirit_of_mars_power } from 'city/gods';
-import { city_god_spirit_of_mars_mark_used } from 'city/gods';
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
 import MESSAGE_SPIRIT_OF_MARS = city_message_type.MESSAGE_SPIRIT_OF_MARS;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_post } from 'city/message';
-import { direction_type } from 'core/direction';
-import { calc_maximum_distance } from 'core/calc';
-import { random_byte } from 'core/random';
-import { enemy_army } from 'figure/enemy_army';
-import { enemy_army_get } from 'figure/enemy_army';
-import { enemy_army_get_editable } from 'figure/enemy_army';
-import { enemy_armies_clear_ignore_roman_soldiers } from 'figure/enemy_army';
-import { enemy_armies_clear_formations } from 'figure/enemy_army';
-import { enemy_army_total_enemy_formations } from 'figure/enemy_army';
-import { enemy_army_calculate_roman_influence } from 'figure/enemy_army';
-import { enemy_army_is_stronger_than_legions } from 'figure/enemy_army';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_148_FLEEING = figure_action.FIGURE_ACTION_148_FLEEING;
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_ACTION_150_ATTACK = figure_action.FIGURE_ACTION_150_ATTACK;
 import FIGURE_ACTION_151_ENEMY_INITIAL = figure_action.FIGURE_ACTION_151_ENEMY_INITIAL;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_is_dead } from 'figure/figure';
-import { figure_is_enemy } from 'figure/figure';
-import { figure_is_legion } from 'figure/figure';
-import { formation_layout_position_x } from 'figure/formation_layout';
-import { formation_layout_position_y } from 'figure/formation_layout';
-import { figure_route_remove } from 'figure/route';
-import { map_figure_at } from 'map/figure';
-import { map_has_figure_at } from 'map/figure';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_is_valid_offset } from 'map/grid';
-import { map_grid_offset } from 'map/grid';
-import { map_grid_bound } from 'map/grid';
-import { map_grid_get_area } from 'map/grid';
-import { routed_building_type } from 'map/routing';
-import { map_routing_distance } from 'map/routing';
-import { map_routing_noncitizen_can_travel_over_land } from 'map/routing';
-import { map_routing_noncitizen_can_travel_through_everything } from 'map/routing';
-import { map_routing_get_closest_tile_within_range } from 'map/routing_path';
-import { map_soldier_strength_get } from 'map/soldier_strength';
-import { map_soldier_strength_get_max } from 'map/soldier_strength';
-import { terrain } from 'map/terrain';
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 import TERRAIN_IMPASSABLE_ENEMY = terrain.TERRAIN_IMPASSABLE_ENEMY;
-import { map_terrain_is } from 'map/terrain';
-let ENEMY_ATTACK_PRIORITY: number[] = new Array(4).fill({
-    {
+let ENEMY_ATTACK_PRIORITY: number[][] = [
+    [
         BUILDING_GRANARY, BUILDING_WAREHOUSE, BUILDING_MARKET,
         BUILDING_WHEAT_FARM, BUILDING_VEGETABLE_FARM, BUILDING_FRUIT_FARM,
         BUILDING_OLIVE_FARM, BUILDING_VINES_FARM, BUILDING_PIG_FARM, 0
-    },
-    {
+    ],
+    [
         BUILDING_SENATE, BUILDING_SENATE_1_UNUSED,
         BUILDING_FORUM_2_UNUSED, BUILDING_FORUM, 0
-    },
-    {
+    ],
+    [
         BUILDING_GOVERNORS_PALACE, BUILDING_GOVERNORS_VILLA, BUILDING_GOVERNORS_HOUSE,
         BUILDING_HOUSE_LUXURY_PALACE, BUILDING_HOUSE_LARGE_PALACE,
         BUILDING_HOUSE_MEDIUM_PALACE, BUILDING_HOUSE_SMALL_PALACE,
@@ -151,99 +101,93 @@ let ENEMY_ATTACK_PRIORITY: number[] = new Array(4).fill({
         BUILDING_HOUSE_LARGE_HOVEL, BUILDING_HOUSE_SMALL_HOVEL,
         BUILDING_HOUSE_LARGE_SHACK, BUILDING_HOUSE_SMALL_SHACK,
         BUILDING_HOUSE_LARGE_TENT, BUILDING_HOUSE_SMALL_TENT, 0
-    },
-    {
+    ],
+    [
         BUILDING_MILITARY_ACADEMY, BUILDING_PREFECTURE, 0
-    }
-});
-let RIOTER_ATTACK_PRIORITY: number[] = new Array(100).fill({
+    ]
+];
+let RIOTER_ATTACK_PRIORITY: number[] = [
     79, 78, 77, 29, 28, 27, 26, 25, 85, 84, 32, 33, 98, 65, 66, 67,
     68, 69, 87, 86, 30, 31, 47, 52, 46, 48, 53, 51, 24, 23, 22, 21,
     20, 46, 48, 114, 113, 112, 111, 110, 71, 72, 70, 74, 75, 76, 60, 61,
     62, 63, 64, 34, 36, 37, 35, 94, 19, 18, 17, 16, 15, 49, 106, 107,
     109, 108, 90, 100, 101, 102, 103, 104, 105, 55, 81, 91, 92, 14, 13, 12, 11, 10, 0
-});
-let LAYOUT_ORIENTATION_OFFSETS: number[] = new Array(13).fill({
-    {
-        { 0, 0, - 3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0},
-{ 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0 },
-{ 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0 },
-{ 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0 },
-    },
-{
-    { 0, 0, -6, 0, 6, 0, -6, 2, 6, 2, -2, 4, 4, 6, 0 },
-    { 0, 0, 0, -6, 0, 6, 2, -6, 2, 6, 4, -2, 6, 4, 0 },
-    { 0, 0, -6, 0, 6, 0, -6, -2, 6, -2, -4, -6, 4, -6, 0 },
-    { 0, 0, 0, -6, 0, 6, -2, -6, -2, 6, -6, -4, -6, 4, 0 },
-},
-{
-    { 0, 0, -6, 0, 6, 0, -6, 2, 6, 2, -2, 4, 4, 6, 0 },
-    { 0, 0, 0, -6, 0, 6, 2, -6, 2, 6, 4, -2, 6, 4, 0 },
-    { 0, 0, -6, 0, 6, 0, -6, -2, 6, -2, -4, -6, 4, -6, 0 },
-    { 0, 0, 0, -6, 0, 6, -2, -6, -2, 6, -6, -4, -6, 4, 0 },
-},
-{
-    { 0, 0, -6, 0, 6, 0, -6, 2, 6, 2, -2, 4, 4, 6, 0 },
-    { 0, 0, 0, -6, 0, 6, 2, -6, 2, 6, 4, -2, 6, 4, 0 },
-    { 0, 0, -6, 0, 6, 0, -6, -2, 6, -2, -4, -6, 4, -6, 0 },
-    { 0, 0, 0, -6, 0, 6, -2, -6, -2, 6, -6, -4, -6, 4, 0 },
-},
-{
-    { 0, 0, -6, 0, 6, 0, -6, 2, 6, 2, -2, 4, 4, 6, 0 },
-    { 0, 0, 0, -6, 0, 6, 2, -6, 2, 6, 4, -2, 6, 4, 0 },
-    { 0, 0, -6, 0, 6, 0, -6, -2, 6, -2, -4, -6, 4, -6, 0 },
-    { 0, 0, 0, -6, 0, 6, -2, -6, -2, 6, -6, -4, -6, 4, 0 },
-},
-{
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0 },
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0 },
-},
-{
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0 },
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0 },
-},
-{
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0 },
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0 },
-},
-{
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0 },
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0 },
-},
-{
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0 },
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0 },
-},
-{
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0 },
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0 },
-},
-{
-    { 0, 0, -4, 0, 4, 0, -12, 0, 12, 0, -4, 12, 4, 12, 0 },
-    { 0, 0, 0, -4, 0, 4, 0, -12, 0, 12, 12, -4, 12, 4, 0 },
-    { 0, 0, -4, 0, 4, 0, -12, 0, 12, 0, -4, -12, 4, -12, 0 },
-    { 0, 0, 0, -4, 0, 4, 0, -12, 0, 12, -12, -4, -12, 4, 0 },
-},
-{
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0 },
-    { 0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0 },
-    { 0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0 },
-}
-});
-export function formation_rioter_get_target_building(x_tile: number, y_tile: number) {
+];
+let LAYOUT_ORIENTATION_OFFSETS: number[][][] = [
+    [
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0],
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0]
+    ],
+    [
+        [0, 0, -6, 0, 6, 0, -6, 2, 6, 2, -2, 4, 4, 6, 0],
+        [0, 0, 0, -6, 0, 6, 2, -6, 2, 6, 4, -2, 6, 4, 0],
+        [0, 0, -6, 0, 6, 0, -6, -2, 6, -2, -4, -6, 4, -6, 0],
+        [0, 0, 0, -6, 0, 6, -2, -6, -2, 6, -6, -4, -6, 4, 0]
+    ],
+    [
+        [0, 0, -6, 0, 6, 0, -6, 2, 6, 2, -2, 4, 4, 6, 0],
+        [0, 0, 0, -6, 0, 6, 2, -6, 2, 6, 4, -2, 6, 4, 0],
+        [0, 0, -6, 0, 6, 0, -6, -2, 6, -2, -4, -6, 4, -6, 0],
+        [0, 0, 0, -6, 0, 6, -2, -6, -2, 6, -6, -4, -6, 4, 0]
+    ],
+    [
+        [0, 0, -6, 0, 6, 0, -6, 2, 6, 2, -2, 4, 4, 6, 0],
+        [0, 0, 0, -6, 0, 6, 2, -6, 2, 6, 4, -2, 6, 4, 0],
+        [0, 0, -6, 0, 6, 0, -6, -2, 6, -2, -4, -6, 4, -6, 0],
+        [0, 0, 0, -6, 0, 6, -2, -6, -2, 6, -6, -4, -6, 4, 0]
+    ],
+    [
+        [0, 0, -6, 0, 6, 0, -6, 2, 6, 2, -2, 4, 4, 6, 0],
+        [0, 0, 0, -6, 0, 6, 2, -6, 2, 6, 4, -2, 6, 4, 0],
+        [0, 0, -6, 0, 6, 0, -6, -2, 6, -2, -4, -6, 4, -6, 0],
+        [0, 0, 0, -6, 0, 6, -2, -6, -2, 6, -6, -4, -6, 4, 0]
+    ],
+    [
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0],
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0]
+    ],
+    [
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0],
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0]
+    ],
+    [
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0],
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0]
+    ],
+    [
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0],
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0]
+    ],
+    [
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0],
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0]
+    ],
+    [
+        [0, 0, -4, 0, 4, 0, -12, 0, 12, 0, -4, 12, 4, 12, 0],
+        [0, 0, 0, -4, 0, 4, 0, -12, 0, 12, 12, -4, 12, 4, 0],
+        [0, 0, -4, 0, 4, 0, -12, 0, 12, 0, -4, -12, 4, -12, 0],
+        [0, 0, 0, -4, 0, 4, 0, -12, 0, 12, -12, -4, -12, 4, 0]
+    ],
+    [
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, 8, 3, 8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, 8, -3, 8, 3, 0],
+        [0, 0, -3, 0, 3, 0, -8, 0, 8, 0, -3, -8, 3, -8, 0],
+        [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0]
+    ]
+];
+export function formation_rioter_get_target_building(x_tile: { value: number }, y_tile: { value: number }) {
     let best_type_index: number = 100;
     let best_building: building = null;
     for (let i: number = 1; i < MAX_BUILDINGS; i++) {
@@ -265,12 +209,12 @@ export function formation_rioter_get_target_building(x_tile: number, y_tile: num
         return 0;
     }
     if (best_building.type == BUILDING_WAREHOUSE) {
-        * x_tile = best_building.x + 1;
-        * y_tile = best_building.y;
+        x_tile.value = best_building.x + 1;
+        y_tile.value = best_building.y;
         return best_building.id + 1;
     } else {
-        * x_tile = best_building.x;
-        * y_tile = best_building.y;
+        x_tile.value = best_building.x;
+        y_tile.value = best_building.y;
         return best_building.id;
     }
 }
@@ -333,9 +277,11 @@ function set_enemy_target_building(m: formation) {
     }
 }
 function set_native_target_building(m: formation) {
-    let meeting_x: number
-    let meeting_y: number;
-    city_buildings_main_native_meeting_center(meeting_x, meeting_y);
+    let meeting_x_ref: Ref<number> = new Ref(0);
+    let meeting_y_ref: Ref<number> = new Ref(0);
+    city_buildings_main_native_meeting_center(meeting_x_ref, meeting_y_ref);
+    let meeting_x: number = meeting_x_ref.v;
+    let meeting_y: number = meeting_y_ref.v;
     let min_building: building = null;
     let min_distance: number = 10000;
     for (let i: number = 1; i < MAX_BUILDINGS; i++) {
@@ -352,7 +298,7 @@ function set_native_target_building(m: formation) {
             case BUILDING_FORT:
                 break
             default: {
-                            int distance = calc_maximum_distance(meeting_x, meeting_y, b.x, b.y);
+                let distance: number = calc_maximum_distance(meeting_x, meeting_y, b.x, b.y);
                 if (distance < min_distance) {
                     min_building = b;
                     min_distance = distance;
@@ -369,10 +315,12 @@ function approach_target(m: formation) {
         m.destination_x, m.destination_y, m.destination_building_id, 400) ||
         map_routing_noncitizen_can_travel_through_everything(m.x_home, m.y_home,
             m.destination_x, m.destination_y)) {
-        let x_tile: number
-        let y_tile: number;
+        let x_tile_ref = new Ref(0);
+        let y_tile_ref = new Ref(0);
         if (map_routing_get_closest_tile_within_range(m.x_home, m.y_home,
-            m.destination_x, m.destination_y, 8, 20, x_tile, y_tile)) {
+            m.destination_x, m.destination_y, 8, 20, x_tile_ref, y_tile_ref)) {
+            let x_tile: number = x_tile_ref.v;
+            let y_tile: number = y_tile_ref.v;
             formation_set_destination(m, x_tile, y_tile);
         }
     }
@@ -389,7 +337,7 @@ function set_figures_to_initial(m: formation) {
         }
     }
 }
-export function formation_enemy_move_formation_to(m: formation, x: number, y: number, x_tile: number, y_tile: number) {
+export function formation_enemy_move_formation_to(m: formation, x: number, y: number, x_tile: Ref<number>, y_tile: Ref<number>) {
     let base_offset: number = map_grid_offset(
         formation_layout_position_x(m.layout, 0),
         formation_layout_position_y(m.layout, 0));
@@ -431,8 +379,8 @@ export function formation_enemy_move_formation_to(m: formation, x: number, y: nu
                     }
                 }
                 if (can_move) {
-                    * x_tile = xx;
-                    * y_tile = yy;
+                    x_tile.v = xx;
+                    y_tile.v = yy;
                     return 1;
                 }
             }
@@ -578,10 +526,10 @@ function update_enemy_movement(m: formation, roman_distance: number) {
         let y_offset: number = LAYOUT_ORIENTATION_OFFSETS[layout][m.orientation / 2][2 * m.enemy_legion_index + 1] +
             army.home_y;
         map_grid_bound(x_offset, y_offset);
-        let x_tile: number
-        let y_tile: number;
+        let x_tile = new Ref(0);
+        let y_tile = new Ref(0);
         if (formation_enemy_move_formation_to(m, x_offset, y_offset, x_tile, y_tile)) {
-            formation_set_destination(m, x_tile, y_tile);
+            formation_set_destination(m, x_tile.v, y_tile.v);
         }
     } else if (advance) {
         let layout: number = army.layout;
@@ -590,14 +538,14 @@ function update_enemy_movement(m: formation, roman_distance: number) {
         let y_offset: number = LAYOUT_ORIENTATION_OFFSETS[layout][m.orientation / 2][2 * m.enemy_legion_index + 1] +
             army.destination_y;
         map_grid_bound(x_offset, y_offset);
-        let x_tile: number
-        let y_tile: number;
+        let x_tile = new Ref(0);
+        let y_tile = new Ref(0);
         if (formation_enemy_move_formation_to(m, x_offset, y_offset, x_tile, y_tile)) {
-            formation_set_destination(m, x_tile, y_tile);
+            formation_set_destination(m, x_tile.v, y_tile.v);
         }
     }
 }
-function update_enemy_formation(m: formation, roman_distance: number) {
+function update_enemy_formation(m: formation, roman_distance: Ref<number>) {
     let army: enemy_army = enemy_army_get_editable(m.invasion_id);
     if (enemy_army_is_stronger_than_legions()) {
         if (m.figure_type != FIGURE_FORT_JAVELIN) {
@@ -640,21 +588,21 @@ function update_enemy_formation(m: formation, roman_distance: number) {
         army.home_x = m.x_home;
         army.home_y = m.y_home;
         army.layout = m.layout;
-        * roman_distance = 0;
+        roman_distance.v = 0;
         map_routing_noncitizen_can_travel_over_land(m.x_home, m.y_home, -1, -1, 100000, 300);
-        let x_tile: number
-        let y_tile: number;
+        let x_tile = new Ref(0);
+        let y_tile = new Ref(0);
         if (map_soldier_strength_get_max(m.x_home, m.y_home, 16, x_tile, y_tile)) {
-            * roman_distance = 1;
+            roman_distance.v = 1;
         } else if (map_soldier_strength_get_max(m.x_home, m.y_home, 32, x_tile, y_tile)) {
-            * roman_distance = 2;
+            roman_distance.v = 2;
         }
         if (army.ignore_roman_soldiers) {
-            * roman_distance = 0;
+            roman_distance.v = 0;
         }
-        if (* roman_distance == 1) {
-            army.destination_x = x_tile;
-            army.destination_y = y_tile;
+        if (roman_distance.v == 1) {
+            army.destination_x = x_tile.v;
+            army.destination_y = y_tile.v;
             army.destination_building_id = 0;
         } else {
             set_enemy_target_building(m);
@@ -669,7 +617,7 @@ function update_enemy_formation(m: formation, roman_distance: number) {
     formation_set_destination_building(m,
         army.destination_x, army.destination_y, army.destination_building_id
     );
-    update_enemy_movement(m, * roman_distance);
+    update_enemy_movement(m, roman_distance.v);
 }
 export function formation_enemy_update() {
     if (enemy_army_total_enemy_formations() <= 0) {
@@ -677,7 +625,7 @@ export function formation_enemy_update() {
     } else {
         enemy_army_calculate_roman_influence();
         enemy_armies_clear_formations();
-        let roman_distance: number = 0;
+        let roman_distance = new Ref(0);
         for (let i: number = 1; i < MAX_FORMATIONS; i++) {
             let m: formation = formation_get(i);
             if (m.in_use && !m.is_herd && !m.is_legion) {

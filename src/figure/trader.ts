@@ -1,9 +1,8 @@
 export const MAX_TRADERS = 100;
-;
 import { buffer, buffer_read_i32, buffer_read_u8, buffer_write_i32, buffer_write_u8 } from 'core/buffer';
 import { trade_price_buy, trade_price_sell } from 'empire/trade_prices';
 import { resource_type } from 'game/resource';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { memset } from '../../ext/crt';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 export class trader {
     public bought_amount: number = 0;
