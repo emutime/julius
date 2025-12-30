@@ -1,12 +1,19 @@
 
 ;
-import { buffer } from 'core/buffer';
-import { buffer_init } from 'core/buffer';
-import { buffer_write_i32 } from 'core/buffer';
-import { buffer_read_i16 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
-import { building_type } from 'building/type';
+import { building_count_industry_active } from 'building/count';
+import { resource_trade_status } from 'city/constants';
+import { city_population } from 'city/population';
+import { city_resource_count, city_resource_export_over, city_resource_trade_status } from 'city/resource';
+import { buffer, buffer_init, buffer_read_i16, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
+import { calc_bound } from 'core/calc';
+import { localized } from 'core/dir';
+import { io_read_file_part_into_buffer } from 'core/io';
+import { log_error } from 'core/log';
+import { empire_city, empire_city_get } from 'empire/city';
+import { empire_object, empire_object_get_closest, empire_object_get_our_city, empire_object_init_cities, empire_object_load } from 'empire/object';
+import { trade_route_limit_reached } from 'empire/trade_route';
 import { resource_type } from 'game/resource';
+import { memset, Ref } from '../../ext/crt';
 import RESOURCE_NONE = resource_type.RESOURCE_NONE;
 import RESOURCE_WHEAT = resource_type.RESOURCE_WHEAT;
 import RESOURCE_VEGETABLES = resource_type.RESOURCE_VEGETABLES;
@@ -24,51 +31,22 @@ import RESOURCE_WEAPONS = resource_type.RESOURCE_WEAPONS;
 import RESOURCE_FURNITURE = resource_type.RESOURCE_FURNITURE;
 import RESOURCE_POTTERY = resource_type.RESOURCE_POTTERY;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { building_count_industry_active } from 'building/count';
-import { resource_trade_status } from 'city/constants';
 import TRADE_STATUS_IMPORT = resource_trade_status.TRADE_STATUS_IMPORT;
 import TRADE_STATUS_EXPORT = resource_trade_status.TRADE_STATUS_EXPORT;
-import { resource_trade_status } from 'city/constants';
-import { city_population } from 'city/population';
-import { resource_list } from 'city/resource';
-import { city_resource_count } from 'city/resource';
-import { city_resource_trade_status } from 'city/resource';
-import { city_resource_export_over } from 'city/resource';
-import { direction_type } from 'core/direction';
-import { calc_bound } from 'core/calc';
-import { log_error } from 'core/log';
-import { localized } from 'core/dir';
 import NOT_LOCALIZED = localized.NOT_LOCALIZED;
-import { dir_listing } from 'core/dir';
-import { io_read_file_part_into_buffer } from 'core/io';
-import { empire_city } from 'empire/city';
-import { empire_city_get } from 'empire/city';
-import { empire_object } from 'empire/object';
-import { empire_object_load } from 'empire/object';
-import { empire_object_init_cities } from 'empire/object';
-import { empire_object_get_our_city } from 'empire/object';
-import { empire_object_get_closest } from 'empire/object';
-import { trade_route_limit_reached } from 'empire/trade_route';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
+
 export const enum empire {
     EMPIRE_WIDTH = 2000,
     EMPIRE_HEIGHT = 1000,
     EMPIRE_HEADER_SIZE = 1280,
     EMPIRE_DATA_SIZE = 12800,
 }
+
+import EMPIRE_WIDTH = empire.EMPIRE_WIDTH;
+import EMPIRE_HEIGHT = empire.EMPIRE_HEIGHT;
+import EMPIRE_HEADER_SIZE = empire.EMPIRE_HEADER_SIZE;
+import EMPIRE_DATA_SIZE = empire.EMPIRE_DATA_SIZE;
+
 export class unnamed23_8 {
     public initial_scroll_x: number = 0;
     public initial_scroll_y: number = 0;
@@ -89,17 +67,18 @@ export class unnamed23_8 {
 }
 let data: unnamed23_8 = new unnamed23_8();
 export function empire_load(is_custom_scenario: number, empire_id: number) {
-    let raw_data: char[];
-    let filename: char = is_custom_scenario ? "c32.emp" : "c3.emp";
-    if (!io_read_file_part_into_buffer(filename, NOT_LOCALIZED, raw_data, 4, 32 * empire_id)) {
-        memset(raw_data, 0);
+    let raw_data_ref: Ref<ArrayBufferView> = new Ref(null);
+    let filename: string = is_custom_scenario ? "c32.emp" : "c3.emp";
+    if (!io_read_file_part_into_buffer(filename, NOT_LOCALIZED, raw_data_ref, 4, 32 * empire_id)) {
+        memset(raw_data_ref.v, 0);
     }
     let buf: buffer;
+    const raw_data = raw_data_ref.v;
     buffer_init(buf, raw_data, 4);
     data.initial_scroll_x = buffer_read_i16(buf);
     data.initial_scroll_y = buffer_read_i16(buf);
     let offset: number = EMPIRE_HEADER_SIZE + EMPIRE_DATA_SIZE * empire_id;
-    let read_size: number = io_read_file_part_into_buffer(filename, NOT_LOCALIZED, raw_data, EMPIRE_DATA_SIZE, offset);
+    let read_size: number = io_read_file_part_into_buffer(filename, NOT_LOCALIZED, raw_data_ref, EMPIRE_DATA_SIZE, offset);
     if (read_size != EMPIRE_DATA_SIZE) {
         log_error("Unable to load empire data from file", filename, 0);
         memset(raw_data, 0);
@@ -140,9 +119,9 @@ export function empire_set_viewport(width: number, height: number) {
     data.viewport_height = height;
     check_scroll_boundaries();
 }
-export function empire_adjust_scroll(x_offset: number, y_offset: number) {
-    * x_offset = * x_offset - data.scroll_x;
-    * y_offset = * y_offset - data.scroll_y;
+export function empire_adjust_scroll(x_offset: Ref<number>, y_offset: Ref<number>) {
+    x_offset.v = x_offset.v - data.scroll_x;
+    y_offset.v = y_offset.v - data.scroll_y;
 }
 export function empire_scroll_map(x: number, y: number) {
     data.scroll_x += x

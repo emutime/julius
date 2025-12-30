@@ -1,5 +1,6 @@
 
-export const enum empire_object {
+
+export const enum empire_object_type {
     EMPIRE_OBJECT_ORNAMENT = 0,
     EMPIRE_OBJECT_CITY = 1,
     EMPIRE_OBJECT_BATTLE_ICON = 3,
@@ -8,7 +9,7 @@ export const enum empire_object {
     EMPIRE_OBJECT_ROMAN_ARMY = 6,
     EMPIRE_OBJECT_ENEMY_ARMY = 7,
 }
-export const enum empire_city {
+export const enum empire_city_type {
     EMPIRE_CITY_DISTANT_ROMAN = 0,
     EMPIRE_CITY_OURS = 1,
     EMPIRE_CITY_TRADE = 2,

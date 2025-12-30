@@ -1,10 +1,14 @@
 export const MAX_OBJECTS = 200;
-;
-import { buffer } from 'core/buffer';
-import { buffer_read_u8 } from 'core/buffer';
-import { buffer_read_u16 } from 'core/buffer';
-import { buffer_read_i16 } from 'core/buffer';
-import { buffer_skip } from 'core/buffer';
+import { buffer, buffer_read_i16, buffer_read_u16, buffer_read_u8, buffer_skip } from 'core/buffer';
+import { calc_maximum_distance } from 'core/calc';
+import { image, image_get, image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { empire_city, empire_city_clear_all, empire_city_get } from 'empire/city';
+import { trade_route_init } from 'empire/trade_route';
+import { empire_city_type, empire_object_type } from 'empire/type';
+import { game_animation_should_advance } from 'game/animation';
+import { resource_type } from 'game/resource';
+import { scenario_empire_is_expanded } from 'scenario/empire';
 class expanded {
     public x: number = 0;
     public y: number = 0;
@@ -45,42 +49,21 @@ export class empire_object {
         args.length >= 13 && (this.invasion_years = args[12]);
     }
 }
-import { direction_type } from 'core/direction';
-import { calc_maximum_distance } from 'core/calc';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_EMPIRE_CITY = group_terrain.GROUP_EMPIRE_CITY;
 import GROUP_EMPIRE_CITY_TRADE = group_terrain.GROUP_EMPIRE_CITY_TRADE;
 import GROUP_EMPIRE_CITY_DISTANT_ROMAN = group_terrain.GROUP_EMPIRE_CITY_DISTANT_ROMAN;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { image_get } from 'core/image';
-import { resource_type } from 'game/resource';
 import RESOURCE_MIN = resource_type.RESOURCE_MIN;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { empire_city } from 'empire/city';
-import { empire_city_clear_all } from 'empire/city';
-import { empire_city_get } from 'empire/city';
-import { trade_route_init } from 'empire/trade_route';
-import { empire_object } from 'empire/type';
-import EMPIRE_OBJECT_CITY = empire_object.EMPIRE_OBJECT_CITY;
-import EMPIRE_OBJECT_BATTLE_ICON = empire_object.EMPIRE_OBJECT_BATTLE_ICON;
-import EMPIRE_OBJECT_LAND_TRADE_ROUTE = empire_object.EMPIRE_OBJECT_LAND_TRADE_ROUTE;
-import EMPIRE_OBJECT_SEA_TRADE_ROUTE = empire_object.EMPIRE_OBJECT_SEA_TRADE_ROUTE;
-import { empire_city } from 'empire/type';
-import EMPIRE_CITY_DISTANT_ROMAN = empire_city.EMPIRE_CITY_DISTANT_ROMAN;
-import EMPIRE_CITY_OURS = empire_city.EMPIRE_CITY_OURS;
-import EMPIRE_CITY_TRADE = empire_city.EMPIRE_CITY_TRADE;
-import EMPIRE_CITY_DISTANT_FOREIGN = empire_city.EMPIRE_CITY_DISTANT_FOREIGN;
-import EMPIRE_CITY_VULNERABLE_ROMAN = empire_city.EMPIRE_CITY_VULNERABLE_ROMAN;
-import EMPIRE_CITY_FUTURE_ROMAN = empire_city.EMPIRE_CITY_FUTURE_ROMAN;
-import { game_animation_should_advance } from 'game/animation';
-import { scenario_empire_is_expanded } from 'scenario/empire';
+import EMPIRE_OBJECT_CITY = empire_object_type.EMPIRE_OBJECT_CITY;
+import EMPIRE_OBJECT_BATTLE_ICON = empire_object_type.EMPIRE_OBJECT_BATTLE_ICON;
+import EMPIRE_OBJECT_LAND_TRADE_ROUTE = empire_object_type.EMPIRE_OBJECT_LAND_TRADE_ROUTE;
+import EMPIRE_OBJECT_SEA_TRADE_ROUTE = empire_object_type.EMPIRE_OBJECT_SEA_TRADE_ROUTE;
+import EMPIRE_CITY_DISTANT_ROMAN = empire_city_type.EMPIRE_CITY_DISTANT_ROMAN;
+import EMPIRE_CITY_OURS = empire_city_type.EMPIRE_CITY_OURS;
+import EMPIRE_CITY_TRADE = empire_city_type.EMPIRE_CITY_TRADE;
+import EMPIRE_CITY_DISTANT_FOREIGN = empire_city_type.EMPIRE_CITY_DISTANT_FOREIGN;
+import EMPIRE_CITY_VULNERABLE_ROMAN = empire_city_type.EMPIRE_CITY_VULNERABLE_ROMAN;
+import EMPIRE_CITY_FUTURE_ROMAN = empire_city_type.EMPIRE_CITY_FUTURE_ROMAN;
 export class full_empire_object {
     public in_use: number = 0;
     public city_type: number = 0;
@@ -182,56 +165,58 @@ export function empire_object_init_cities() {
             continue
         }
         let obj: full_empire_object = objects[i];
-        let city: empire_city = empire_city_get(route_index++);
-        city.in_use = 1;
-        city.type = obj.city_type;
-        city.name_id = obj.city_name_id;
-        if (obj.obj.trade_route_id < 0) {
-            obj.obj.trade_route_id = 0;
+        let city: empire_city | null = empire_city_get(route_index++);
+        if (city) {
+            city.in_use = 1;
+            city.type = obj.city_type;
+            city.name_id = obj.city_name_id;
+            if (obj.obj.trade_route_id < 0) {
+                obj.obj.trade_route_id = 0;
+            }
+            if (obj.obj.trade_route_id >= 20) {
+                obj.obj.trade_route_id = 19;
+            }
+            city.route_id = obj.obj.trade_route_id;
+            city.is_open = obj.trade_route_open;
+            city.cost_to_open = obj.trade_route_cost;
+            city.is_sea_trade = is_sea_trade_route(obj.obj.trade_route_id);
+            for (let resource: number = RESOURCE_MIN; resource < RESOURCE_MAX; resource++) {
+                city.sells_resource[resource] = 0;
+                city.buys_resource[resource] = 0;
+                if (city.type == EMPIRE_CITY_DISTANT_ROMAN
+                    || city.type == EMPIRE_CITY_DISTANT_FOREIGN
+                    || city.type == EMPIRE_CITY_VULNERABLE_ROMAN
+                    || city.type == EMPIRE_CITY_FUTURE_ROMAN) {
+                    continue
+                }
+                if (empire_object_city_sells_resource(i, resource)) {
+                    city.sells_resource[resource] = 1;
+                }
+                if (empire_object_city_buys_resource(i, resource)) {
+                    city.buys_resource[resource] = 1;
+                }
+                let amount: number;
+                switch (get_trade_amount_code(i, resource)) {
+                    case 1:
+                        amount = 15;
+                        break
+                    case 2:
+                        amount = 25;
+                        break
+                    case 3:
+                        amount = 40;
+                        break
+                    default: amount = 0
+                        break
+                }
+                trade_route_init(city.route_id, resource, amount);
+            }
+            city.trader_entry_delay = 4;
+            city.trader_figure_ids[0] = 0;
+            city.trader_figure_ids[1] = 0;
+            city.trader_figure_ids[2] = 0;
+            city.empire_object_id = i;
         }
-        if (obj.obj.trade_route_id >= 20) {
-            obj.obj.trade_route_id = 19;
-        }
-        city.route_id = obj.obj.trade_route_id;
-        city.is_open = obj.trade_route_open;
-        city.cost_to_open = obj.trade_route_cost;
-        city.is_sea_trade = is_sea_trade_route(obj.obj.trade_route_id);
-        for (let resource: number = RESOURCE_MIN; resource < RESOURCE_MAX; resource++) {
-            city.sells_resource[resource] = 0;
-            city.buys_resource[resource] = 0;
-            if (city.type == EMPIRE_CITY_DISTANT_ROMAN
-                || city.type == EMPIRE_CITY_DISTANT_FOREIGN
-                || city.type == EMPIRE_CITY_VULNERABLE_ROMAN
-                || city.type == EMPIRE_CITY_FUTURE_ROMAN) {
-                continue
-            }
-            if (empire_object_city_sells_resource(i, resource)) {
-                city.sells_resource[resource] = 1;
-            }
-            if (empire_object_city_buys_resource(i, resource)) {
-                city.buys_resource[resource] = 1;
-            }
-            let amount: number;
-            switch (get_trade_amount_code(i, resource)) {
-                case 1:
-                    amount = 15;
-                    break
-                case 2:
-                    amount = 25;
-                    break
-                case 3:
-                    amount = 40;
-                    break
-                default: amount = 0
-                    break
-            }
-            trade_route_init(city.route_id, resource, amount);
-        }
-        city.trader_entry_delay = 4;
-        city.trader_figure_ids[0] = 0;
-        city.trader_figure_ids[1] = 0;
-        city.trader_figure_ids[2] = 0;
-        city.empire_object_id = i;
     }
 }
 export function empire_object_init_distant_battle_travel_months(object_type: number) {
@@ -256,9 +241,9 @@ export function empire_object_get_our_city() {
             }
         }
     }
-    return 0;
+    return null;
 }
-export function empire_object_foreach(callback: void () {
+export function empire_object_foreach(callback: (obj: empire_object) => void) {
     for (let i: number = 0; i < MAX_OBJECTS; i++) {
         if (objects[i].in_use) {
             callback(objects[i].obj);

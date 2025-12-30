@@ -1,5 +1,4 @@
 export const MAX_CITIES = 41;
-;
 import { city_buildings_has_working_dock } from 'city/buildings';
 import { city_finance_process_construction } from 'city/finance';
 import { city_map_entry_point } from 'city/map';
@@ -8,12 +7,11 @@ import { city_trade_add_land_trade_route, city_trade_add_sea_trade_route, city_t
 import { buffer, buffer_read_i16, buffer_read_u8, buffer_skip, buffer_write_i16, buffer_write_u8 } from 'core/buffer';
 import { empire_object_set_expanded } from 'empire/object';
 import { trade_route_limit, trade_route_reset_traded } from 'empire/trade_route';
-import { empire_city } from 'empire/type';
+import { empire_city_type } from 'empire/type';
 import { figure_create_trade_caravan, figure_create_trade_ship } from 'figuretype/trader';
 import { resource_type } from 'game/resource';
 import { map_point, map_tile } from 'map/point';
 import { scenario_map_has_river_entry, scenario_map_river_entry } from 'scenario/map';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
 import RESOURCE_OLIVES = resource_type.RESOURCE_OLIVES;
 import RESOURCE_VINES = resource_type.RESOURCE_VINES;
 import RESOURCE_WINE = resource_type.RESOURCE_WINE;
@@ -56,22 +54,24 @@ export class empire_city {
 }
 import MESSAGE_CAT_NO_WORKING_DOCK = message_category.MESSAGE_CAT_NO_WORKING_DOCK;
 import MESSAGE_NO_WORKING_DOCK = city_message_type.MESSAGE_NO_WORKING_DOCK;
-import EMPIRE_CITY_DISTANT_ROMAN = empire_city.EMPIRE_CITY_DISTANT_ROMAN;
-import EMPIRE_CITY_OURS = empire_city.EMPIRE_CITY_OURS;
-import EMPIRE_CITY_TRADE = empire_city.EMPIRE_CITY_TRADE;
-import EMPIRE_CITY_FUTURE_TRADE = empire_city.EMPIRE_CITY_FUTURE_TRADE;
-import EMPIRE_CITY_DISTANT_FOREIGN = empire_city.EMPIRE_CITY_DISTANT_FOREIGN;
-import EMPIRE_CITY_VULNERABLE_ROMAN = empire_city.EMPIRE_CITY_VULNERABLE_ROMAN;
-import EMPIRE_CITY_FUTURE_ROMAN = empire_city.EMPIRE_CITY_FUTURE_ROMAN;
+import EMPIRE_CITY_DISTANT_ROMAN = empire_city_type.EMPIRE_CITY_DISTANT_ROMAN;
+import EMPIRE_CITY_OURS = empire_city_type.EMPIRE_CITY_OURS;
+import EMPIRE_CITY_TRADE = empire_city_type.EMPIRE_CITY_TRADE;
+import EMPIRE_CITY_FUTURE_TRADE = empire_city_type.EMPIRE_CITY_FUTURE_TRADE;
+import EMPIRE_CITY_DISTANT_FOREIGN = empire_city_type.EMPIRE_CITY_DISTANT_FOREIGN;
+import EMPIRE_CITY_VULNERABLE_ROMAN = empire_city_type.EMPIRE_CITY_VULNERABLE_ROMAN;
+import EMPIRE_CITY_FUTURE_ROMAN = empire_city_type.EMPIRE_CITY_FUTURE_ROMAN;
 let cities: empire_city[] = new Array(MAX_CITIES);
 export function empire_city_clear_all() {
-    memset(cities, 0);
+    for (let i: number = 0; i < MAX_CITIES; i++) {
+        cities[i] = new empire_city(0, 0, 0, 0, 0, new Array(RESOURCE_MAX).fill(0), new Array(RESOURCE_MAX).fill(0), 0, 0, 0, 0, new Array(3).fill(0));
+    }
 }
 export function empire_city_get(city_id: number) {
     if (city_id >= 0 && city_id < MAX_CITIES) {
         return cities[city_id];
     } else {
-        return 0;
+        return null;
     }
 }
 export function empire_city_get_route_id(city_id: number) {
