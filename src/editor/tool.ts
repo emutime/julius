@@ -1,7 +1,50 @@
 
-import { map_point } from 'map/point';
+import { building, building_create } from 'building/building';
+import { building_construction_place_road } from 'building/construction_routed';
+import { building_type } from 'building/type';
+import { city_warning_show, warning_type } from 'city/warning';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { group_editor } from 'core/image_group_editor';
+import { random_byte } from 'core/random';
+import { editor_tool_can_place_access_ramp, editor_tool_can_place_building, editor_tool_can_place_flag } from 'editor/tool_restriction';
+import { game_undo_restore_map, game_undo_start_build } from 'game/undo';
+import { map_building_tiles_add, map_building_tiles_remove } from 'map/building_tiles';
+import { map_elevation_at, map_elevation_remove_cliffs, map_elevation_set } from 'map/elevation';
+import { map_grid_delta, map_grid_is_inside } from 'map/grid';
+import { map_image_context_reset_elevation, map_image_context_reset_water } from 'map/image_context';
 import { map_tile } from 'map/point';
-import { tool_type } from 'editor/tool';
+import { map_property_set_multi_tile_size, map_property_set_multi_tile_xy } from 'map/property';
+import { map_routing_update_land } from 'map/routing_terrain';
+import { map_terrain_get, map_terrain_set, terrain } from 'map/terrain';
+import { map_tiles_update_all_elevation_editor, map_tiles_update_all_empty_land, map_tiles_update_all_meadow, map_tiles_update_all_rocks, map_tiles_update_region_empty_land, map_tiles_update_region_meadow, map_tiles_update_region_shrub, map_tiles_update_region_trees, map_tiles_update_region_water } from 'map/tiles';
+import { scenario_editor_earthquake_severity } from 'scenario/editor_events';
+import { scenario_editor_set_earthquake_point, scenario_editor_set_entry_point, scenario_editor_set_exit_point, scenario_editor_set_fishing_point, scenario_editor_set_herd_point, scenario_editor_set_invasion_point, scenario_editor_set_river_entry_point, scenario_editor_set_river_exit_point, scenario_editor_updated_terrain } from 'scenario/editor_map';
+import { widget_minimap_invalidate } from 'widget/minimap';
+import { Ref } from '../../ext/crt';
+export const enum tool_type {
+    TOOL_GRASS = 0,
+    TOOL_TREES = 1,
+    TOOL_WATER = 2,
+    TOOL_EARTHQUAKE_POINT = 3,
+    TOOL_SHRUB = 4,
+    TOOL_ROCKS = 5,
+    TOOL_MEADOW = 6,
+    TOOL_ACCESS_RAMP = 9,
+    TOOL_ROAD = 10,
+    TOOL_RAISE_LAND = 11,
+    TOOL_LOWER_LAND = 12,
+    TOOL_INVASION_POINT = 13,
+    TOOL_ENTRY_POINT = 15,
+    TOOL_EXIT_POINT = 16,
+    TOOL_RIVER_ENTRY_POINT = 18,
+    TOOL_RIVER_EXIT_POINT = 19,
+    TOOL_NATIVE_HUT = 21,
+    TOOL_NATIVE_CENTER = 22,
+    TOOL_NATIVE_FIELD = 23,
+    TOOL_FISHING_POINT = 24,
+    TOOL_HERD_POINT = 25
+};
 import TOOL_GRASS = tool_type.TOOL_GRASS;
 import TOOL_TREES = tool_type.TOOL_TREES;
 import TOOL_WATER = tool_type.TOOL_WATER;
@@ -23,58 +66,13 @@ import TOOL_NATIVE_CENTER = tool_type.TOOL_NATIVE_CENTER;
 import TOOL_NATIVE_FIELD = tool_type.TOOL_NATIVE_FIELD;
 import TOOL_FISHING_POINT = tool_type.TOOL_FISHING_POINT;
 import TOOL_HERD_POINT = tool_type.TOOL_HERD_POINT;;
-import { buffer } from 'core/buffer';
-import { routed_building_type } from 'map/routing';
-import { building_construction_place_road } from 'building/construction_routed';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_TERRAIN_ACCESS_RAMP = group_terrain.GROUP_TERRAIN_ACCESS_RAMP;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { group_editor } from 'core/image_group_editor';
 import GROUP_EDITOR_BUILDING_CROPS = group_editor.GROUP_EDITOR_BUILDING_CROPS;
 import GROUP_EDITOR_BUILDING_NATIVE = group_editor.GROUP_EDITOR_BUILDING_NATIVE;
-import { random_byte } from 'core/random';
-import { editor_tool_can_place_flag } from 'editor/tool_restriction';
-import { editor_tool_can_place_access_ramp } from 'editor/tool_restriction';
-import { editor_tool_can_place_building } from 'editor/tool_restriction';
-import { building_type } from 'building/type';
 import BUILDING_ROAD = building_type.BUILDING_ROAD;
 import BUILDING_NATIVE_HUT = building_type.BUILDING_NATIVE_HUT;
 import BUILDING_NATIVE_MEETING = building_type.BUILDING_NATIVE_MEETING;
 import BUILDING_NATIVE_CROPS = building_type.BUILDING_NATIVE_CROPS;
-import { building_type } from 'building/type';
-import { building } from 'building/building';
-import { building_create } from 'building/building';
-import { game_undo_restore_map } from 'game/undo';
-import { game_undo_start_build } from 'game/undo';
-import { map_building_tiles_add } from 'map/building_tiles';
-import { map_building_tiles_remove } from 'map/building_tiles';
-import { map_elevation_at } from 'map/elevation';
-import { map_elevation_set } from 'map/elevation';
-import { map_elevation_remove_cliffs } from 'map/elevation';
-import { GRID } from 'map/grid';
-import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_delta } from 'map/grid';
-import { map_grid_is_inside } from 'map/grid';
-import { terrain_image } from 'map/image_context';
-import { map_image_context_reset_water } from 'map/image_context';
-import { map_image_context_reset_elevation } from 'map/image_context';
-import { map_property_set_multi_tile_xy } from 'map/property';
-import { map_property_set_multi_tile_size } from 'map/property';
-import { map_routing_update_land } from 'map/routing_terrain';
-import { map_tiles_update_all_rocks } from 'map/tiles';
-import { map_tiles_update_region_trees } from 'map/tiles';
-import { map_tiles_update_region_shrub } from 'map/tiles';
-import { map_tiles_update_all_empty_land } from 'map/tiles';
-import { map_tiles_update_region_empty_land } from 'map/tiles';
-import { map_tiles_update_all_meadow } from 'map/tiles';
-import { map_tiles_update_region_meadow } from 'map/tiles';
-import { map_tiles_update_region_water } from 'map/tiles';
-import { map_tiles_update_all_elevation_editor } from 'map/tiles';
-import { terrain } from 'map/terrain';
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_ROCK = terrain.TERRAIN_ROCK;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
@@ -86,33 +84,11 @@ import TERRAIN_AQUEDUCT = terrain.TERRAIN_AQUEDUCT;
 import TERRAIN_ELEVATION = terrain.TERRAIN_ELEVATION;
 import TERRAIN_ACCESS_RAMP = terrain.TERRAIN_ACCESS_RAMP;
 import TERRAIN_MEADOW = terrain.TERRAIN_MEADOW;
-import TERRAIN_WALL = terrain.TERRAIN_WALL;
-import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_get } from 'map/terrain';
-import { map_terrain_set } from 'map/terrain';
-import { scenario_editor_earthquake_severity } from 'scenario/editor_events';
-import { scenario_editor_set_entry_point } from 'scenario/editor_map';
-import { scenario_editor_set_exit_point } from 'scenario/editor_map';
-import { scenario_editor_set_river_entry_point } from 'scenario/editor_map';
-import { scenario_editor_set_river_exit_point } from 'scenario/editor_map';
-import { scenario_editor_set_herd_point } from 'scenario/editor_map';
-import { scenario_editor_set_fishing_point } from 'scenario/editor_map';
-import { scenario_editor_set_invasion_point } from 'scenario/editor_map';
-import { scenario_editor_set_earthquake_point } from 'scenario/editor_map';
-import { scenario_editor_updated_terrain } from 'scenario/editor_map';
-import { warning_type } from 'city/warning';
 import WARNING_EDITOR_CANNOT_PLACE = warning_type.WARNING_EDITOR_CANNOT_PLACE;
 import WARNING_EDITOR_NO_EARTHQUAKE_SCHEDULED = warning_type.WARNING_EDITOR_NO_EARTHQUAKE_SCHEDULED;
-import { warning_type } from 'city/warning';
-import { city_warning_show } from 'city/warning';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { widget_minimap_invalidate } from 'widget/minimap';
+
+const TERRAIN_PAINT_MASK = ~(TERRAIN_TREE | TERRAIN_ROCK | TERRAIN_WATER | TERRAIN_BUILDING | TERRAIN_SHRUB | TERRAIN_GARDEN | TERRAIN_ROAD | TERRAIN_MEADOW)
+
 export class unnamed26_8 {
     public active: number = 0;
     public type: tool_type = null;
@@ -160,7 +136,7 @@ export function editor_tool_brush_size() {
 export function editor_tool_set_brush_size(size: number) {
     data.brush_size = size;
 }
-export function editor_tool_foreach_brush_tile(callback: void (, user_data: void) {
+export function editor_tool_foreach_brush_tile(callback: (user_data: map_tile, dx: number, dy: number) => void, user_data: map_tile) {
     if (data.type == TOOL_RAISE_LAND || data.type == TOOL_LOWER_LAND) {
         for (let dy: number = -1; dy <= 1; dy++) {
             for (let dx: number = -1; dx <= 1; dx++) {
@@ -190,7 +166,7 @@ export function editor_tool_start_use(tile: map_tile) {
     }
     data.build_in_progress = 1;
     data.start_elevation = map_elevation_at(tile.grid_offset);
-    data.start_tile = * tile;
+    data.start_tile = tile;
     if (data.type == TOOL_ROAD) {
         game_undo_start_build(BUILDING_ROAD);
         map_routing_update_land();
@@ -211,7 +187,7 @@ export function editor_tool_is_brush() {
             return 0
     }
 }
-function raise_land_tile(x: number, y: number, grid_offset: number, terrain: number) {
+function raise_land_tile(_x: number, _y: number, grid_offset: number, terrain: number) {
     let elevation: number = map_elevation_at(grid_offset);
     if (elevation < 5 && elevation == data.start_elevation) {
         if (!(terrain & (TERRAIN_ACCESS_RAMP | TERRAIN_ELEVATION))) {
@@ -222,7 +198,7 @@ function raise_land_tile(x: number, y: number, grid_offset: number, terrain: num
     }
     return terrain;
 }
-function lower_land_tile(x: number, y: number, grid_offset: number, terrain: number) {
+function lower_land_tile(_x: number, _y: number, grid_offset: number, terrain: number) {
     if (terrain & TERRAIN_ACCESS_RAMP) {
         terrain |= TERRAIN_ELEVATION
         terrain &= ~(TERRAIN_ACCESS_RAMP)
@@ -238,8 +214,8 @@ function lower_land_tile(x: number, y: number, grid_offset: number, terrain: num
     }
     return terrain;
 }
-function add_terrain(tile_data: void, dx: number, dy: number) {
-    let tile: map_tile = (const map_tile *) tile_data;
+function add_terrain(tile_data: map_tile, dx: number, dy: number) {
+    let tile: map_tile = tile_data;
     let x: number = tile.x + dx;
     let y: number = tile.y + dy;
     if (!map_grid_is_inside(x, y, 1)) {
@@ -363,7 +339,7 @@ export function editor_tool_update_use(tile: map_tile) {
     widget_minimap_invalidate();
 }
 function place_earthquake_flag(tile: map_tile) {
-    let warning: number = 0;
+    let warning = new Ref(0);
     if (editor_tool_can_place_flag(data.type, tile, warning)) {
         if (scenario_editor_earthquake_severity()) {
             scenario_editor_set_earthquake_point(tile.x, tile.y);
@@ -371,23 +347,23 @@ function place_earthquake_flag(tile: map_tile) {
             city_warning_show(WARNING_EDITOR_NO_EARTHQUAKE_SCHEDULED);
         }
     } else {
-        city_warning_show(warning);
+        city_warning_show(warning.v);
     }
 }
-function place_flag(tile: map_tile, update: void () {
-    let warning: number = 0;
+function place_flag(tile: map_tile, update: (x: number, y: number) => void) {
+    let warning = new Ref(0);
     if (editor_tool_can_place_flag(data.type, tile, warning)) {
         update(tile.x, tile.y);
     } else {
-        city_warning_show(warning);
+        city_warning_show(warning.v);
     }
 }
-function place_flag_with_id(tile: map_tile, update: void () {
-    let warning: number = 0;
+function place_flag_with_id(tile: map_tile, update: (id: number, x: number, y: number) => void) {
+    let warning = new Ref(0);
     if (editor_tool_can_place_flag(data.type, tile, warning)) {
         update(data.id, tile.x, tile.y);
     } else {
-        city_warning_show(warning);
+        city_warning_show(warning.v);
     }
 }
 function place_building(tile: map_tile) {
@@ -413,7 +389,7 @@ function place_building(tile: map_tile) {
         default:
             return
     }
-    if (editor_tool_can_place_building(tile, size * size, 0)) {
+    if (editor_tool_can_place_building(tile, size * size, { value: [] })) {
         let b: building = building_create(type, tile.x, tile.y);
         map_building_tiles_add(b.id, tile.x, tile.y, size, image_id, TERRAIN_BUILDING);
         scenario_editor_updated_terrain();
@@ -432,7 +408,7 @@ function update_terrain_after_elevation_changes() {
     scenario_editor_updated_terrain();
 }
 function place_access_ramp(tile: map_tile) {
-    let orientation: number = 0;
+    let orientation = new Ref(0);
     if (editor_tool_can_place_access_ramp(tile, orientation)) {
         let terrain_mask: number = ~(TERRAIN_ROCK | TERRAIN_WATER | TERRAIN_BUILDING | TERRAIN_GARDEN | TERRAIN_AQUEDUCT);
         for (let dy: number = 0; dy < 2; dy++) {
@@ -442,7 +418,7 @@ function place_access_ramp(tile: map_tile) {
             }
         }
         map_building_tiles_add(0, tile.x, tile.y, 2,
-            image_group(GROUP_TERRAIN_ACCESS_RAMP) + orientation, TERRAIN_ACCESS_RAMP);
+            image_group(GROUP_TERRAIN_ACCESS_RAMP) + orientation.v, TERRAIN_ACCESS_RAMP);
         update_terrain_after_elevation_changes();
         scenario_editor_updated_terrain();
     } else {
