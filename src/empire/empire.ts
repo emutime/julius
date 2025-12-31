@@ -142,15 +142,15 @@ export function empire_select_object(x: number, y: number) {
 export function empire_can_export_resource_to_city(city_id: number, resource: number) {
     let city: empire_city = empire_city_get(city_id);
     if (city_id && trade_route_limit_reached(city.route_id, resource)) {
-        return 0;
+        return false;
     }
     if (city_resource_count(resource) <= city_resource_export_over(resource)) {
-        return 0;
+        return false;
     }
     if (city_id == 0 || city.buys_resource[resource]) {
         return city_resource_trade_status(resource) == TRADE_STATUS_EXPORT;
     } else {
-        return 0;
+        return false;
     }
 }
 function get_max_stock_for_population() {
@@ -168,13 +168,13 @@ function get_max_stock_for_population() {
 export function empire_can_import_resource_from_city(city_id: number, resource: number) {
     let city: empire_city = empire_city_get(city_id);
     if (!city.sells_resource[resource]) {
-        return 0;
+        return false;
     }
     if (city_resource_trade_status(resource) != TRADE_STATUS_IMPORT) {
-        return 0;
+        return false;
     }
     if (trade_route_limit_reached(city.route_id, resource)) {
-        return 0;
+        return false;
     }
     let in_stock: number = city_resource_count(resource);
     let max_in_stock: number = 0;
@@ -213,7 +213,7 @@ export function empire_can_import_resource_from_city(city_id: number, resource: 
     if (finished_good) {
         max_in_stock = 2 + 2 * building_count_industry_active(finished_good);
     }
-    return in_stock < max_in_stock ? 1 : 0;
+    return in_stock < max_in_stock ? true : false;
 }
 export function empire_save_state(buf: buffer) {
     buffer_write_i32(buf, data.scroll_x);
