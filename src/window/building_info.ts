@@ -549,7 +549,7 @@ function init(grid_offset: number) {
 for (let i: number = 0; i < 9 && context.figure.count < 7; i++) {
     let figure_id: number = map_figure_at(grid_offset + FIGURE_OFFSETS[i]);
     while (figure_id > 0 && context.figure.count < 7) {
-        figure * f = figure_get(figure_id);
+        let f: figure = figure_get(figure_id);
         if (f.state != FIGURE_STATE_DEAD &&
             f.action_state != FIGURE_ACTION_149_CORPSE) {
             switch (f.type) {

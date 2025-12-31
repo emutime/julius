@@ -1,21 +1,11 @@
 
 ;
-import { buffer } from 'core/buffer';
-import { direction_type } from 'core/direction';
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_is_legion } from 'figure/figure';
-import { map_figure_at } from 'map/figure';
-import { map_has_figure_at } from 'map/figure';
-import { GRID } from 'map/grid';
-import GRID_SIZE = GRID.GRID_SIZE;
-import { grid_u8 } from 'map/grid';
-import { map_grid_offset } from 'map/grid';
-import { map_grid_get_area } from 'map/grid';
-import { map_grid_clear_u8 } from 'map/grid';
-import { routed_building_type } from 'map/routing';
+import { figure_get, figure_is_legion } from 'figure/figure';
+import { map_figure_at, map_has_figure_at } from 'map/figure';
+import { GRID, grid_u8, map_grid_clear_u8, map_grid_get_area, map_grid_offset } from 'map/grid';
 import { map_routing_distance } from 'map/routing';
+import { Ref } from '../../ext/crt';
+import GRID_SIZE = GRID.GRID_SIZE;
 let strength: grid_u8;
 export function map_soldier_strength_clear() {
     map_grid_clear_u8(strength.items);
@@ -41,7 +31,7 @@ export function map_soldier_strength_add(x: number, y: number, radius: number, a
 export function map_soldier_strength_get(grid_offset: number) {
     return strength.items[grid_offset];
 }
-export function map_soldier_strength_get_max(x: number, y: number, radius: number, out_x: number, out_y: number) {
+export function map_soldier_strength_get_max(x: number, y: number, radius: number, out_x: Ref<number>, out_y: Ref<number>) {
     let x_min: number
     let y_min: number
     let x_max: number
@@ -61,8 +51,8 @@ export function map_soldier_strength_get_max(x: number, y: number, radius: numbe
         }
     }
     if (max_value > 0) {
-        * out_x = max_tile_x;
-        * out_y = max_tile_y;
+        out_x.v = max_tile_x;
+        out_y.v = max_tile_y;
         return 1;
     }
     return 0;

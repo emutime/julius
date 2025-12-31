@@ -1,6 +1,5 @@
-
-;
 import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
+import { scenario_t } from './data';
 export let scenario: scenario_t = new scenario_t();
 let max_game_year: number;
 export function scenario_criteria_population_enabled() {

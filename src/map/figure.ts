@@ -79,8 +79,8 @@ export function map_figure_foreach_until(grid_offset: number, callback: int () {
     if (figures.items[grid_offset] > 0) {
         let figure_id: number = figures.items[grid_offset];
         while (figure_id) {
-            figure * f = figure_get(figure_id);
-                    int result = callback(f);
+            let f: figure = figure_get(figure_id);
+            let result: number = callback(f);
             if (result) {
                 return result;
             }

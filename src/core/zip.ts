@@ -396,14 +396,14 @@ function pk_implode_data(buf: pk_comp_buffer) {
     pk_memset(buf.output_data[2], 0, 2048);
     buf.current_output_bits_used = 0;
     while (!eof) {
-            int bytes_read = pk_implode_fill_input_buffer(buf, 4096);
+        let bytes_read: number = pk_implode_fill_input_buffer(buf, 4096);
         if (bytes_read != 4096) {
             eof = 1;
             if (!bytes_read && has_leftover_data == 0) {
                 break;
             }
         }
-            int input_end = buf.dictionary_size + bytes_read; // keep 516 bytes leftover
+        let input_end: number = buf.dictionary_size + bytes_read; // keep 516 bytes leftover
         if (eof) {
             input_end += 516; // eat the 516 leftovers anyway
         }
@@ -422,9 +422,9 @@ function pk_implode_data(buf: pk_comp_buffer) {
         }
 
         while (input_ptr < input_end) {
-                int write_literal = 0;
-                int write_copy = 0;
-                struct pk_copy_length_offset copy;
+            let write_literal: number = 0;
+            let write_copy: number = 0;
+            let copy: pk_copy_length_offset;
             pk_implode_determine_copy(buf, input_ptr, copy);
 
             if (copy.length == 0) {
@@ -592,8 +592,8 @@ function pk_explode_data(buf: pk_decomp_buffer) {
         }
         if (token >= 256) {
                 // copy offset
-                int length = token - 254;
-                int offset = pk_explode_get_copy_offset(buf, length);
+                let length: number = token - 254;
+                let offset: number = pk_explode_get_copy_offset(buf, length);
             if (!offset) {
                 token = PK_ERROR_VALUE;
                 break;

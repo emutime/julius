@@ -72,7 +72,7 @@ import { _vsscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.
 import { vsscanf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
 import { file_open } from 'core/file';
 import { file_close } from 'core/file';
-import { Ptr } from '../../ext/crt';
+import { Ptr, Ref } from '../../ext/crt';
 export function io_read_file_into_buffer(filepath: string, localizable: number, buffer: Uint8Array, max_size: number) {
     let cased_file = dir_get_file(filepath, localizable);
     if (!cased_file) {
@@ -92,8 +92,8 @@ export function io_read_file_into_buffer(filepath: string, localizable: number, 
     file_close(fp);
     return bytes_read;
 }
-export function io_read_file_part_into_buffer(filepath: char, localizable: number, buffer: void, size: number, offset_in_file: number) {
-    let cased_file: char = dir_get_file(filepath, localizable);
+export function io_read_file_part_into_buffer(filepath: string, localizable: number, buffer: Ref<ArrayBufferView>, size: number, offset_in_file: number) {
+    let cased_file: string = dir_get_file(filepath, localizable);
     if (!cased_file) {
         return 0;
     }
@@ -108,8 +108,8 @@ export function io_read_file_part_into_buffer(filepath: char, localizable: numbe
     }
     return bytes_read;
 }
-export function io_write_buffer_to_file(filepath: char, buffer: void, size: number) {
-    let cased_file: char = dir_get_file(filepath, NOT_LOCALIZED);
+export function io_write_buffer_to_file(filepath: string, buffer: Uint8Array, size: number) {
+    let cased_file: string = dir_get_file(filepath, NOT_LOCALIZED);
     if (!cased_file) {
         cased_file = filepath;
     }

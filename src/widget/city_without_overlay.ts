@@ -403,13 +403,13 @@ function draw_top(x: number, y: number, grid_offset: number) {
 function draw_figures(x: number, y: number, grid_offset: number) {
     let figure_id: number = map_figure_at(grid_offset);
     while (figure_id) {
-        figure * f = figure_get(figure_id);
+        let f: figure = figure_get(figure_id);
         if (figure_id == draw_context.selected_figure_id) {
             if (!f.is_ghost || f.height_adjusted_ticks) {
                 city_draw_selected_figure(f, x, y, draw_context.selected_figure_coord);
             }
         } else if (!f.is_ghost) {
-                int highlight = f.formation_id > 0 && f.formation_id == draw_context.highlighted_formation;
+            let highlight: number = f.formation_id > 0 && f.formation_id == draw_context.highlighted_formation;
             city_draw_figure(f, x, y, highlight);
         }
         figure_id = f.next_figure_id_on_same_tile;
@@ -566,7 +566,7 @@ function draw_animation(x: number, y: number, grid_offset: number) {
 function draw_elevated_figures(x: number, y: number, grid_offset: number) {
     let figure_id: number = map_figure_at(grid_offset);
     while (figure_id > 0) {
-        figure * f = figure_get(figure_id);
+        let f: figure = figure_get(figure_id);
         if ((f.use_cross_country && !f.is_ghost) || f.height_adjusted_ticks) {
             city_draw_figure(f, x, y, 0);
         }

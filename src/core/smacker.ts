@@ -737,7 +737,7 @@ function decode_palette(s: smacker, data: number, length: number) {
     while (index < length && color_index < MAX_PALETTE) {
         if (data[index] & 0x80) {
                 // Copy from same position in previous palette
-                int num_entries = 1 + (data[index] & 0x7f);
+                let num_entries: number = 1 + (data[index] & 0x7f);
             if (num_entries + color_index > MAX_PALETTE) {
                 log_error("SMK: invalid palette data", 0, 0);
                 return 0;
@@ -747,8 +747,8 @@ function decode_palette(s: smacker, data: number, length: number) {
             index++;
         } else if (data[index] & 0x40) {
                 // Copy from 'offset' position in previous palette
-                int num_entries = 1 + (data[index] & 0x3f);
-                int offset = data[index + 1];
+                let num_entries: number = 1 + (data[index] & 0x3f);
+                let offset: number = data[index + 1];
             if (num_entries + color_index > MAX_PALETTE || num_entries + offset > MAX_PALETTE) {
                 log_error("SMK: invalid palette data", 0, 0);
                 return 0;

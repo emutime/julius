@@ -190,12 +190,12 @@ export function config_load() {
         while (size > 0 && (line[size - 1] == '\n' || line[size - 1] == '\r')) {
             line[--size] = 0;
         }
-        char * equals = strchr(line, '=');
+        let equals: string = strchr(line, '=');
         if (equals) {
                 * equals = 0;
-            for (int i = 0; i < CONFIG_MAX_ENTRIES; i++) {
+            for (let i: number = 0; i < CONFIG_MAX_ENTRIES; i++) {
                 if (strcmp(ini_keys[i], line) == 0) {
-                        int value = atoi(equals[1]);
+                    let value: number = atoi(equals[1]);
                     log_info("Config key", ini_keys[i], value);
                     values[i] = value;
                     break;

@@ -305,7 +305,7 @@ export function empire_city_generate_trader() {
         }
         if (cities[i].is_sea_trade) {
             if (!city_buildings_has_working_dock()) {
-                city_message_post_with_message_delay(MESSAGE_CAT_NO_WORKING_DOCK, 1, MESSAGE_NO_WORKING_DOCK, 384);
+                city_message_post_with_message_delay(MESSAGE_CAT_NO_WORKING_DOCK, true, MESSAGE_NO_WORKING_DOCK, 384);
                 continue
             }
             if (!scenario_map_has_river_entry()) {

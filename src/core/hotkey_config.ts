@@ -430,13 +430,13 @@ function load_file() {
         while (size > 0 && (line[size - 1] == '\n' || line[size - 1] == '\r')) {
             line[--size] = 0;
         }
-        char * equals = strchr(line, '=');
+        let equals: string = strchr(line, '=');
         if (!equals) {
             continue;
         }
             * equals = 0;
-        char * value = equals[1];
-        for (int i = 0; i < HOTKEY_MAX_ITEMS; i++) {
+        let value: string = equals[1];
+        for (let i: number = 0; i < HOTKEY_MAX_ITEMS; i++) {
             if (strcmp(ini_keys[i], line) == 0) {
                     hotkey_mapping mapping;
                 if (key_combination_from_name(value, mapping.key, mapping.modifiers)) {

@@ -66,7 +66,7 @@ import { platform_file_manager_compare_filename } from 'platform/file_manager';
 import { platform_file_manager_open_file } from 'platform/file_manager';
 import { platform_file_manager_close_file } from 'platform/file_manager';
 import { platform_file_manager_remove_file } from 'platform/file_manager';
-export function file_open(filename: char, mode: char) {
+export function file_open(filename: string, mode: string) {
     return platform_file_manager_open_file(filename, mode);
 }
 export function file_close(stream: FILE) {

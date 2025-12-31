@@ -5,6 +5,7 @@ import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
 import { GRID, map_grid_offset } from 'map/grid';
 import { map_point } from 'map/point';
 import GRID_SIZE = GRID.GRID_SIZE;
+import { Ref } from '../../ext/crt';
 let bookmarks: map_point[] = new Array(MAX_BOOKMARKS);
 export function map_bookmarks_clear() {
     for (let i: number = 0; i < MAX_BOOKMARKS; i++) {
@@ -14,7 +15,11 @@ export function map_bookmarks_clear() {
 }
 export function map_bookmark_save(number: number) {
     if (number >= 0 && number < MAX_BOOKMARKS) {
-        city_view_get_camera_absolute(bookmarks[number].x, bookmarks[number].y);
+        const x_ref = new Ref(0);
+        const y_ref = new Ref(0);
+        city_view_get_camera_absolute(x_ref, y_ref);
+        bookmarks[number].x = x_ref.v;
+
     }
 }
 export function map_bookmark_go_to(number: number) {

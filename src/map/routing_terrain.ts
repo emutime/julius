@@ -1,5 +1,11 @@
 
-import { destroyable } from 'map/routing_terrain';
+export const enum destroyable {
+    DESTROYABLE_BUILDING,
+    DESTROYABLE_AQUEDUCT_GARDEN,
+    DESTROYABLE_WALL,
+    DESTROYABLE_GATEHOUSE,
+    DESTROYABLE_NONE
+};
 import DESTROYABLE_BUILDING = destroyable.DESTROYABLE_BUILDING;
 import DESTROYABLE_AQUEDUCT_GARDEN = destroyable.DESTROYABLE_AQUEDUCT_GARDEN;
 import DESTROYABLE_WALL = destroyable.DESTROYABLE_WALL;
@@ -17,7 +23,6 @@ import BUILDING_NATIVE_MEETING = building_type.BUILDING_NATIVE_MEETING;
 import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
 import BUILDING_NATIVE_CROPS = building_type.BUILDING_NATIVE_CROPS;
 import BUILDING_BURNING_RUIN = building_type.BUILDING_BURNING_RUIN;
-import { building_type } from 'building/type';;
 import { buffer } from 'core/buffer';
 import { building } from 'building/building';
 import { building_get } from 'building/building';
@@ -98,6 +103,9 @@ import TERRAIN_NOT_CLEAR = terrain.TERRAIN_NOT_CLEAR;
 import { map_terrain_is } from 'map/terrain';
 import { map_terrain_get } from 'map/terrain';
 import { map_terrain_remove } from 'map/terrain';
+import { map_data_t } from './data';
+
+
 export function map_routing_update_all() {
     map_routing_update_land();
     map_routing_update_water();

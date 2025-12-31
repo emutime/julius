@@ -1,7 +1,8 @@
+import { memcpy } from "../../ext/crt";
 
 ;
 export class buffer {
-    public data: number = 0;
+    public data: ArrayBufferView = null;
     public size: number = 0;
     public index: number = 0;
     public overflow: number = 0;
@@ -13,7 +14,7 @@ export class buffer {
     }
 }
 
-export function buffer_init(buf: buffer, data: void, size: number) {
+export function buffer_init(buf: buffer, data: ArrayBufferView, size: number) {
     buf.data = data;
     buf.size = size;
     buf.index = 0;
@@ -71,7 +72,7 @@ export function buffer_write_i32(buf: buffer, value: number) {
         buf.data[buf.index++] = (value >> 24) & 0xff;
     }
 }
-export function buffer_write_raw(buf: buffer, value: ArrayBuffer, size: number) {
+export function buffer_write_raw(buf: buffer, value: Uint8Array, size: number) {
     if (check_size(buf, size)) {
         memcpy(buf.data[buf.index], value, size);
         buf.index += size
@@ -131,7 +132,7 @@ export function buffer_read_i32(buf: buffer) {
         return 0;
     }
 }
-export function buffer_read_raw(buf: buffer, value: ArrayBuffer, max_size: number) {
+export function buffer_read_raw(buf: buffer, value: Uint8Array, max_size: number) {
     let size: number = buf.size - buf.index;
     if (size > max_size) {
         size = max_size;

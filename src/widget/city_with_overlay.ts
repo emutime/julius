@@ -600,7 +600,7 @@ function draw_animation(x: number, y: number, grid_offset: number) {
 function draw_figures(x: number, y: number, grid_offset: number) {
     let figure_id: number = map_figure_at(grid_offset);
     while (figure_id) {
-        figure * f = figure_get(figure_id);
+        let f: figure = figure_get(figure_id);
         if (!f.is_ghost && overlay.show_figure(f)) {
             city_draw_figure(f, x, y, 0);
         }
@@ -610,7 +610,7 @@ function draw_figures(x: number, y: number, grid_offset: number) {
 function draw_elevated_figures(x: number, y: number, grid_offset: number) {
     let figure_id: number = map_figure_at(grid_offset);
     while (figure_id > 0) {
-        figure * f = figure_get(figure_id);
+        let f: figure = figure_get(figure_id);
         if (((f.use_cross_country && !f.is_ghost) || f.height_adjusted_ticks) && overlay.show_figure(f)) {
             city_draw_figure(f, x, y, 0);
         }

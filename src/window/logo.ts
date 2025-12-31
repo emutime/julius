@@ -1,5 +1,10 @@
 import { COLOR_WHITE } from 'graphics/color';
-import { message } from 'window/logo';
+export const enum message {
+    MESSAGE_NONE = 0,
+    MESSAGE_MISSING_PATCH = 1,
+    MESSAGE_MISSING_FONTS = 2
+};
+
 import MESSAGE_MISSING_PATCH = message.MESSAGE_MISSING_PATCH;
 import MESSAGE_MISSING_FONTS = message.MESSAGE_MISSING_FONTS;
 import { config_key } from 'core/config';

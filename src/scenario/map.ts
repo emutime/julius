@@ -52,14 +52,14 @@ export function scenario_map_river_exit() {
     let point: map_point = { scenario.river_exit_point.x, scenario.river_exit_point.y };
     return point;
 }
-export function scenario_map_foreach_herd_point(callback: void () {
+export function scenario_map_foreach_herd_point(callback: (x: number, y: number) => void) {
     for (let i: number = 0; i < MAX_HERD_POINTS; i++) {
         if (scenario.herd_points[i].x > 0) {
             callback(scenario.herd_points[i].x, scenario.herd_points[i].y);
         }
     }
 }
-export function scenario_map_foreach_fishing_point(callback: void () {
+export function scenario_map_foreach_fishing_point(callback: (x: number, y: number) => void) {
     for (let i: number = 0; i < MAX_FISH_POINTS; i++) {
         if (scenario.fishing_points[i].x > 0) {
             callback(scenario.fishing_points[i].x, scenario.fishing_points[i].y);

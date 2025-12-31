@@ -1,72 +1,59 @@
 
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { map_point_store_result } from 'map/point';
+import { building, building_get } from 'building/building';
 import { building_type } from 'building/type';
-import BUILDING_GATEHOUSE = building_type.BUILDING_GATEHOUSE;
-import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
-import { building_type } from 'building/type';;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
 import { city_map_road_network_index } from 'city/map';
 import { map_building_at } from 'map/building';
-import { GRID } from 'map/grid';
-import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_offset_to_x } from 'map/grid';
-import { map_grid_offset_to_y } from 'map/grid';
-import { map_grid_delta } from 'map/grid';
-import { map_grid_get_area } from 'map/grid';
-import { map_grid_adjacent_offsets } from 'map/grid';
+import { map_grid_adjacent_offsets, map_grid_delta, map_grid_get_area, map_grid_offset, map_grid_offset_to_x, map_grid_offset_to_y } from 'map/grid';
+import { map_point, map_point_store_result } from 'map/point';
 import { map_road_network_get } from 'map/road_network';
-import { routed_building_type } from 'map/routing';
 import { map_routing_distance } from 'map/routing';
 import { map_routing_citizen_is_road } from 'map/routing_terrain';
-import { terrain } from 'map/terrain';
+import { map_terrain_is, terrain } from 'map/terrain';
+import { Ref } from '../../ext/crt';
+import BUILDING_GATEHOUSE = building_type.BUILDING_GATEHOUSE;
+import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
 import TERRAIN_BUILDING = terrain.TERRAIN_BUILDING;
 import TERRAIN_ROAD = terrain.TERRAIN_ROAD;
 import TERRAIN_ACCESS_RAMP = terrain.TERRAIN_ACCESS_RAMP;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_is } from 'map/terrain';
-function find_minimum_road_tile(x: number, y: number, size: number, min_value: number, min_grid_offset: number) {
+function find_minimum_road_tile(x: number, y: number, size: number, min_value: Ref<number>, min_grid_offset: Ref<number>) {
     let base_offset: number = map_grid_offset(x, y);
-    for (let tile_delta: number = map_grid_adjacent_offsets(size); * tile_delta; tile_delta++) {
-        let grid_offset: number = base_offset + * tile_delta;
+    for (let tile_delta: number = map_grid_adjacent_offsets(size); tile_delta; tile_delta++) {
+        let grid_offset: number = base_offset + tile_delta;
         if (!map_terrain_is(grid_offset, TERRAIN_BUILDING) ||
             building_get(map_building_at(grid_offset)).type != BUILDING_GATEHOUSE) {
             if (map_terrain_is(grid_offset, TERRAIN_ROAD)) {
                 let road_index: number = city_map_road_network_index(map_road_network_get(grid_offset));
-                if (road_index < * min_value) {
-                    * min_value = road_index;
-                    * min_grid_offset = grid_offset;
+                if (road_index < min_value.v) {
+                    min_value.v = road_index;
+                    min_grid_offset.v = grid_offset;
                 }
             }
         }
     }
 }
 export function map_has_road_access(x: number, y: number, size: number, road: map_point) {
-    let min_value: number = 12;
-    let min_grid_offset: number = map_grid_offset(x, y);
+    let min_value: Ref<number> = new Ref(12);
+    let min_grid_offset: Ref<number> = new Ref(map_grid_offset(x, y));
     find_minimum_road_tile(x, y, size, min_value, min_grid_offset);
-    if (min_value < 12) {
+    if (min_value.v < 12) {
         if (road) {
-            map_point_store_result(map_grid_offset_to_x(min_grid_offset), map_grid_offset_to_y(min_grid_offset), road);
+            map_point_store_result(map_grid_offset_to_x(min_grid_offset.v), map_grid_offset_to_y(min_grid_offset.v), road);
         }
         return 1;
     }
     return 0;
 }
 export function map_has_road_access_hippodrome(x: number, y: number, road: map_point) {
-    let min_value: number = 12;
-    let min_grid_offset: number = map_grid_offset(x, y);
+    let min_value: Ref<number> = new Ref(12);
+    let min_grid_offset: Ref<number> = new Ref(map_grid_offset(x, y));
     find_minimum_road_tile(x, y, 5, min_value, min_grid_offset);
     find_minimum_road_tile(x + 5, y, 5, min_value, min_grid_offset);
     find_minimum_road_tile(x + 10, y, 5, min_value, min_grid_offset);
-    if (min_value < 12) {
+    if (min_value.v < 12) {
         if (road) {
-            map_point_store_result(map_grid_offset_to_x(min_grid_offset), map_grid_offset_to_y(min_grid_offset), road);
+            map_point_store_result(map_grid_offset_to_x(min_grid_offset.v), map_grid_offset_to_y(min_grid_offset.v), road);
         }
         return 1;
     }
@@ -96,7 +83,7 @@ export function map_has_road_access_granary(x: number, y: number, road: map_poin
     }
     return 0;
 }
-function road_within_radius(x: number, y: number, size: number, radius: number, x_road: number, y_road: number) {
+function road_within_radius(x: number, y: number, size: number, radius: number, x_road: Ref<number>, y_road: Ref<number>) {
     let x_min: number
     let y_min: number
     let x_max: number
@@ -106,8 +93,8 @@ function road_within_radius(x: number, y: number, size: number, radius: number, 
         for (let xx: number = x_min; xx <= x_max; xx++) {
             if (map_terrain_is(map_grid_offset(xx, yy), TERRAIN_ROAD)) {
                 if (x_road && y_road) {
-                    * x_road = xx;
-                    * y_road = yy;
+                    x_road.v = xx;
+                    y_road.v = yy;
                 }
                 return 1;
             }
@@ -115,7 +102,7 @@ function road_within_radius(x: number, y: number, size: number, radius: number, 
     }
     return 0;
 }
-export function map_closest_road_within_radius(x: number, y: number, size: number, radius: number, x_road: number, y_road: number) {
+export function map_closest_road_within_radius(x: number, y: number, size: number, radius: number, x_road: Ref<number>, y_road: Ref<number>) {
     for (let r: number = 1; r <= radius; r++) {
         if (road_within_radius(x, y, size, r, x_road, y_road)) {
             return 1;
@@ -123,7 +110,7 @@ export function map_closest_road_within_radius(x: number, y: number, size: numbe
     }
     return 0;
 }
-function reachable_road_within_radius(x: number, y: number, size: number, radius: number, x_road: number, y_road: number) {
+function reachable_road_within_radius(x: number, y: number, size: number, radius: number, x_road: Ref<number>, y_road: Ref<number>) {
     let x_min: number
     let y_min: number
     let x_max: number
@@ -135,8 +122,8 @@ function reachable_road_within_radius(x: number, y: number, size: number, radius
             if (map_terrain_is(grid_offset, TERRAIN_ROAD)) {
                 if (map_routing_distance(grid_offset) > 0) {
                     if (x_road && y_road) {
-                        * x_road = xx;
-                        * y_road = yy;
+                        x_road.v = xx;
+                        y_road.v = yy;
                     }
                     return 1;
                 }
@@ -145,7 +132,7 @@ function reachable_road_within_radius(x: number, y: number, size: number, radius
     }
     return 0;
 }
-export function map_closest_reachable_road_within_radius(x: number, y: number, size: number, radius: number, x_road: number, y_road: number) {
+export function map_closest_reachable_road_within_radius(x: number, y: number, size: number, radius: number, x_road: Ref<number>, y_road: Ref<number>) {
     for (let r: number = 1; r <= radius; r++) {
         if (reachable_road_within_radius(x, y, size, r, x_road, y_road)) {
             return 1;
@@ -153,12 +140,12 @@ export function map_closest_reachable_road_within_radius(x: number, y: number, s
     }
     return 0;
 }
-export function map_road_to_largest_network(x: number, y: number, size: number, x_road: number, y_road: number) {
+export function map_road_to_largest_network(x: number, y: number, size: number, x_road: Ref<number>, y_road: Ref<number>) {
     let min_index: number = 12;
     let min_grid_offset: number = -1;
     let base_offset: number = map_grid_offset(x, y);
-    for (let tile_delta: number = map_grid_adjacent_offsets(size); * tile_delta; tile_delta++) {
-        let grid_offset: number = base_offset + * tile_delta;
+    for (let tile_delta: number = map_grid_adjacent_offsets(size); tile_delta; tile_delta++) {
+        let grid_offset: number = base_offset + tile_delta;
         if (map_terrain_is(grid_offset, TERRAIN_ROAD) && map_routing_distance(grid_offset) > 0) {
             let index: number = city_map_road_network_index(map_road_network_get(grid_offset));
             if (index < min_index) {
@@ -168,14 +155,14 @@ export function map_road_to_largest_network(x: number, y: number, size: number, 
         }
     }
     if (min_index < 12) {
-        * x_road = map_grid_offset_to_x(min_grid_offset);
-        * y_road = map_grid_offset_to_y(min_grid_offset);
+        x_road.v = map_grid_offset_to_x(min_grid_offset);
+        y_road.v = map_grid_offset_to_y(min_grid_offset);
         return min_grid_offset;
     }
     let min_dist: number = 100000;
     min_grid_offset = -1;
-    for (let tile_delta: number = map_grid_adjacent_offsets(size); * tile_delta; tile_delta++) {
-        let grid_offset: number = base_offset + * tile_delta;
+    for (let tile_delta: number = map_grid_adjacent_offsets(size); tile_delta; tile_delta++) {
+        let grid_offset: number = base_offset + tile_delta;
         let dist: number = map_routing_distance(grid_offset);
         if (dist > 0 && dist < min_dist) {
             min_dist = dist;
@@ -183,57 +170,57 @@ export function map_road_to_largest_network(x: number, y: number, size: number, 
         }
     }
     if (min_grid_offset >= 0) {
-        * x_road = map_grid_offset_to_x(min_grid_offset);
-        * y_road = map_grid_offset_to_y(min_grid_offset);
+        x_road.v = map_grid_offset_to_x(min_grid_offset);
+        y_road.v = map_grid_offset_to_y(min_grid_offset);
         return min_grid_offset;
     }
     return -1;
 }
-function check_road_to_largest_network_hippodrome(x: number, y: number, min_index: number, min_grid_offset: number) {
+function check_road_to_largest_network_hippodrome(x: number, y: number, min_index: Ref<number>, min_grid_offset: Ref<number>) {
     let base_offset: number = map_grid_offset(x, y);
-    for (let tile_delta: number = map_grid_adjacent_offsets(5); * tile_delta; tile_delta++) {
-        let grid_offset: number = base_offset + * tile_delta;
+    for (let tile_delta: number = map_grid_adjacent_offsets(5); tile_delta; tile_delta++) {
+        let grid_offset: number = base_offset + tile_delta;
         if (map_terrain_is(grid_offset, TERRAIN_ROAD) && map_routing_distance(grid_offset) > 0) {
             let index: number = city_map_road_network_index(map_road_network_get(grid_offset));
-            if (index < * min_index) {
-                * min_index = index;
-                * min_grid_offset = grid_offset;
+            if (index < min_index.v) {
+                min_index.v = index;
+                min_grid_offset.v = grid_offset;
             }
         }
     }
 }
-function check_min_dist_hippodrome(base_offset: number, x_offset: number, min_dist: number, min_grid_offset: number, min_x_offset: number) {
-    for (let tile_delta: number = map_grid_adjacent_offsets(5); * tile_delta; tile_delta++) {
-        let grid_offset: number = base_offset + * tile_delta;
+function check_min_dist_hippodrome(base_offset: number, x_offset: number, min_dist: Ref<number>, min_grid_offset: Ref<number>, min_x_offset: Ref<number>) {
+    for (let tile_delta: number = map_grid_adjacent_offsets(5); tile_delta; tile_delta++) {
+        let grid_offset: number = base_offset + tile_delta;
         let dist: number = map_routing_distance(grid_offset);
-        if (dist > 0 && dist < * min_dist) {
-            * min_dist = dist;
-            * min_grid_offset = grid_offset;
-            * min_x_offset = x_offset;
+        if (dist > 0 && dist < min_dist.v) {
+            min_dist.v = dist;
+            min_grid_offset.v = grid_offset;
+            min_x_offset.v = x_offset;
         }
     }
 }
-export function map_road_to_largest_network_hippodrome(x: number, y: number, x_road: number, y_road: number) {
-    let min_index: number = 12;
-    let min_grid_offset: number = -1;
+export function map_road_to_largest_network_hippodrome(x: number, y: number, x_road: Ref<number>, y_road: Ref<number>) {
+    let min_index: Ref<number> = new Ref(12);
+    let min_grid_offset: Ref<number> = new Ref(-1);
     check_road_to_largest_network_hippodrome(x, y, min_index, min_grid_offset);
     check_road_to_largest_network_hippodrome(x + 5, y, min_index, min_grid_offset);
     check_road_to_largest_network_hippodrome(x + 10, y, min_index, min_grid_offset);
-    if (min_index < 12) {
-        * x_road = map_grid_offset_to_x(min_grid_offset);
-        * y_road = map_grid_offset_to_y(min_grid_offset);
+    if (min_index.v < 12) {
+        x_road.v = map_grid_offset_to_x(min_grid_offset.v);
+        y_road.v = map_grid_offset_to_y(min_grid_offset.v);
         return min_grid_offset;
     }
-    let min_dist: number = 100000;
-    min_grid_offset = -1;
-    let min_x_offset: number = -1;
+    let min_dist: Ref<number> = new Ref(100000);
+    min_grid_offset.v = -1;
+    let min_x_offset: Ref<number> = new Ref(-1);
     check_min_dist_hippodrome(map_grid_offset(x, y), 0, min_dist, min_grid_offset, min_x_offset);
     check_min_dist_hippodrome(map_grid_offset(x + 5, y), 5, min_dist, min_grid_offset, min_x_offset);
     check_min_dist_hippodrome(map_grid_offset(x + 10, y), 10, min_dist, min_grid_offset, min_x_offset);
-    if (min_grid_offset >= 0) {
-        * x_road = map_grid_offset_to_x(min_grid_offset) + min_x_offset;
-        * y_road = map_grid_offset_to_y(min_grid_offset);
-        return min_grid_offset + min_x_offset;
+    if (min_grid_offset.v >= 0) {
+        x_road.v = map_grid_offset_to_x(min_grid_offset.v) + min_x_offset.v;
+        y_road.v = map_grid_offset_to_y(min_grid_offset.v);
+        return min_grid_offset.v + min_x_offset.v;
     }
     return -1;
 }
@@ -254,7 +241,7 @@ function get_adjacent_road_tile_for_roaming(grid_offset: number) {
     }
     return is_road;
 }
-export function map_get_adjacent_road_tiles_for_roaming(grid_offset: number, road_tiles: number) {
+export function map_get_adjacent_road_tiles_for_roaming(grid_offset: number, road_tiles: number[]) {
     road_tiles[1] = road_tiles[3] = road_tiles[5] = road_tiles[7] = 0;
     road_tiles[0] = get_adjacent_road_tile_for_roaming(grid_offset + map_grid_delta(0, -1));
     road_tiles[2] = get_adjacent_road_tile_for_roaming(grid_offset + map_grid_delta(1, 0));
@@ -262,7 +249,7 @@ export function map_get_adjacent_road_tiles_for_roaming(grid_offset: number, roa
     road_tiles[6] = get_adjacent_road_tile_for_roaming(grid_offset + map_grid_delta(-1, 0));
     return road_tiles[0] + road_tiles[2] + road_tiles[4] + road_tiles[6];
 }
-export function map_get_diagonal_road_tiles_for_roaming(grid_offset: number, road_tiles: number) {
+export function map_get_diagonal_road_tiles_for_roaming(grid_offset: number, road_tiles: number[]) {
     road_tiles[1] = terrain_is_road_like(grid_offset + map_grid_delta(1, -1));
     road_tiles[3] = terrain_is_road_like(grid_offset + map_grid_delta(1, 1));
     road_tiles[5] = terrain_is_road_like(grid_offset + map_grid_delta(-1, 1));

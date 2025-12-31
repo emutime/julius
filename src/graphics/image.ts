@@ -150,9 +150,9 @@ function draw_compressed(img: image, data: color_t, x_offset: number, y_offset: 
                 x += b;
             } else {
                 // number of concrete pixels
-                const color_t * pixels = data;
+                const pixels: color_t[] = data;
                 data += b;
-                color_t * dst = graphics_get_pixel(x_offset + x, y_offset + y);
+                let dst: color_t = graphics_get_pixel(x_offset + x, y_offset + y);
                 if (unclipped) {
                     x += b;
                     memcpy(dst, pixels, b * sizeof(color_t));
@@ -233,9 +233,9 @@ function draw_compressed_and(img: image, data: color_t, x_offset: number, y_offs
                 x += b;
             } else {
                 // number of concrete pixels
-                const color_t * pixels = data;
+                const pixels: color_t[] = data;
                 data += b;
-                color_t * dst = graphics_get_pixel(x_offset + x, y_offset + y);
+                let dst: color_t = graphics_get_pixel(x_offset + x, y_offset + y);
                 if (unclipped) {
                     x += b;
                     while (b) {

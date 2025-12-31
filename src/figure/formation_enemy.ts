@@ -408,7 +408,7 @@ function mars_kill_enemies() {
         }
     }
     city_god_spirit_of_mars_mark_used();
-    city_message_post(1, MESSAGE_SPIRIT_OF_MARS, 0, grid_offset);
+    city_message_post(true, MESSAGE_SPIRIT_OF_MARS, 0, grid_offset);
 }
 function update_enemy_movement(m: formation, roman_distance: number) {
     let army: enemy_army = enemy_army_get(m.invasion_id);

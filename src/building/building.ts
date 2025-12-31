@@ -388,6 +388,9 @@ let extra: unnamed25_8 = new unnamed25_8(0, 0, 0, 0);
 export function building_get(id: number) {
     return all_buildings[id];
 }
+export function building_set(id: number, building: building) {
+    all_buildings[id] = building;
+}
 export function building_main(b: building) {
     for (let guard: number = 0; guard < 9; guard++) {
         if (b.prev_part_building_id <= 0) {

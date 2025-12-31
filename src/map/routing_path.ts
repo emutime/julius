@@ -20,6 +20,7 @@ import { map_grid_direction_delta } from 'map/grid';
 import { map_random_get } from 'map/random';
 import { routed_building_type } from 'map/routing';
 import { map_routing_distance } from 'map/routing';
+import { Ref } from '../../ext/crt';
 let direction_path: number[] = new Array(MAX_PATH);
 function adjust_tile_in_direction(direction: number, x: number, y: number, grid_offset: number) {
     switch (direction) {
@@ -101,7 +102,7 @@ export function map_routing_get_path(path: number, src_x: number, src_y: number,
     }
     return num_tiles;
 }
-export function map_routing_get_closest_tile_within_range(src_x: number, src_y: number, dst_x: number, dst_y: number, num_directions: number, range: number, out_x: number, out_y: number) {
+export function map_routing_get_closest_tile_within_range(src_x: number, src_y: number, dst_x: number, dst_y: number, num_directions: number, range: number, out_x: Ref<number>, out_y: Ref<number>) {
     let dst_grid_offset: number = map_grid_offset(dst_x, dst_y);
     let distance: number = map_routing_distance(dst_grid_offset);
     if (distance <= 0 || distance >= 998) {

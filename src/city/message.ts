@@ -390,15 +390,15 @@ export function city_message_post(use_popup: boolean, message_type: number, para
     should_play_sound = 1;
 }
 export function city_message_post_with_popup_delay(category: message_category, message_type: number, param1: number, param2: number) {
-    let use_popup: number = 0;
+    let use_popup: boolean = false;
     if (data.message_delay[category] <= 0) {
-        use_popup = 1;
+        use_popup = true;
         data.message_delay[category] = 12;
     }
     city_message_post(use_popup, message_type, param1, param2);
     data.message_count[category]++;
 }
-export function city_message_post_with_message_delay(category: message_category, use_popup: number, message_type: number, delay: number) {
+export function city_message_post_with_message_delay(category: message_category, use_popup: boolean, message_type: number, delay: number) {
     if (category == MESSAGE_CAT_FISHING_BLOCKED || category == MESSAGE_CAT_NO_WORKING_DOCK) {
         if (data.message_count[category] > 0) {
             data.message_count[category]--;

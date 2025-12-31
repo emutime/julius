@@ -153,7 +153,7 @@ function draw_top(x: number, y: number, grid_offset: number) {
 function draw_flags(x: number, y: number, grid_offset: number) {
     let figure_id: number = map_figure_at(grid_offset);
     while (figure_id) {
-        figure * f = figure_get(figure_id);
+        let f: figure = figure_get(figure_id);
         if (!f.is_ghost) {
             city_draw_figure(f, x, y, 0);
         }

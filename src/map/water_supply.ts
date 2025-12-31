@@ -164,12 +164,12 @@ function fill_aqueducts_from_offset(grid_offset: number) {
             map_image_set(grid_offset, image_id - 15);
         }
         next_offset = -1;
-        for (int i = 0; i < 4; i++) {
-                int new_offset = grid_offset + ADJACENT_OFFSETS[i];
-            building * b = building_get(map_building_at(new_offset));
+        for (let i: number = 0; i < 4; i++) {
+            let new_offset: number = grid_offset + ADJACENT_OFFSETS[i];
+            let b: building = building_get(map_building_at(new_offset));
             if (b.id && b.type == BUILDING_RESERVOIR) {
                     // check if aqueduct connects to reservoir -. doesn't connect to corner
-                    int xy = map_property_multi_tile_xy(new_offset);
+                let xy: number = map_property_multi_tile_xy(new_offset);
                 if (xy != EDGE_X0Y0 && xy != EDGE_X2Y0 && xy != EDGE_X0Y2 && xy != EDGE_X2Y2) {
                     if (!b.has_water_access) {
                         b.has_water_access = 2;
@@ -222,12 +222,12 @@ export function map_water_supply_update_reservoir_fountain() {
 };
 while (changed == 1) {
     changed = 0;
-    for (int i = 0; i < total_reservoirs; i++) {
-        building * b = building_get(reservoirs[i]);
+    for (let i: number = 0; i < total_reservoirs; i++) {
+        let b: building = building_get(reservoirs[i]);
         if (b.has_water_access == 2) {
             b.has_water_access = 1;
             changed = 1;
-            for (int d = 0; d < 4; d++) {
+            for (let d: number = 0; d < 4; d++) {
                 fill_aqueducts_from_offset(b.grid_offset + CONNECTOR_OFFSETS[d]);
             }
         }

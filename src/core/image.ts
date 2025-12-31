@@ -372,7 +372,7 @@ function convert_uncompressed(buf: buffer, buf_length: number, dst: color_t) {
 function convert_compressed(buf: buffer, buf_length: number, dst: color_t) {
     let dst_length: number = 0;
     while (buf_length > 0) {
-            int control = buffer_read_u8(buf);
+        let control: number = buffer_read_u8(buf);
         if (control == 255) {
                 // next byte = transparent pixels to skip
                 * dst++ = 255;

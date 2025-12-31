@@ -1,6 +1,6 @@
 
 import { building_type } from 'building/type';
-import { allowed_building } from 'scenario/data';
+import { allowed_building, scenario_t } from 'scenario/data';
 import BUILDING_MENU_FARMS = building_type.BUILDING_MENU_FARMS;
 import BUILDING_MENU_RAW_MATERIALS = building_type.BUILDING_MENU_RAW_MATERIALS;
 import BUILDING_MENU_WORKSHOPS = building_type.BUILDING_MENU_WORKSHOPS;
@@ -83,7 +83,6 @@ import BUILDING_OIL_WORKSHOP = building_type.BUILDING_OIL_WORKSHOP;
 import BUILDING_WEAPONS_WORKSHOP = building_type.BUILDING_WEAPONS_WORKSHOP;
 import BUILDING_FURNITURE_WORKSHOP = building_type.BUILDING_FURNITURE_WORKSHOP;
 import BUILDING_POTTERY_WORKSHOP = building_type.BUILDING_POTTERY_WORKSHOP;
-;
 import ALLOWED_BUILDING_FARMS = allowed_building.ALLOWED_BUILDING_FARMS;
 import ALLOWED_BUILDING_RAW_MATERIALS = allowed_building.ALLOWED_BUILDING_RAW_MATERIALS;
 import ALLOWED_BUILDING_WORKSHOPS = allowed_building.ALLOWED_BUILDING_WORKSHOPS;

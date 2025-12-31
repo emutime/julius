@@ -274,7 +274,7 @@ export function figure_fishing_boat_action(f: figure) {
             } else if (f.direction == DIR_FIGURE_REROUTE) {
                 figure_route_remove(f);
             } else if (f.direction == DIR_FIGURE_LOST) {
-                city_message_post_with_message_delay(MESSAGE_CAT_FISHING_BLOCKED, 1, MESSAGE_FISHING_BOAT_BLOCKED, 12);
+                city_message_post_with_message_delay(MESSAGE_CAT_FISHING_BLOCKED, true, MESSAGE_FISHING_BOAT_BLOCKED, 12);
                 f.state = FIGURE_STATE_DEAD;
             }
             break
