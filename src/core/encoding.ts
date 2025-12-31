@@ -1,0 +1,1073 @@
+export const HIGH_CHAR_COUNT = 128;
+import { language_type } from 'core/locale';
+import LANGUAGE_JAPANESE = language_type.LANGUAGE_JAPANESE;
+import LANGUAGE_KOREAN = language_type.LANGUAGE_KOREAN;
+import LANGUAGE_POLISH = language_type.LANGUAGE_POLISH;
+import LANGUAGE_RUSSIAN = language_type.LANGUAGE_RUSSIAN;
+import LANGUAGE_SIMPLIFIED_CHINESE = language_type.LANGUAGE_SIMPLIFIED_CHINESE;
+import LANGUAGE_TRADITIONAL_CHINESE = language_type.LANGUAGE_TRADITIONAL_CHINESE;
+import LANGUAGE_CZECH = language_type.LANGUAGE_CZECH;
+import LANGUAGE_GREEK = language_type.LANGUAGE_GREEK;
+export const enum encoding_type {
+    ENCODING_WESTERN_EUROPE = 1252,
+    ENCODING_EASTERN_EUROPE = 1250,
+    ENCODING_CZECH = 12502,
+    ENCODING_CYRILLIC = 1251,
+    ENCODING_GREEK = 1253,
+    ENCODING_TRADITIONAL_CHINESE = 950,
+    ENCODING_SIMPLIFIED_CHINESE = 936,
+    ENCODING_JAPANESE = 932,
+    ENCODING_KOREAN = 949
+};
+import ENCODING_WESTERN_EUROPE = encoding_type.ENCODING_WESTERN_EUROPE;
+import ENCODING_EASTERN_EUROPE = encoding_type.ENCODING_EASTERN_EUROPE;
+import ENCODING_CZECH = encoding_type.ENCODING_CZECH;
+import ENCODING_CYRILLIC = encoding_type.ENCODING_CYRILLIC;
+import ENCODING_GREEK = encoding_type.ENCODING_GREEK;
+import ENCODING_TRADITIONAL_CHINESE = encoding_type.ENCODING_TRADITIONAL_CHINESE;
+import ENCODING_SIMPLIFIED_CHINESE = encoding_type.ENCODING_SIMPLIFIED_CHINESE;
+import ENCODING_JAPANESE = encoding_type.ENCODING_JAPANESE;
+import ENCODING_KOREAN = encoding_type.ENCODING_KOREAN;
+import { encoding_japanese_init } from 'core/encoding_japanese';
+import { encoding_japanese_to_utf8 } from 'core/encoding_japanese';
+import { encoding_japanese_from_utf8 } from 'core/encoding_japanese';
+import { encoding_korean_init } from 'core/encoding_korean';
+import { encoding_korean_to_utf8 } from 'core/encoding_korean';
+import { encoding_korean_from_utf8 } from 'core/encoding_korean';
+import { encoding_simp_chinese_init } from 'core/encoding_simp_chinese';
+import { encoding_simp_chinese_to_utf8 } from 'core/encoding_simp_chinese';
+import { encoding_simp_chinese_from_utf8 } from 'core/encoding_simp_chinese';
+import { encoding_trad_chinese_init } from 'core/encoding_trad_chinese';
+import { encoding_trad_chinese_to_utf8 } from 'core/encoding_trad_chinese';
+import { encoding_trad_chinese_from_utf8 } from 'core/encoding_trad_chinese';
+import { bsearch } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_search';
+import { qsort } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_search';
+export class letter_code {
+    public internal_value: number = 0;
+    public bytes: number = 0;
+    public utf8_value: number[] = new Array(3).fill(0);
+    public bytes_decomposed: number = 0;
+    public utf8_decomposed: number[] = new Array(4).fill(0);
+    public constructor(...args: any[]) {
+        args.length >= 1 && (this.internal_value = args[0]);
+        args.length >= 2 && (this.bytes = args[1]);
+        args.length >= 3 && (this.utf8_value = args[2]);
+        args.length >= 4 && (this.bytes_decomposed = args[3]);
+        args.length >= 5 && (this.utf8_decomposed = args[4]);
+    }
+}
+export class from_utf8_lookup {
+    public utf8: number = 0;
+    public code: letter_code = null;
+    public constructor(...args: any[]) {
+        args.length >= 1 && (this.utf8 = args[0]);
+        args.length >= 2 && (this.code = args[1]);
+    }
+}
+let HIGH_TO_UTF8_DEFAULT: letter_code[] = [
+    new letter_code(0x80, 3, [0xe2, 0x82, 0xac]),
+    new letter_code(0x81, 1, [0x3f]),
+    new letter_code(0x82, 3, [0xe2, 0x80, 0x9a]),
+    new letter_code(0x83, 2, [0xc6, 0x92]),
+    new letter_code(0x84, 3, [0xe2, 0x80, 0x9e]),
+    new letter_code(0x85, 3, [0xe2, 0x80, 0xa6]),
+    new letter_code(0x86, 3, [0xe2, 0x80, 0xa0]),
+    new letter_code(0x87, 3, [0xe2, 0x80, 0xa1]),
+    new letter_code(0x88, 2, [0xcb, 0x86]),
+    new letter_code(0x89, 3, [0xe2, 0x80, 0xb0]),
+    new letter_code(0x8a, 2, [0xc5, 0xa0]),
+    new letter_code(0x8b, 3, [0xe2, 0x80, 0xb9]),
+    new letter_code(0x8c, 2, [0xc5, 0x92]),
+    new letter_code(0x8d, 1, [0x3f]),
+    new letter_code(0x8e, 2, [0xc5, 0xbd]),
+    new letter_code(0x8f, 1, [0x3f]),
+    new letter_code(0x90, 1, [0x3f]),
+    new letter_code(0x91, 3, [0xe2, 0x80, 0x98]),
+    new letter_code(0x92, 3, [0xe2, 0x80, 0x99]),
+    new letter_code(0x93, 3, [0xe2, 0x80, 0x9c]),
+    new letter_code(0x94, 3, [0xe2, 0x80, 0x9d]),
+    new letter_code(0x95, 3, [0xe2, 0x80, 0xa2]),
+    new letter_code(0x96, 3, [0xe2, 0x80, 0x93]),
+    new letter_code(0x97, 3, [0xe2, 0x80, 0x94]),
+    new letter_code(0x98, 2, [0xcb, 0x9c]),
+    new letter_code(0x99, 3, [0xe2, 0x84, 0xa2]),
+    new letter_code(0x9a, 2, [0xc5, 0xa1]),
+    new letter_code(0x9b, 3, [0xe2, 0x80, 0xba]),
+    new letter_code(0x9c, 2, [0xc5, 0x93]),
+    new letter_code(0x9d, 1, [0x3f]),
+    new letter_code(0x9e, 2, [0xc5, 0xbe]),
+    new letter_code(0x9f, 2, [0xc5, 0xb8]),
+    new letter_code(0xa0, 2, [0xc2, 0xa0]),
+    new letter_code(0xa1, 2, [0xc2, 0xa1]),
+    new letter_code(0xa2, 2, [0xc2, 0xa2]),
+    new letter_code(0xa3, 2, [0xc2, 0xa3]),
+    new letter_code(0xa4, 2, [0xc2, 0xa4]),
+    new letter_code(0xa5, 2, [0xc2, 0xa5]),
+    new letter_code(0xa6, 2, [0xc2, 0xa6]),
+    new letter_code(0xa7, 2, [0xc2, 0xa7]),
+    new letter_code(0xa8, 2, [0xc2, 0xa8]),
+    new letter_code(0xa9, 2, [0xc2, 0xa9]),
+    new letter_code(0xaa, 2, [0xc2, 0xaa]),
+    new letter_code(0xab, 2, [0xc2, 0xab]),
+    new letter_code(0xac, 2, [0xc2, 0xac]),
+    new letter_code(0xad, 2, [0xc2, 0xad]),
+    new letter_code(0xae, 2, [0xc2, 0xae]),
+    new letter_code(0xaf, 2, [0xc2, 0xaf]),
+    new letter_code(0xb0, 2, [0xc2, 0xb0]),
+    new letter_code(0xb1, 2, [0xc2, 0xb1]),
+    new letter_code(0xb2, 2, [0xc2, 0xb2]),
+    new letter_code(0xb3, 2, [0xc2, 0xb3]),
+    new letter_code(0xb4, 2, [0xc2, 0xb4]),
+    new letter_code(0xb5, 2, [0xc2, 0xb5]),
+    new letter_code(0xb6, 2, [0xc2, 0xb6]),
+    new letter_code(0xb7, 2, [0xc2, 0xb7]),
+    new letter_code(0xb8, 2, [0xc2, 0xb8]),
+    new letter_code(0xb9, 2, [0xc2, 0xb9]),
+    new letter_code(0xba, 2, [0xc2, 0xba]),
+    new letter_code(0xbb, 2, [0xc2, 0xbb]),
+    new letter_code(0xbc, 2, [0xc2, 0xbc]),
+    new letter_code(0xbd, 2, [0xc2, 0xbd]),
+    new letter_code(0xbe, 2, [0xc2, 0xbe]),
+    new letter_code(0xbf, 2, [0xc2, 0xbf]),
+    new letter_code(0xc0, 2, [0xc3, 0x80], 3, [0x41, 0xcc, 0x80]),
+    new letter_code(0xc1, 2, [0xc3, 0x81], 3, [0x41, 0xcc, 0x81]),
+    new letter_code(0xc2, 2, [0xc3, 0x82], 3, [0x41, 0xcc, 0x82]),
+    new letter_code(0xc3, 2, [0xc3, 0x83], 3, [0x41, 0xcc, 0x83]),
+    new letter_code(0xc4, 2, [0xc3, 0x84], 3, [0x41, 0xcc, 0x88]),
+    new letter_code(0xc5, 2, [0xc3, 0x85], 3, [0x41, 0xcc, 0x8a]),
+    new letter_code(0xc6, 2, [0xc3, 0x86]), // AE
+    new letter_code(0xc7, 2, [0xc3, 0x87], 3, [0x43, 0xcc, 0xa7]),
+    new letter_code(0xc8, 2, [0xc3, 0x88], 3, [0x45, 0xcc, 0x80]),
+    new letter_code(0xc9, 2, [0xc3, 0x89], 3, [0x45, 0xcc, 0x81]),
+    new letter_code(0xca, 2, [0xc3, 0x8a], 3, [0x45, 0xcc, 0x82]),
+    new letter_code(0xcb, 2, [0xc3, 0x8b], 3, [0x45, 0xcc, 0x88]),
+    new letter_code(0xcc, 2, [0xc3, 0x8c], 3, [0x49, 0xcc, 0x80]),
+    new letter_code(0xcd, 2, [0xc3, 0x8d], 3, [0x49, 0xcc, 0x81]),
+    new letter_code(0xce, 2, [0xc3, 0x8e], 3, [0x49, 0xcc, 0x82]),
+    new letter_code(0xcf, 2, [0xc3, 0x8f], 3, [0x49, 0xcc, 0x88]),
+    new letter_code(0xd0, 1, [0xc3, 0x90]), // ETH
+    new letter_code(0xd1, 2, [0xc3, 0x91], 3, [0x4e, 0xcc, 0x83]),
+    new letter_code(0xd2, 2, [0xc3, 0x92], 3, [0x4f, 0xcc, 0x80]),
+    new letter_code(0xd3, 2, [0xc3, 0x93], 3, [0x4f, 0xcc, 0x81]),
+    new letter_code(0xd4, 2, [0xc3, 0x94], 3, [0x4f, 0xcc, 0x82]),
+    new letter_code(0xd5, 2, [0xc3, 0x95], 3, [0x4f, 0xcc, 0x83]),
+    new letter_code(0xd6, 2, [0xc3, 0x96], 3, [0x4f, 0xcc, 0x88]),
+    new letter_code(0xd7, 1, [0x3f]), // multiplication
+    new letter_code(0xd8, 2, [0xc3, 0x98]),
+    new letter_code(0xd9, 2, [0xc3, 0x99], 3, [0x55, 0xcc, 0x80]),
+    new letter_code(0xda, 2, [0xc3, 0x9a], 3, [0x55, 0xcc, 0x81]),
+    new letter_code(0xdb, 2, [0xc3, 0x9b], 3, [0x55, 0xcc, 0x82]),
+    new letter_code(0xdc, 2, [0xc3, 0x9c], 3, [0x55, 0xcc, 0x88]),
+    new letter_code(0xdd, 2, [0xc3, 0x9d], 3, [0x59, 0xcc, 0x81]),
+    new letter_code(0xde, 2, [0xc3, 0x90]), // THORN
+    new letter_code(0xdf, 2, [0xc3, 0x9f]), // ss
+    new letter_code(0xe0, 2, [0xc3, 0xa0], 3, [0x61, 0xcc, 0x80]),
+    new letter_code(0xe1, 2, [0xc3, 0xa1], 3, [0x61, 0xcc, 0x81]),
+    new letter_code(0xe2, 2, [0xc3, 0xa2], 3, [0x61, 0xcc, 0x82]),
+    new letter_code(0xe3, 2, [0xc3, 0xa3], 3, [0x61, 0xcc, 0x83]),
+    new letter_code(0xe4, 2, [0xc3, 0xa4], 3, [0x61, 0xcc, 0x88]),
+    new letter_code(0xe5, 2, [0xc3, 0xa5], 3, [0x61, 0xcc, 0x8a]),
+    new letter_code(0xe6, 2, [0xc3, 0xa6]), // ae
+    new letter_code(0xe7, 2, [0xc3, 0xa7], 3, [0x63, 0xcc, 0xa7]),
+    new letter_code(0xe8, 2, [0xc3, 0xa8], 3, [0x65, 0xcc, 0x80]),
+    new letter_code(0xe9, 2, [0xc3, 0xa9], 3, [0x65, 0xcc, 0x81]),
+    new letter_code(0xea, 2, [0xc3, 0xaa], 3, [0x65, 0xcc, 0x82]),
+    new letter_code(0xeb, 2, [0xc3, 0xab], 3, [0x65, 0xcc, 0x88]),
+    new letter_code(0xec, 2, [0xc3, 0xac], 3, [0x69, 0xcc, 0x80]),
+    new letter_code(0xed, 2, [0xc3, 0xad], 3, [0x69, 0xcc, 0x81]),
+    new letter_code(0xee, 2, [0xc3, 0xae], 3, [0x69, 0xcc, 0x82]),
+    new letter_code(0xef, 2, [0xc3, 0xaf], 3, [0x69, 0xcc, 0x88]),
+    new letter_code(0xf0, 2, [0xc3, 0xb0]), // eth
+    new letter_code(0xf1, 2, [0xc3, 0xb1], 3, [0x6e, 0xcc, 0x83]),
+    new letter_code(0xf2, 2, [0xc3, 0xb2], 3, [0x6f, 0xcc, 0x80]),
+    new letter_code(0xf3, 2, [0xc3, 0xb3], 3, [0x6f, 0xcc, 0x81]),
+    new letter_code(0xf4, 2, [0xc3, 0xb4], 3, [0x6f, 0xcc, 0x82]),
+    new letter_code(0xf5, 2, [0xc3, 0xb5], 3, [0x6f, 0xcc, 0x83]),
+    new letter_code(0xf6, 2, [0xc3, 0xb6], 3, [0x6f, 0xcc, 0x88]),
+    new letter_code(0xf7, 2, [0xc3, 0xb7]), // division
+    new letter_code(0xf8, 2, [0xc3, 0xb8]), // o/
+    new letter_code(0xf9, 2, [0xc3, 0xb9], 3, [0x75, 0xcc, 0x80]),
+    new letter_code(0xfa, 2, [0xc3, 0xba], 3, [0x75, 0xcc, 0x81]),
+    new letter_code(0xfb, 2, [0xc3, 0xbb], 3, [0x75, 0xcc, 0x82]),
+    new letter_code(0xfc, 2, [0xc3, 0xbc], 3, [0x75, 0xcc, 0x88]),
+    new letter_code(0xfd, 2, [0xc3, 0xbd], 3, [0x79, 0xcc, 0x81]),
+    new letter_code(0xfe, 2, [0xc3, 0xbe]), // thorn
+    new letter_code(0xff, 2, [0xc3, 0xbf], 3, [0x79, 0xcc, 0x88]),
+];
+let HIGH_TO_UTF8_EASTERN: letter_code[] = [
+    new letter_code(0x80, 3, [0xe2, 0x82, 0xac]),
+    new letter_code(0x81, 1, [0x3f]),
+    new letter_code(0x82, 3, [0xe2, 0x80, 0x9a]),
+    new letter_code(0x83, 1, [0x3f]),
+    new letter_code(0x84, 3, [0xe2, 0x80, 0x9e]),
+    new letter_code(0x85, 3, [0xe2, 0x80, 0xa6]),
+    new letter_code(0x86, 3, [0xe2, 0x80, 0xa0]),
+    new letter_code(0x87, 3, [0xe2, 0x80, 0xa1]),
+    new letter_code(0x88, 1, [0x3f]),
+    new letter_code(0x89, 3, [0xe2, 0x80, 0xb0]),
+    new letter_code(0x8a, 2, [0xc5, 0xa0], 3, [0x53, 0xcc, 0x8c]),
+    new letter_code(0x8b, 3, [0xe2, 0x80, 0xb9]),
+    new letter_code(0x8c, 2, [0xc5, 0x9a], 3, [0x53, 0xcc, 0x81]),
+    new letter_code(0x8d, 2, [0xc5, 0xa4], 3, [0x54, 0xcc, 0x8c]),
+    new letter_code(0x8e, 2, [0xc5, 0xbd], 3, [0x5a, 0xcc, 0x8c]),
+    new letter_code(0x8f, 2, [0xc5, 0xb9], 3, [0x5a, 0xcc, 0x81]),
+    new letter_code(0x90, 1, [0x3f]),
+    new letter_code(0x91, 3, [0xe2, 0x80, 0x98]),
+    new letter_code(0x92, 3, [0xe2, 0x80, 0x99]),
+    new letter_code(0x93, 3, [0xe2, 0x80, 0x9c]),
+    new letter_code(0x94, 3, [0xe2, 0x80, 0x9d]),
+    new letter_code(0x95, 3, [0xe2, 0x80, 0xa2]),
+    new letter_code(0x96, 3, [0xe2, 0x80, 0x93]),
+    new letter_code(0x97, 3, [0xe2, 0x80, 0x94]),
+    new letter_code(0x98, 1, [0x3f]),
+    new letter_code(0x99, 3, [0xe2, 0x84, 0xa2]),
+    new letter_code(0x9a, 2, [0xc5, 0xa1], 3, [0x73, 0xcc, 0x8c]),
+    new letter_code(0x9b, 3, [0xe2, 0x80, 0xba]),
+    new letter_code(0x9c, 2, [0xc5, 0x9b], 3, [0x73, 0xcc, 0x81]),
+    new letter_code(0x9d, 2, [0xc5, 0xa5], 3, [0x74, 0xcc, 0x8c]),
+    new letter_code(0x9e, 2, [0xc5, 0xbe], 3, [0x7a, 0xcc, 0x8c]),
+    new letter_code(0x9f, 2, [0xc5, 0xba], 3, [0x7a, 0xcc, 0x81]),
+    new letter_code(0xa0, 2, [0xc2, 0xa0]),
+    new letter_code(0xa1, 2, [0xcb, 0x87]),
+    new letter_code(0xa2, 2, [0xcb, 0x98]),
+    new letter_code(0xa3, 2, [0xc5, 0x81]),
+    new letter_code(0xa4, 2, [0xc2, 0xa4]),
+    new letter_code(0xa5, 2, [0xc4, 0x84], 3, [0x41, 0xcc, 0xa8]),
+    new letter_code(0xa6, 2, [0xc2, 0xa6]),
+    new letter_code(0xa7, 2, [0xc2, 0xa7]),
+    new letter_code(0xa8, 2, [0xc2, 0xa8]),
+    new letter_code(0xa9, 2, [0xc2, 0xa9]),
+    new letter_code(0xaa, 2, [0xc5, 0x9e], 3, [0x53, 0xcc, 0xa7]),
+    new letter_code(0xab, 2, [0xc2, 0xab]),
+    new letter_code(0xac, 2, [0xc2, 0xac]),
+    new letter_code(0xad, 2, [0xc2, 0xad]),
+    new letter_code(0xae, 2, [0xc2, 0xae]),
+    new letter_code(0xaf, 2, [0xc5, 0xbb], 3, [0x5a, 0xcc, 0x87]),
+    new letter_code(0xb0, 2, [0xc2, 0xb0]),
+    new letter_code(0xb1, 2, [0xc2, 0xb1]),
+    new letter_code(0xb2, 2, [0xcb, 0x9b]),
+    new letter_code(0xb3, 2, [0xc5, 0x82]),
+    new letter_code(0xb4, 2, [0xc2, 0xb4]),
+    new letter_code(0xb5, 2, [0xc2, 0xb5]),
+    new letter_code(0xb6, 2, [0xc2, 0xb6]),
+    new letter_code(0xb7, 2, [0xc2, 0xb7]),
+    new letter_code(0xb8, 2, [0xc2, 0xb8]),
+    new letter_code(0xb9, 2, [0xc4, 0x85], 3, [0x61, 0xcc, 0xa8]),
+    new letter_code(0xba, 2, [0xc5, 0x9f], 3, [0x73, 0xcc, 0xa7]),
+    new letter_code(0xbb, 2, [0xc2, 0xbb]),
+    new letter_code(0xbc, 2, [0xc4, 0xbd], 3, [0x4c, 0xcc, 0x8c]),
+    new letter_code(0xbd, 2, [0xcb, 0x9d]),
+    new letter_code(0xbe, 2, [0xc4, 0xbe], 3, [0x6c, 0xcc, 0x8c]),
+    new letter_code(0xbf, 2, [0xc5, 0xbc], 3, [0x7a, 0xcc, 0x87]),
+    new letter_code(0xc0, 2, [0xc5, 0x94], 3, [0x52, 0xcc, 0x81]),
+    new letter_code(0xc1, 2, [0xc3, 0x81], 3, [0x41, 0xcc, 0x81]),
+    new letter_code(0xc2, 2, [0xc3, 0x82], 3, [0x41, 0xcc, 0x82]),
+    new letter_code(0xc3, 2, [0xc4, 0x82], 3, [0x41, 0xcc, 0x86]),
+    new letter_code(0xc4, 2, [0xc3, 0x84], 3, [0x41, 0xcc, 0x88]),
+    new letter_code(0xc5, 2, [0xc4, 0xb9], 3, [0x4c, 0xcc, 0x81]),
+    new letter_code(0xc6, 2, [0xc4, 0x86], 3, [0x43, 0xcc, 0x81]),
+    new letter_code(0xc7, 2, [0xc3, 0x87], 3, [0x43, 0xcc, 0xa7]),
+    new letter_code(0xc8, 2, [0xc4, 0x8c], 3, [0x43, 0xcc, 0x8c]),
+    new letter_code(0xc9, 2, [0xc3, 0x89], 3, [0x45, 0xcc, 0x81]),
+    new letter_code(0xca, 2, [0xc4, 0x98], 3, [0x45, 0xcc, 0xa8]),
+    new letter_code(0xcb, 2, [0xc3, 0x8b], 3, [0x45, 0xcc, 0x88]),
+    new letter_code(0xcc, 2, [0xc4, 0x9a], 3, [0x45, 0xcc, 0x8c]),
+    new letter_code(0xcd, 2, [0xc3, 0x8d], 3, [0x49, 0xcc, 0x81]),
+    new letter_code(0xce, 2, [0xc3, 0x8e], 3, [0x49, 0xcc, 0x82]),
+    new letter_code(0xcf, 2, [0xc4, 0x8e], 3, [0x44, 0xcc, 0x8c]),
+    new letter_code(0xd0, 2, [0xc4, 0x90]),
+    new letter_code(0xd1, 2, [0xc5, 0x83], 3, [0x4e, 0xcc, 0x81]),
+    new letter_code(0xd2, 2, [0xc5, 0x87], 3, [0x4e, 0xcc, 0x8c]),
+    new letter_code(0xd3, 2, [0xc3, 0x93], 3, [0x4f, 0xcc, 0x81]),
+    new letter_code(0xd4, 2, [0xc3, 0x94], 3, [0x4f, 0xcc, 0x82]),
+    new letter_code(0xd5, 2, [0xc5, 0x90], 3, [0x4f, 0xcc, 0x8b]),
+    new letter_code(0xd6, 2, [0xc3, 0x96], 3, [0x4f, 0xcc, 0x88]),
+    new letter_code(0xd7, 2, [0xc3, 0x97]),
+    new letter_code(0xd8, 2, [0xc5, 0x98], 3, [0x52, 0xcc, 0x8c]),
+    new letter_code(0xd9, 2, [0xc5, 0xae], 3, [0x55, 0xcc, 0x8a]),
+    new letter_code(0xda, 2, [0xc3, 0x9a], 3, [0x55, 0xcc, 0x81]),
+    new letter_code(0xdb, 2, [0xc5, 0xb0], 3, [0x55, 0xcc, 0x8b]),
+    new letter_code(0xdc, 2, [0xc3, 0x9c], 3, [0x55, 0xcc, 0x88]),
+    new letter_code(0xdd, 2, [0xc3, 0x9d], 3, [0x59, 0xcc, 0x81]),
+    new letter_code(0xde, 2, [0xc5, 0xa2], 3, [0x54, 0xcc, 0xa7]),
+    new letter_code(0xdf, 2, [0xc3, 0x9f]),
+    new letter_code(0xe0, 2, [0xc5, 0x95], 3, [0x72, 0xcc, 0x81]),
+    new letter_code(0xe1, 2, [0xc3, 0xa1], 3, [0x61, 0xcc, 0x81]),
+    new letter_code(0xe2, 2, [0xc3, 0xa2], 3, [0x61, 0xcc, 0x82]),
+    new letter_code(0xe3, 2, [0xc4, 0x83], 3, [0x61, 0xcc, 0x86]),
+    new letter_code(0xe4, 2, [0xc3, 0xa4], 3, [0x61, 0xcc, 0x88]),
+    new letter_code(0xe5, 2, [0xc4, 0xba], 3, [0x6c, 0xcc, 0x81]),
+    new letter_code(0xe6, 2, [0xc4, 0x87], 3, [0x63, 0xcc, 0x81]),
+    new letter_code(0xe7, 2, [0xc3, 0xa7], 3, [0x63, 0xcc, 0xa7]),
+    new letter_code(0xe8, 2, [0xc4, 0x8d], 3, [0x63, 0xcc, 0x8c]),
+    new letter_code(0xe9, 2, [0xc3, 0xa9], 3, [0x65, 0xcc, 0x81]),
+    new letter_code(0xea, 2, [0xc4, 0x99], 3, [0x65, 0xcc, 0xa8]),
+    new letter_code(0xeb, 2, [0xc3, 0xab], 3, [0x65, 0xcc, 0x88]),
+    new letter_code(0xec, 2, [0xc4, 0x9b], 3, [0x65, 0xcc, 0x8c]),
+    new letter_code(0xed, 2, [0xc3, 0xad], 3, [0x69, 0xcc, 0x81]),
+    new letter_code(0xee, 2, [0xc3, 0xae], 3, [0x69, 0xcc, 0x82]),
+    new letter_code(0xef, 2, [0xc4, 0x8f], 3, [0x64, 0xcc, 0x8c]),
+    new letter_code(0xf0, 2, [0xc4, 0x91]),
+    new letter_code(0xf1, 2, [0xc5, 0x84], 3, [0x6e, 0xcc, 0x81]),
+    new letter_code(0xf2, 2, [0xc5, 0x88], 3, [0x6e, 0xcc, 0x8c]),
+    new letter_code(0xf3, 2, [0xc3, 0xb3], 3, [0x6f, 0xcc, 0x81]),
+    new letter_code(0xf4, 2, [0xc3, 0xb4], 3, [0x6f, 0xcc, 0x82]),
+    new letter_code(0xf5, 2, [0xc5, 0x91], 3, [0x6f, 0xcc, 0x8b]),
+    new letter_code(0xf6, 2, [0xc3, 0xb6], 3, [0x6f, 0xcc, 0x88]),
+    new letter_code(0xf7, 2, [0xc3, 0xb7]),
+    new letter_code(0xf8, 2, [0xc5, 0x99], 3, [0x72, 0xcc, 0x8c]),
+    new letter_code(0xf9, 2, [0xc5, 0xaf], 3, [0x75, 0xcc, 0x8a]),
+    new letter_code(0xfa, 2, [0xc3, 0xba], 3, [0x75, 0xcc, 0x81]),
+    new letter_code(0xfb, 2, [0xc5, 0xb1], 3, [0x75, 0xcc, 0x8b]),
+    new letter_code(0xfc, 2, [0xc3, 0xbc], 3, [0x75, 0xcc, 0x88]),
+    new letter_code(0xfd, 2, [0xc3, 0xbd], 3, [0x79, 0xcc, 0x81]),
+    new letter_code(0xfe, 2, [0xc5, 0xa3], 3, [0x74, 0xcc, 0xa7]),
+    new letter_code(0xff, 2, [0xcb, 0x99]),
+]
+let HIGH_TO_UTF8_CZECH: letter_code[] = [
+    new letter_code(0x80, 1, [0x3f]),
+    new letter_code(0x81, 1, [0x3f]),
+    new letter_code(0x82, 1, [0x3f]),
+    new letter_code(0x83, 1, [0x3f]),
+    new letter_code(0x84, 1, [0x3f]),
+    new letter_code(0x85, 1, [0x3f]),
+    new letter_code(0x86, 1, [0x3f]),
+    new letter_code(0x87, 1, [0x3f]),
+    new letter_code(0x88, 2, [0xcb, 0x86]),
+    new letter_code(0x89, 1, [0x3f]),
+    new letter_code(0x8a, 1, [0x3f]),
+    new letter_code(0x8b, 1, [0x3f]),
+    new letter_code(0x8c, 2, [0xc4, 0x8e], 3, [0x44, 0xcc, 0x8c]),
+    new letter_code(0x8d, 1, [0x3f]),
+    new letter_code(0x8e, 1, [0x3f]),
+    new letter_code(0x8f, 1, [0x3f]),
+    new letter_code(0x90, 1, [0x3f]),
+    new letter_code(0x91, 1, [0x3f]),
+    new letter_code(0x92, 1, [0x3f]),
+    new letter_code(0x93, 1, [0x3f]),
+    new letter_code(0x94, 1, [0x3f]),
+    new letter_code(0x95, 1, [0x3f]),
+    new letter_code(0x96, 1, [0x3f]),
+    new letter_code(0x97, 1, [0x3f]),
+    new letter_code(0x98, 1, [0x3f]),
+    new letter_code(0x99, 1, [0x3f]),
+    new letter_code(0x9a, 2, [0xc5, 0xa1], 3, [0x73, 0xcc, 0x8c]),
+    new letter_code(0x9b, 1, [0x3f]),
+    new letter_code(0x9c, 2, [0xc5, 0x93]),
+    new letter_code(0x9d, 1, [0x3f]),
+    new letter_code(0x9e, 1, [0x3f]),
+    new letter_code(0x9f, 1, [0x3f]),
+    new letter_code(0xa0, 1, [0x3f]),
+    new letter_code(0xa1, 2, [0xcb, 0x87]),
+    new letter_code(0xa2, 1, [0x3f]),
+    new letter_code(0xa3, 1, [0x3f]),
+    new letter_code(0xa4, 1, [0x3f]),
+    new letter_code(0xa5, 1, [0x3f]),
+    new letter_code(0xa6, 1, [0x3f]),
+    new letter_code(0xa7, 1, [0x3f]),
+    new letter_code(0xa8, 1, [0x3f]),
+    new letter_code(0xa9, 1, [0x3f]),
+    new letter_code(0xaa, 1, [0x3f]),
+    new letter_code(0xab, 1, [0x3f]),
+    new letter_code(0xac, 1, [0x3f]),
+    new letter_code(0xad, 1, [0x3f]),
+    new letter_code(0xae, 1, [0x3f]),
+    new letter_code(0xaf, 1, [0x3f]),
+    new letter_code(0xb0, 2, [0xc2, 0xb0]),
+    new letter_code(0xb1, 1, [0x3f]),
+    new letter_code(0xb2, 1, [0x3f]),
+    new letter_code(0xb3, 1, [0x3f]),
+    new letter_code(0xb4, 1, [0x3f]),
+    new letter_code(0xb5, 1, [0x3f]),
+    new letter_code(0xb6, 1, [0x3f]),
+    new letter_code(0xb7, 1, [0x3f]),
+    new letter_code(0xb8, 1, [0x3f]),
+    new letter_code(0xb9, 1, [0x3f]),
+    new letter_code(0xba, 1, [0x3f]),
+    new letter_code(0xbb, 1, [0x3f]),
+    new letter_code(0xbc, 1, [0x3f]),
+    new letter_code(0xbd, 1, [0x3f]),
+    new letter_code(0xbe, 1, [0x3f]),
+    new letter_code(0xbf, 2, [0xc2, 0xbf]),
+    new letter_code(0xc0, 2, [0xc5, 0xa0], 3, [0x53, 0xcc, 0x8c]),
+    new letter_code(0xc1, 2, [0xc3, 0x81], 3, [0x41, 0xcc, 0x81]),
+    new letter_code(0xc2, 2, [0xc3, 0x82], 3, [0x41, 0xcc, 0x82]),
+    new letter_code(0xc3, 1, [0x3f]),
+    new letter_code(0xc4, 2, [0xc5, 0xbd], 3, [0x5a, 0xcc, 0x8c]),
+    new letter_code(0xc5, 1, [0x3f]),
+    new letter_code(0xc6, 1, [0x3f]),
+    new letter_code(0xc7, 1, [0x3f]),
+    new letter_code(0xc8, 2, [0xc4, 0x8c], 3, [0x43, 0xcc, 0x8c]),
+    new letter_code(0xc9, 2, [0xc3, 0x89], 3, [0x45, 0xcc, 0x81]),
+    new letter_code(0xca, 2, [0xc4, 0x9a], 3, [0x45, 0xcc, 0x8c]),
+    new letter_code(0xcb, 1, [0x3f]),
+    new letter_code(0xcc, 1, [0x3f]),
+    new letter_code(0xcd, 2, [0xc3, 0x8d], 3, [0x49, 0xcc, 0x81]),
+    new letter_code(0xce, 1, [0x3f]),
+    new letter_code(0xcf, 1, [0x3f]),
+    new letter_code(0xd0, 1, [0x3f]),
+    new letter_code(0xd1, 2, [0xc5, 0x87], 3, [0x4e, 0xcc, 0x8c]),
+    new letter_code(0xd2, 1, [0x3f]),
+    new letter_code(0xd3, 2, [0xc3, 0x93], 3, [0x4f, 0xcc, 0x81]),
+    new letter_code(0xd4, 2, [0xc3, 0x9d], 3, [0x59, 0xcc, 0x81]),
+    new letter_code(0xd5, 1, [0x3f]),
+    new letter_code(0xd6, 2, [0xc5, 0xa4], 3, [0x54, 0xcc, 0x8c]),
+    new letter_code(0xd7, 1, [0x3f]),
+    new letter_code(0xd8, 2, [0xc5, 0x98], 3, [0x52, 0xcc, 0x8c]),
+    new letter_code(0xd9, 2, [0xc5, 0xae], 3, [0x55, 0xcc, 0x8a]),
+    new letter_code(0xda, 2, [0xc3, 0x9a], 3, [0x55, 0xcc, 0x81]),
+    new letter_code(0xdb, 1, [0x3f]),
+    new letter_code(0xdc, 1, [0x3f]),
+    new letter_code(0xdd, 1, [0x3f]),
+    new letter_code(0xde, 1, [0x3f]),
+    new letter_code(0xdf, 1, [0x3f]),
+    new letter_code(0xe0, 2, [0xc3, 0xa0], 3, [0x61, 0xcc, 0x80]),
+    new letter_code(0xe1, 2, [0xc3, 0xa1], 3, [0x61, 0xcc, 0x81]),
+    new letter_code(0xe2, 2, [0xc3, 0xa2], 3, [0x61, 0xcc, 0x82]),
+    new letter_code(0xe3, 1, [0x3f]),
+    new letter_code(0xe4, 2, [0xc3, 0xa4], 3, [0x61, 0xcc, 0x88]),
+    new letter_code(0xe5, 2, [0xc5, 0xa5], 3, [0x74, 0xcc, 0x8c]),
+    new letter_code(0xe6, 2, [0xc3, 0xa6]),
+    new letter_code(0xe7, 2, [0xc3, 0xbd], 3, [0x79, 0xcc, 0x81]),
+    new letter_code(0xe8, 2, [0xc4, 0x8d], 3, [0x63, 0xcc, 0x8c]),
+    new letter_code(0xe9, 2, [0xc3, 0xa9], 3, [0x65, 0xcc, 0x81]),
+    new letter_code(0xea, 1, [0x3f]),
+    new letter_code(0xeb, 2, [0xc3, 0xab], 3, [0x65, 0xcc, 0x88]),
+    new letter_code(0xec, 2, [0xc4, 0x9b], 3, [0x65, 0xcc, 0x8c]),
+    new letter_code(0xed, 2, [0xc3, 0xad], 3, [0x69, 0xcc, 0x81]),
+    new letter_code(0xee, 1, [0x3f]),
+    new letter_code(0xef, 2, [0xc4, 0x8f], 3, [0x64, 0xcc, 0x8c]),
+    new letter_code(0xf0, 1, [0x3f]),
+    new letter_code(0xf1, 2, [0xc5, 0xbe], 3, [0x7a, 0xcc, 0x8c]),
+    new letter_code(0xf2, 2, [0xc5, 0x88], 3, [0x6e, 0xcc, 0x8c]),
+    new letter_code(0xf3, 2, [0xc3, 0xb3], 3, [0x6f, 0xcc, 0x81]),
+    new letter_code(0xf4, 1, [0x3f]),
+    new letter_code(0xf5, 1, [0x3f]),
+    new letter_code(0xf6, 2, [0xc3, 0xb6], 3, [0x6f, 0xcc, 0x88]),
+    new letter_code(0xf7, 1, [0x3f]),
+    new letter_code(0xf8, 2, [0xc5, 0x99], 3, [0x72, 0xcc, 0x8c]),
+    new letter_code(0xf9, 2, [0xc5, 0xaf], 3, [0x75, 0xcc, 0x8a]),
+    new letter_code(0xfa, 2, [0xc3, 0xba], 3, [0x75, 0xcc, 0x81]),
+    new letter_code(0xfb, 1, [0x3f]),
+    new letter_code(0xfc, 2, [0xc3, 0xbc], 3, [0x75, 0xcc, 0x88]),
+    new letter_code(0xfd, 1, [0x3f]),
+    new letter_code(0xfe, 1, [0x3f]),
+    new letter_code(0xff, 1, [0x3f]),
+]
+let HIGH_TO_UTF8_CYRILLIC: letter_code[] = [
+    new letter_code(0x80, 2, [0xd0, 0x82]),
+    new letter_code(0x81, 2, [0xd0, 0x83]),
+    new letter_code(0x82, 3, [0xe2, 0x80, 0x9a]),
+    new letter_code(0x83, 2, [0xd1, 0x93]),
+    new letter_code(0x84, 3, [0xe2, 0x80, 0x9e]),
+    new letter_code(0x85, 3, [0xe2, 0x80, 0xa6]),
+    new letter_code(0x86, 3, [0xe2, 0x80, 0xa0]),
+    new letter_code(0x87, 3, [0xe2, 0x80, 0xa1]),
+    new letter_code(0x88, 3, [0xe2, 0x82, 0xac]),
+    new letter_code(0x89, 3, [0xe2, 0x80, 0xb0]),
+    new letter_code(0x8a, 2, [0xd0, 0x89]),
+    new letter_code(0x8b, 3, [0xe2, 0x80, 0xb9]),
+    new letter_code(0x8c, 2, [0xd0, 0x8a]),
+    new letter_code(0x8d, 2, [0xd0, 0x8c]),
+    new letter_code(0x8e, 2, [0xd0, 0x8b]),
+    new letter_code(0x8f, 2, [0xd0, 0x8f]),
+    new letter_code(0x90, 2, [0xd1, 0x92]),
+    new letter_code(0x91, 3, [0xe2, 0x80, 0x98]),
+    new letter_code(0x92, 3, [0xe2, 0x80, 0x99]),
+    new letter_code(0x93, 3, [0xe2, 0x80, 0x9c]),
+    new letter_code(0x94, 3, [0xe2, 0x80, 0x9d]),
+    new letter_code(0x95, 3, [0xe2, 0x80, 0xa2]),
+    new letter_code(0x96, 3, [0xe2, 0x80, 0x93]),
+    new letter_code(0x97, 3, [0xe2, 0x80, 0x94]),
+    new letter_code(0x98, 1, [0x3f]),
+    new letter_code(0x99, 3, [0xe2, 0x84, 0xa2]),
+    new letter_code(0x9a, 2, [0xd1, 0x99]),
+    new letter_code(0x9b, 3, [0xe2, 0x80, 0xba]),
+    new letter_code(0x9c, 2, [0xd1, 0x9a]),
+    new letter_code(0x9d, 2, [0xd1, 0x9c]),
+    new letter_code(0x9e, 2, [0xd1, 0x9b]),
+    new letter_code(0x9f, 2, [0xd1, 0x9f]),
+    new letter_code(0xa0, 2, [0xc2, 0xa0]),
+    new letter_code(0xa1, 2, [0xd0, 0x8e]),
+    new letter_code(0xa2, 2, [0xd1, 0x9e]),
+    new letter_code(0xa3, 2, [0xd0, 0x88]),
+    new letter_code(0xa4, 2, [0xc2, 0xa4]),
+    new letter_code(0xa5, 2, [0xd2, 0x90]),
+    new letter_code(0xa6, 2, [0xc2, 0xa6]),
+    new letter_code(0xa7, 2, [0xc2, 0xa7]),
+    new letter_code(0xa8, 2, [0xd0, 0x81]),
+    new letter_code(0xa9, 2, [0xc2, 0xa9]),
+    new letter_code(0xaa, 2, [0xd0, 0x84]),
+    new letter_code(0xab, 2, [0xc2, 0xab]),
+    new letter_code(0xac, 2, [0xc2, 0xac]),
+    new letter_code(0xad, 2, [0xc2, 0xad]),
+    new letter_code(0xae, 2, [0xc2, 0xae]),
+    new letter_code(0xaf, 2, [0xd0, 0x87]),
+    new letter_code(0xb0, 2, [0xc2, 0xb0]),
+    new letter_code(0xb1, 2, [0xc2, 0xb1]),
+    new letter_code(0xb2, 2, [0xd0, 0x86]),
+    new letter_code(0xb3, 2, [0xd1, 0x96]),
+    new letter_code(0xb4, 2, [0xd2, 0x91]),
+    new letter_code(0xb5, 2, [0xc2, 0xb5]),
+    new letter_code(0xb6, 2, [0xc2, 0xb6]),
+    new letter_code(0xb7, 2, [0xc2, 0xb7]),
+    new letter_code(0xb8, 2, [0xd1, 0x91]),
+    new letter_code(0xb9, 3, [0xe2, 0x84, 0x96]),
+    new letter_code(0xba, 2, [0xd1, 0x94]),
+    new letter_code(0xbb, 2, [0xc2, 0xbb]),
+    new letter_code(0xbc, 2, [0xd1, 0x98]),
+    new letter_code(0xbd, 2, [0xd0, 0x85]),
+    new letter_code(0xbe, 2, [0xd1, 0x95]),
+    new letter_code(0xbf, 2, [0xd1, 0x97]),
+    new letter_code(0xc0, 2, [0xd0, 0x90]),
+    new letter_code(0xc1, 2, [0xd0, 0x91]),
+    new letter_code(0xc2, 2, [0xd0, 0x92]),
+    new letter_code(0xc3, 2, [0xd0, 0x93]),
+    new letter_code(0xc4, 2, [0xd0, 0x94]),
+    new letter_code(0xc5, 2, [0xd0, 0x95]),
+    new letter_code(0xc6, 2, [0xd0, 0x96]),
+    new letter_code(0xc7, 2, [0xd0, 0x97]),
+    new letter_code(0xc8, 2, [0xd0, 0x98]),
+    new letter_code(0xc9, 2, [0xd0, 0x99], 4, [0xd0, 0x98, 0xcc, 0x86]),
+    new letter_code(0xca, 2, [0xd0, 0x9a]),
+    new letter_code(0xcb, 2, [0xd0, 0x9b]),
+    new letter_code(0xcc, 2, [0xd0, 0x9c]),
+    new letter_code(0xcd, 2, [0xd0, 0x9d]),
+    new letter_code(0xce, 2, [0xd0, 0x9e]),
+    new letter_code(0xcf, 2, [0xd0, 0x9f]),
+    new letter_code(0xd0, 2, [0xd0, 0xa0]),
+    new letter_code(0xd1, 2, [0xd0, 0xa1]),
+    new letter_code(0xd2, 2, [0xd0, 0xa2]),
+    new letter_code(0xd3, 2, [0xd0, 0xa3]),
+    new letter_code(0xd4, 2, [0xd0, 0xa4]),
+    new letter_code(0xd5, 2, [0xd0, 0xa5]),
+    new letter_code(0xd6, 2, [0xd0, 0xa6]),
+    new letter_code(0xd7, 2, [0xd0, 0xa7]),
+    new letter_code(0xd8, 2, [0xd0, 0xa8]),
+    new letter_code(0xd9, 2, [0xd0, 0xa9]),
+    new letter_code(0xda, 2, [0xd0, 0xaa]),
+    new letter_code(0xdb, 2, [0xd0, 0xab]),
+    new letter_code(0xdc, 2, [0xd0, 0xac]),
+    new letter_code(0xdd, 2, [0xd0, 0xad]),
+    new letter_code(0xde, 2, [0xd0, 0xae]),
+    new letter_code(0xdf, 2, [0xd0, 0xaf]),
+    new letter_code(0xe0, 2, [0xd0, 0xb0]),
+    new letter_code(0xe1, 2, [0xd0, 0xb1]),
+    new letter_code(0xe2, 2, [0xd0, 0xb2]),
+    new letter_code(0xe3, 2, [0xd0, 0xb3]),
+    new letter_code(0xe4, 2, [0xd0, 0xb4]),
+    new letter_code(0xe5, 2, [0xd0, 0xb5]),
+    new letter_code(0xe6, 2, [0xd0, 0xb6]),
+    new letter_code(0xe7, 2, [0xd0, 0xb7]),
+    new letter_code(0xe8, 2, [0xd0, 0xb8]),
+    new letter_code(0xe9, 2, [0xd0, 0xb9], 4, [0xd0, 0xb8, 0xcc, 0x86]),
+    new letter_code(0xea, 2, [0xd0, 0xba]),
+    new letter_code(0xeb, 2, [0xd0, 0xbb]),
+    new letter_code(0xec, 2, [0xd0, 0xbc]),
+    new letter_code(0xed, 2, [0xd0, 0xbd]),
+    new letter_code(0xee, 2, [0xd0, 0xbe]),
+    new letter_code(0xef, 2, [0xd0, 0xbf]),
+    new letter_code(0xf0, 2, [0xd1, 0x80]),
+    new letter_code(0xf1, 2, [0xd1, 0x81]),
+    new letter_code(0xf2, 2, [0xd1, 0x82]),
+    new letter_code(0xf3, 2, [0xd1, 0x83]),
+    new letter_code(0xf4, 2, [0xd1, 0x84]),
+    new letter_code(0xf5, 2, [0xd1, 0x85]),
+    new letter_code(0xf6, 2, [0xd1, 0x86]),
+    new letter_code(0xf7, 2, [0xd1, 0x87]),
+    new letter_code(0xf8, 2, [0xd1, 0x88]),
+    new letter_code(0xf9, 2, [0xd1, 0x89]),
+    new letter_code(0xfa, 2, [0xd1, 0x8a]),
+    new letter_code(0xfb, 2, [0xd1, 0x8b]),
+    new letter_code(0xfc, 2, [0xd1, 0x8c]),
+    new letter_code(0xfd, 2, [0xd1, 0x8d]),
+    new letter_code(0xfe, 2, [0xd1, 0x8e]),
+    new letter_code(0xff, 2, [0xd1, 0x8f]),
+]
+let HIGH_TO_UTF8_GREEK: letter_code[] = [
+    new letter_code(0x80, 3, [0xe2, 0x82, 0xac]),
+    new letter_code(0x81, 1, [0x3f]),
+    new letter_code(0x82, 3, [0xe2, 0x80, 0x9a]),
+    new letter_code(0x83, 2, [0xc6, 0x92]),
+    new letter_code(0x84, 3, [0xe2, 0x80, 0x9e]),
+    new letter_code(0x85, 3, [0xe2, 0x80, 0xa6]),
+    new letter_code(0x86, 3, [0xe2, 0x80, 0xa0]),
+    new letter_code(0x87, 3, [0xe2, 0x80, 0xa1]),
+    new letter_code(0x88, 1, [0x3f]),
+    new letter_code(0x89, 3, [0xe2, 0x80, 0xb0]),
+    new letter_code(0x8a, 1, [0x3f]),
+    new letter_code(0x8b, 3, [0xe2, 0x80, 0xb9]),
+    new letter_code(0x8c, 1, [0x3f]),
+    new letter_code(0x8d, 1, [0x3f]),
+    new letter_code(0x8e, 1, [0x3f]),
+    new letter_code(0x8f, 1, [0x3f]),
+    new letter_code(0x90, 1, [0x3f]),
+    new letter_code(0x91, 3, [0xe2, 0x80, 0x98]),
+    new letter_code(0x92, 3, [0xe2, 0x80, 0x99]),
+    new letter_code(0x93, 3, [0xe2, 0x80, 0x9c]),
+    new letter_code(0x94, 3, [0xe2, 0x80, 0x9d]),
+    new letter_code(0x95, 3, [0xe2, 0x80, 0xa2]),
+    new letter_code(0x96, 3, [0xe2, 0x80, 0x93]),
+    new letter_code(0x97, 3, [0xe2, 0x80, 0x94]),
+    new letter_code(0x98, 1, [0x3f]),
+    new letter_code(0x99, 3, [0xe2, 0x84, 0xa2]),
+    new letter_code(0x9a, 1, [0x3f]),
+    new letter_code(0x9b, 3, [0xe2, 0x80, 0xba]),
+    new letter_code(0x9c, 1, [0x3f]),
+    new letter_code(0x9d, 1, [0x3f]),
+    new letter_code(0x9e, 1, [0x3f]),
+    new letter_code(0x9f, 1, [0x3f]),
+    new letter_code(0xa0, 2, [0xc2, 0xa0]),
+    new letter_code(0xa1, 2, [0xce, 0x85]),
+    new letter_code(0xa2, 2, [0xce, 0x86]),
+    new letter_code(0xa3, 2, [0xc2, 0xa3]),
+    new letter_code(0xa4, 2, [0xc2, 0xa4]),
+    new letter_code(0xa5, 2, [0xc2, 0xa5]),
+    new letter_code(0xa6, 2, [0xc2, 0xa6]),
+    new letter_code(0xa7, 2, [0xc2, 0xa7]),
+    new letter_code(0xa8, 2, [0xc2, 0xa8]),
+    new letter_code(0xa9, 2, [0xc2, 0xa9]),
+    new letter_code(0xaa, 1, [0x3f]),
+    new letter_code(0xab, 2, [0xc2, 0xab]),
+    new letter_code(0xac, 2, [0xc2, 0xac]),
+    new letter_code(0xad, 2, [0xc2, 0xad]),
+    new letter_code(0xae, 2, [0xc2, 0xae]),
+    new letter_code(0xaf, 3, [0xe2, 0x80, 0x95]),
+    new letter_code(0xb0, 2, [0xc2, 0xb0]),
+    new letter_code(0xb1, 2, [0xc2, 0xb1]),
+    new letter_code(0xb2, 2, [0xc2, 0xb2]),
+    new letter_code(0xb3, 2, [0xc2, 0xb3]),
+    new letter_code(0xb4, 2, [0xce, 0x84]),
+    new letter_code(0xb5, 2, [0xc2, 0xb5]),
+    new letter_code(0xb6, 2, [0xc2, 0xb6]),
+    new letter_code(0xb7, 2, [0xc2, 0xb7]),
+    new letter_code(0xb8, 2, [0xce, 0x88]),
+    new letter_code(0xb9, 3, [0xce, 0x89]),
+    new letter_code(0xba, 2, [0xce, 0x8a]),
+    new letter_code(0xbb, 2, [0xc2, 0xbb]),
+    new letter_code(0xbc, 2, [0xce, 0x8c]),
+    new letter_code(0xbd, 2, [0xc2, 0xbd]),
+    new letter_code(0xbe, 2, [0xce, 0x8e]),
+    new letter_code(0xbf, 2, [0xce, 0x8f]),
+    new letter_code(0xc0, 2, [0xce, 0x90]),
+    new letter_code(0xc1, 2, [0xce, 0x91]),
+    new letter_code(0xc2, 2, [0xce, 0x92]),
+    new letter_code(0xc3, 2, [0xce, 0x93]),
+    new letter_code(0xc4, 2, [0xce, 0x94]),
+    new letter_code(0xc5, 2, [0xce, 0x95]),
+    new letter_code(0xc6, 2, [0xce, 0x96]),
+    new letter_code(0xc7, 2, [0xce, 0x97]),
+    new letter_code(0xc8, 2, [0xce, 0x98]),
+    new letter_code(0xc9, 2, [0xce, 0x99]),
+    new letter_code(0xca, 2, [0xce, 0x9a]),
+    new letter_code(0xcb, 2, [0xce, 0x9b]),
+    new letter_code(0xcc, 2, [0xce, 0x9c]),
+    new letter_code(0xcd, 2, [0xce, 0x9d]),
+    new letter_code(0xce, 2, [0xce, 0x9e]),
+    new letter_code(0xcf, 2, [0xce, 0x9f]),
+    new letter_code(0xd0, 2, [0xce, 0xa0]),
+    new letter_code(0xd1, 2, [0xce, 0xa1]),
+    new letter_code(0xd2, 1, [0x3f]),
+    new letter_code(0xd3, 2, [0xce, 0xa3]),
+    new letter_code(0xd4, 2, [0xce, 0xa4]),
+    new letter_code(0xd5, 2, [0xce, 0xa5]),
+    new letter_code(0xd6, 2, [0xce, 0xa6]),
+    new letter_code(0xd7, 2, [0xce, 0xa7]),
+    new letter_code(0xd8, 2, [0xce, 0xa8]),
+    new letter_code(0xd9, 2, [0xce, 0xa9]),
+    new letter_code(0xda, 2, [0xce, 0xaa]),
+    new letter_code(0xdb, 2, [0xce, 0xab]),
+    new letter_code(0xdc, 2, [0xce, 0xac]),
+    new letter_code(0xdd, 2, [0xce, 0xad]),
+    new letter_code(0xde, 2, [0xce, 0xae]),
+    new letter_code(0xdf, 2, [0xce, 0xaf]),
+    new letter_code(0xe0, 2, [0xce, 0xb0]),
+    new letter_code(0xe1, 2, [0xce, 0xb1]),
+    new letter_code(0xe2, 2, [0xce, 0xb2]),
+    new letter_code(0xe3, 2, [0xce, 0xb3]),
+    new letter_code(0xe4, 2, [0xce, 0xb4]),
+    new letter_code(0xe5, 2, [0xce, 0xb5]),
+    new letter_code(0xe6, 2, [0xce, 0xb6]),
+    new letter_code(0xe7, 2, [0xce, 0xb7]),
+    new letter_code(0xe8, 2, [0xce, 0xb8]),
+    new letter_code(0xe9, 2, [0xce, 0xb9]),
+    new letter_code(0xea, 2, [0xce, 0xba]),
+    new letter_code(0xeb, 2, [0xce, 0xbb]),
+    new letter_code(0xec, 2, [0xce, 0xbc]),
+    new letter_code(0xed, 2, [0xce, 0xbd]),
+    new letter_code(0xee, 2, [0xce, 0xbe]),
+    new letter_code(0xef, 2, [0xce, 0xbf]),
+    new letter_code(0xf0, 2, [0xcf, 0x80]),
+    new letter_code(0xf1, 2, [0xcf, 0x81]),
+    new letter_code(0xf2, 2, [0xcf, 0x82]),
+    new letter_code(0xf3, 2, [0xcf, 0x83]),
+    new letter_code(0xf4, 2, [0xcf, 0x84]),
+    new letter_code(0xf5, 2, [0xcf, 0x85]),
+    new letter_code(0xf6, 2, [0xcf, 0x86]),
+    new letter_code(0xf7, 2, [0xcf, 0x87]),
+    new letter_code(0xf8, 2, [0xcf, 0x88]),
+    new letter_code(0xf9, 2, [0xcf, 0x89]),
+    new letter_code(0xfa, 2, [0xcf, 0x8a]),
+    new letter_code(0xfb, 2, [0xcf, 0x8b]),
+    new letter_code(0xfc, 2, [0xcf, 0x8c]),
+    new letter_code(0xfd, 2, [0xcf, 0x8d]),
+    new letter_code(0xfe, 2, [0xcf, 0x8e]),
+    new letter_code(0xff, 1, [0x3f]),
+]
+export class unnamed683_8 {
+    public encoding: encoding_type = null;
+    public to_utf8_table: letter_code = null;
+    public from_utf8_table: from_utf8_lookup[] = new Array(HIGH_CHAR_COUNT).fill(null);
+    public from_utf8_decomposed_table: from_utf8_lookup[] = new Array(HIGH_CHAR_COUNT).fill(null);
+    public utf8_table_size: number = 0;
+    public decomposed_table_size: number = 0;
+    public constructor(...args: any[]) {
+        args.length >= 1 && (this.encoding = args[0]);
+        args.length >= 2 && (this.to_utf8_table = args[1]);
+        args.length >= 3 && (this.from_utf8_table = args[2]);
+        args.length >= 4 && (this.from_utf8_decomposed_table = args[3]);
+        args.length >= 5 && (this.utf8_table_size = args[4]);
+        args.length >= 6 && (this.decomposed_table_size = args[5]);
+    }
+}
+let data: unnamed683_8 = new unnamed683_8();
+function calculate_utf8_value(bytes: number, length: number) {
+    let value: number = 0;
+    if (length >= 1) {
+        value |= bytes[0]
+    }
+    if (length >= 2) {
+        value |= bytes[1] << 8
+    }
+    if (length >= 3) {
+        value |= bytes[2] << 16
+    }
+    if (length >= 4) {
+        value |= bytes[3] << 24
+    }
+    return value;
+}
+function compare_utf8_lookup(a: void, b: void) {
+    let va: number = ((const from_utf8_lookup*) a).utf8;
+    let vb: number = ((const from_utf8_lookup*) b).utf8;
+    return va == vb ? 0 : (va < vb ? -1 : 1);
+}
+function build_reverse_lookup_table() {
+    if (!data.to_utf8_table) {
+        data.utf8_table_size = 0;
+        return;
+    }
+    for (let i: number = 0; i < HIGH_CHAR_COUNT; i++) {
+        let code: letter_code = data.to_utf8_table[i];
+        data.from_utf8_table[i].code = code;
+        data.from_utf8_table[i].utf8 = calculate_utf8_value(code.utf8_value, code.bytes);
+    }
+    data.utf8_table_size = HIGH_CHAR_COUNT;
+    qsort(data.from_utf8_table, data.utf8_table_size, sizeof(from_utf8_lookup), compare_utf8_lookup);
+}
+function build_decomposed_lookup_table() {
+    if (!data.to_utf8_table) {
+        data.decomposed_table_size = 0;
+        return;
+    }
+    let index: number = 0;
+    for (let i: number = 0; i < HIGH_CHAR_COUNT; i++) {
+        let code: letter_code = data.to_utf8_table[i];
+        if (code.bytes_decomposed > 0) {
+            data.from_utf8_decomposed_table[index].code = code;
+            data.from_utf8_decomposed_table[index].utf8 =
+                calculate_utf8_value(code.utf8_decomposed, code.bytes_decomposed);
+            index++;
+        }
+    }
+    data.decomposed_table_size = index;
+    qsort(data.from_utf8_decomposed_table, data.decomposed_table_size, sizeof(from_utf8_lookup), compare_utf8_lookup);
+}
+function get_letter_code_for_internal(c: number) {
+    if (c < 0x80 || !data.to_utf8_table) {
+        return NULL;
+    }
+    return data.to_utf8_table[c - 0x80];
+}
+function get_utf8_code(c: char, num_bytes: number) {
+    let uc: number = (const uint8_t *) c;
+    if (uc[0] < 0x80) {
+        * num_bytes = 1;
+        return uc[0];
+    } else if ((uc[0] & 0xe0) == 0xc0 && (uc[1] & 0xc0) == 0x80) {
+        * num_bytes = 2;
+        return uc[0] | uc[1] << 8;
+    } else if ((uc[0] & 0xf0) == 0xe0 && (uc[1] & 0xc0) == 0x80 && (uc[2] & 0xc0) == 0x80) {
+        * num_bytes = 3;
+        return uc[0] | uc[1] << 8 | uc[2] << 16;
+    } else {
+        * num_bytes = 1;
+        return 0;
+    }
+}
+function is_combining_char(b1: number, b2: number) {
+    if (b1 == 0xcc && b2 >= 0x80) {
+        return 1;
+    } else if (b1 == 0xcd && b2 <= 0xaf) {
+        return 1;
+    }
+    return 0;
+}
+function search_utf8_table(key: from_utf8_lookup, table: from_utf8_lookup, size: number) {
+    let result: from_utf8_lookup = bsearch(key, table, size, sizeof(from_utf8_lookup), compare_utf8_lookup);
+    return result ? result.code : NULL;
+}
+function get_letter_code_for_utf8(c: char, num_bytes: number, is_accent: number) {
+    let single_char: letter_code = { 0, 1};
+    let key: from_utf8_lookup = { 0, NULL };
+    if (is_accent) {
+        * is_accent = 0;
+    }
+    let uc: number = (const uint8_t *) c;
+    if (uc[0] < 0x80) {
+        if (num_bytes) {
+            * num_bytes = 1;
+        }
+        single_char.internal_value = uc[0];
+        single_char.utf8_value[0] = uc[0];
+        return single_char;
+    } else if ((uc[0] & 0xe0) == 0xc0 && (uc[1] & 0xc0) == 0x80) {
+        if (num_bytes) {
+            * num_bytes = 2;
+        }
+        key.utf8 = uc[0] | uc[1] << 8;
+        if (is_combining_char(uc[0], uc[1])) {
+            if (is_accent) {
+                * is_accent = 1;
+            }
+            return NULL;
+        }
+    } else if ((uc[0] & 0xf0) == 0xe0 && (uc[1] & 0xc0) == 0x80 && (uc[2] & 0xc0) == 0x80) {
+        if (num_bytes) {
+            * num_bytes = 3;
+        }
+        key.utf8 = uc[0] | uc[1] << 8 | uc[2] << 16;
+    } else {
+        if (num_bytes) {
+            * num_bytes = 1;
+        }
+    }
+    if (key.utf8 == 0) {
+        return NULL;
+    }
+    return search_utf8_table(key, data.from_utf8_table, data.utf8_table_size);
+}
+function get_letter_code_for_combining_utf8(prev_char: char, combining_char: char) {
+    let prev_bytes: number
+    let comb_bytes: number;
+    let prev_code: number = get_utf8_code(prev_char, prev_bytes);
+    let code: number = get_utf8_code(combining_char, comb_bytes);
+    switch (prev_bytes) {
+        default: return NULL
+        case 2:
+            code <<= 8
+        case 1:
+            code <<= 8
+            break
+    }
+    code |= prev_code
+    let key: from_utf8_lookup = { code };
+    return search_utf8_table(key, data.from_utf8_decomposed_table, data.decomposed_table_size);
+}
+export function encoding_determine(language: language_type) {
+    if (language == LANGUAGE_POLISH) {
+        data.to_utf8_table = HIGH_TO_UTF8_EASTERN;
+        data.encoding = ENCODING_EASTERN_EUROPE;
+    } else if (language == LANGUAGE_CZECH) {
+        data.to_utf8_table = HIGH_TO_UTF8_CZECH;
+        data.encoding = ENCODING_CZECH;
+    } else if (language == LANGUAGE_RUSSIAN) {
+        data.to_utf8_table = HIGH_TO_UTF8_CYRILLIC;
+        data.encoding = ENCODING_CYRILLIC;
+    } else if (language == LANGUAGE_GREEK) {
+        data.to_utf8_table = HIGH_TO_UTF8_GREEK;
+        data.encoding = ENCODING_GREEK;
+    } else if (language == LANGUAGE_TRADITIONAL_CHINESE) {
+        encoding_trad_chinese_init();
+        data.to_utf8_table = NULL;
+        data.encoding = ENCODING_TRADITIONAL_CHINESE;
+    } else if (language == LANGUAGE_SIMPLIFIED_CHINESE) {
+        encoding_simp_chinese_init();
+        data.to_utf8_table = NULL;
+        data.encoding = ENCODING_SIMPLIFIED_CHINESE;
+    } else if (language == LANGUAGE_KOREAN) {
+        encoding_korean_init();
+        data.to_utf8_table = NULL;
+        data.encoding = ENCODING_KOREAN;
+    } else if (language == LANGUAGE_JAPANESE) {
+        encoding_japanese_init();
+        data.to_utf8_table = NULL;
+        data.encoding = ENCODING_JAPANESE;
+    } else {
+        data.to_utf8_table = HIGH_TO_UTF8_DEFAULT;
+        data.encoding = ENCODING_WESTERN_EUROPE;
+    }
+    build_reverse_lookup_table();
+    build_decomposed_lookup_table();
+    return data.encoding;
+}
+export function encoding_get() {
+    return data.encoding;
+}
+export function encoding_is_multibyte() {
+    return !data.to_utf8_table;
+}
+export function encoding_system_uses_decomposed() {
+    return 0;
+}
+function is_ascii(utf8_char: char) {
+    return ((uint8_t) * utf8_char & 0x80) == 0;
+}
+export function encoding_can_display(utf8_char: char) {
+    return is_ascii(utf8_char) || get_letter_code_for_utf8(utf8_char, NULL, NULL) != NULL;
+}
+export function encoding_to_utf8(input: number, output: char, output_length: number, decomposed: number) {
+    if (!data.to_utf8_table) {
+        if (data.encoding == ENCODING_KOREAN) {
+            encoding_korean_to_utf8(input, output, output_length);
+        } else if (data.encoding == ENCODING_TRADITIONAL_CHINESE) {
+            encoding_trad_chinese_to_utf8(input, output, output_length);
+        } else if (data.encoding == ENCODING_SIMPLIFIED_CHINESE) {
+            encoding_simp_chinese_to_utf8(input, output, output_length);
+        } else if (data.encoding == ENCODING_JAPANESE) {
+            encoding_japanese_to_utf8(input, output, output_length);
+        } else {
+            * output = 0;
+        }
+        return;
+    }
+    let max_output: char = output[output_length - 1];
+    while (* input && output < max_output) {
+            uint8_t c = * input;
+        if (c < 0x80) {
+                * output = c;
+            ++output;
+        } else {
+            // multi-byte char
+            const letter_code * code = get_letter_code_for_internal(c);
+                int num_bytes;
+            const uint8_t * bytes;
+            if (decomposed && code.bytes_decomposed) {
+                num_bytes = code.bytes_decomposed;
+                bytes = code.utf8_decomposed;
+            } else {
+                num_bytes = code.bytes;
+                bytes = code.utf8_value;
+            }
+            if (num_bytes) {
+                if (output + num_bytes >= max_output) {
+                    break;
+                }
+                for (int i = 0; i < num_bytes; i++) {
+                        * output = bytes[i];
+                    ++output;
+                }
+            }
+        }
+        ++input;
+    }
+    * output = 0;
+}
+export function encoding_from_utf8(input: char, output: number, output_length: number) {
+    if (!data.to_utf8_table) {
+        if (data.encoding == ENCODING_KOREAN) {
+            encoding_korean_from_utf8(input, output, output_length);
+            return;
+        } else if (data.encoding == ENCODING_TRADITIONAL_CHINESE) {
+            encoding_trad_chinese_from_utf8(input, output, output_length);
+            return;
+        } else if (data.encoding == ENCODING_SIMPLIFIED_CHINESE) {
+            encoding_simp_chinese_from_utf8(input, output, output_length);
+            return;
+        } else if (data.encoding == ENCODING_JAPANESE) {
+            encoding_japanese_from_utf8(input, output, output_length);
+            return;
+        }
+    }
+    let max_output: number = output[output_length - 1];
+    let prev_input: char = input;
+    while (* input && output < max_output) {
+        if (is_ascii(input)) {
+                * output = * input;
+            prev_input = input;
+            ++output;
+            ++input;
+        } else {
+                // multi-byte char
+                int bytes;
+                int is_accent;
+            const letter_code * code = get_letter_code_for_utf8(input, bytes, is_accent);
+            if (code) {
+                    * output = code.internal_value;
+            } else if (is_accent) {
+                code = get_letter_code_for_combining_utf8(prev_input, input);
+                if (code) {
+                    --output;
+                        * output = code.internal_value;
+                } else {
+                        * output = '?';
+                }
+            } else {
+                    * output = '?';
+            }
+            ++output;
+            prev_input = input;
+            input += bytes;
+        }
+    }
+    * output = 0;
+}
+export function encoding_get_utf8_character_bytes(input: char) {
+    if ((input & 0x80) == 0) {
+        return 1;
+    } else if ((input & 0xe0) == 0xc0) {
+        return 2;
+    } else if ((input & 0xf0) == 0xe0) {
+        return 3;
+    } else if ((input & 0xf8) == 0xf0) {
+        return 4;
+    } else {
+        return 1;
+    }
+}
+export function encoding_utf16_to_utf8(input: number, output: char) {
+    for (let i: number = 0; input[i]; i++) {
+        if ((input[i] & 0xff80) == 0) {
+            * (output++) = input[i] & 0xff;
+        } else if ((input[i] & 0xf800) == 0) {
+            * (output++) = ((input[i] >> 6) & 0xff) | 0xc0;
+            * (output++) = (input[i] & 0x3f) | 0x80;
+        } else if ((input[i] & 0xfc00) == 0xd800 && (input[i + 1] & 0xfc00) == 0xdc00) {
+            * (output++) = (((input[i] + 64) >> 8) & 0x3) | 0xf0;
+            * (output++) = (((input[i] >> 2) + 16) & 0x3f) | 0x80;
+            * (output++) = ((input[i] >> 4) & 0x30) | 0x80 | ((input[i + 1] << 2) & 0xf);
+            * (output++) = (input[i + 1] & 0x3f) | 0x80;
+            i += 1
+        } else {
+            * (output++) = ((input[i] >> 12) & 0xf) | 0xe0;
+            * (output++) = ((input[i] >> 6) & 0x3f) | 0x80;
+            * (output++) = (input[i] & 0x3f) | 0x80;
+        }
+    }
+    * output = '\0';
+}
+export function encoding_utf8_to_utf16(input: char, output: number) {
+    for (let i: number = 0; input[i]) {
+        if ((input[i] & 0xe0) == 0xe0) {
+            * (output++) = ((input[i] & 0x0f) << 12) | ((input[i + 1] & 0x3f) << 6) | (input[i + 2] & 0x3f);
+            i += 3
+        } else if ((input[i] & 0xc0) == 0xc0) {
+            * (output++) = ((input[i] & 0x1f) << 6) | (input[i + 1] & 0x3f);
+            i += 2
+        } else {
+            * (output++) = input[i];
+            i += 1
+        }
+    }
+    * output = '\0';
+}

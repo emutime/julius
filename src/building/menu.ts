@@ -1,5 +1,34 @@
-export const BUILD_MENU_ITEM_MAX = 30;
+
 import { building_type } from 'building/type';
+import { city_buildings_triumphal_arch_available } from 'city/buildings';
+import { config_get, config_key } from 'core/config';
+import { empire_can_produce_resource, empire_can_produce_resource_potentially } from 'empire/city';
+import { resource_type } from 'game/resource';
+import { tutorial_build_buttons, tutorial_get_build_buttons } from 'game/tutorial';
+import { scenario_building_allowed } from 'scenario/building';
+import { Ref } from '../../ext/crt';
+export const BUILD_MENU_ITEM_MAX = 30;
+export const enum build_menu_group {
+    BUILD_MENU_VACANT_HOUSE = 0,
+    BUILD_MENU_CLEAR_LAND = 1,
+    BUILD_MENU_ROAD = 2,
+    BUILD_MENU_WATER = 3,
+    BUILD_MENU_HEALTH = 4,
+    BUILD_MENU_TEMPLES = 5,
+    BUILD_MENU_EDUCATION = 6,
+    BUILD_MENU_ENTERTAINMENT = 7,
+    BUILD_MENU_ADMINISTRATION = 8,
+    BUILD_MENU_ENGINEERING = 9,
+    BUILD_MENU_SECURITY = 10,
+    BUILD_MENU_INDUSTRY = 11,
+    BUILD_MENU_FARMS = 12,
+    BUILD_MENU_RAW_MATERIALS = 13,
+    BUILD_MENU_WORKSHOPS = 14,
+    BUILD_MENU_SMALL_TEMPLES = 15,
+    BUILD_MENU_LARGE_TEMPLES = 16,
+    BUILD_MENU_FORTS = 17,
+    BUILD_MENU_MAX = 18
+};
 import BUILDING_MENU_FARMS = building_type.BUILDING_MENU_FARMS;
 import BUILDING_MENU_RAW_MATERIALS = building_type.BUILDING_MENU_RAW_MATERIALS;
 import BUILDING_MENU_WORKSHOPS = building_type.BUILDING_MENU_WORKSHOPS;
@@ -86,20 +115,10 @@ import BUILDING_OIL_WORKSHOP = building_type.BUILDING_OIL_WORKSHOP;
 import BUILDING_WEAPONS_WORKSHOP = building_type.BUILDING_WEAPONS_WORKSHOP;
 import BUILDING_FURNITURE_WORKSHOP = building_type.BUILDING_FURNITURE_WORKSHOP;
 import BUILDING_POTTERY_WORKSHOP = building_type.BUILDING_POTTERY_WORKSHOP;
-import { building_type } from 'building/type';
-import { build_menu_group } from 'building/menu';
 import BUILD_MENU_SMALL_TEMPLES = build_menu_group.BUILD_MENU_SMALL_TEMPLES;
 import BUILD_MENU_LARGE_TEMPLES = build_menu_group.BUILD_MENU_LARGE_TEMPLES;
 import BUILD_MENU_MAX = build_menu_group.BUILD_MENU_MAX;;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { city_buildings_triumphal_arch_available } from 'city/buildings';
-import { config_key } from 'core/config';
 import CONFIG_UI_ALLOW_CYCLING_TEMPLES = config_key.CONFIG_UI_ALLOW_CYCLING_TEMPLES;
-import { config_key } from 'core/config';
-import { config_string_key } from 'core/config';
-import { config_get } from 'core/config';
-import { resource_type } from 'game/resource';
 import RESOURCE_WHEAT = resource_type.RESOURCE_WHEAT;
 import RESOURCE_VEGETABLES = resource_type.RESOURCE_VEGETABLES;
 import RESOURCE_FRUIT = resource_type.RESOURCE_FRUIT;
@@ -116,14 +135,6 @@ import RESOURCE_WEAPONS = resource_type.RESOURCE_WEAPONS;
 import RESOURCE_FURNITURE = resource_type.RESOURCE_FURNITURE;
 import RESOURCE_POTTERY = resource_type.RESOURCE_POTTERY;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { empire_city } from 'empire/city';
-import { empire_can_produce_resource } from 'empire/city';
-import { empire_can_produce_resource_potentially } from 'empire/city';
-import { tutorial_availability } from 'game/tutorial';
-import { tutorial_build_buttons } from 'game/tutorial';
 import TUT1_BUILD_START = tutorial_build_buttons.TUT1_BUILD_START;
 import TUT1_BUILD_AFTER_FIRE = tutorial_build_buttons.TUT1_BUILD_AFTER_FIRE;
 import TUT1_BUILD_AFTER_COLLAPSE = tutorial_build_buttons.TUT1_BUILD_AFTER_COLLAPSE;
@@ -131,48 +142,43 @@ import TUT2_BUILD_START = tutorial_build_buttons.TUT2_BUILD_START;
 import TUT2_BUILD_UP_TO_250 = tutorial_build_buttons.TUT2_BUILD_UP_TO_250;
 import TUT2_BUILD_UP_TO_450 = tutorial_build_buttons.TUT2_BUILD_UP_TO_450;
 import TUT2_BUILD_AFTER_450 = tutorial_build_buttons.TUT2_BUILD_AFTER_450;
-import { tutorial_build_buttons } from 'game/tutorial';
-import { tutorial_get_build_buttons } from 'game/tutorial';
-import { scenario_building_allowed } from 'scenario/building';
-let MENU_BUILDING_TYPE: building_type[] = new Array(BUILD_MENU_MAX).fill({
-    { BUILDING_HOUSE_VACANT_LOT, 0},
-    { BUILDING_CLEAR_LAND, 0},
-    { BUILDING_ROAD, 0},
-    { BUILDING_DRAGGABLE_RESERVOIR, BUILDING_AQUEDUCT, BUILDING_FOUNTAIN, BUILDING_WELL, 0},
-    { BUILDING_BARBER, BUILDING_BATHHOUSE, BUILDING_DOCTOR, BUILDING_HOSPITAL, 0},
-    { BUILDING_MENU_SMALL_TEMPLES, BUILDING_MENU_LARGE_TEMPLES, BUILDING_ORACLE, 0},
-    { BUILDING_SCHOOL, BUILDING_ACADEMY, BUILDING_LIBRARY, BUILDING_MISSION_POST, 0},
-    {
-        BUILDING_THEATER, BUILDING_AMPHITHEATER, BUILDING_COLOSSEUM, BUILDING_HIPPODROME,
-        BUILDING_GLADIATOR_SCHOOL, BUILDING_LION_HOUSE, BUILDING_ACTOR_COLONY, BUILDING_CHARIOT_MAKER, 0},
-    {
+let MENU_BUILDING_TYPE: building_type[][] = [
+    [BUILDING_HOUSE_VACANT_LOT, 0],
+    [BUILDING_CLEAR_LAND, 0],
+    [BUILDING_ROAD, 0],
+    [BUILDING_DRAGGABLE_RESERVOIR, BUILDING_AQUEDUCT, BUILDING_FOUNTAIN, BUILDING_WELL, 0],
+    [BUILDING_BARBER, BUILDING_BATHHOUSE, BUILDING_DOCTOR, BUILDING_HOSPITAL, 0],
+    [BUILDING_MENU_SMALL_TEMPLES, BUILDING_MENU_LARGE_TEMPLES, BUILDING_ORACLE, 0],
+    [BUILDING_SCHOOL, BUILDING_ACADEMY, BUILDING_LIBRARY, BUILDING_MISSION_POST, 0],
+    [BUILDING_THEATER, BUILDING_AMPHITHEATER, BUILDING_COLOSSEUM, BUILDING_HIPPODROME, BUILDING_GLADIATOR_SCHOOL, BUILDING_LION_HOUSE, BUILDING_ACTOR_COLONY, BUILDING_CHARIOT_MAKER, 0],
+    [
         BUILDING_FORUM, BUILDING_SENATE,
         BUILDING_GOVERNORS_HOUSE, BUILDING_GOVERNORS_VILLA, BUILDING_GOVERNORS_PALACE,
-        BUILDING_SMALL_STATUE, BUILDING_MEDIUM_STATUE, BUILDING_LARGE_STATUE, BUILDING_TRIUMPHAL_ARCH, 0},
-    {
+        BUILDING_SMALL_STATUE, BUILDING_MEDIUM_STATUE, BUILDING_LARGE_STATUE, BUILDING_TRIUMPHAL_ARCH, 0],
+    [
         BUILDING_GARDENS, BUILDING_PLAZA, BUILDING_ENGINEERS_POST, BUILDING_LOW_BRIDGE, BUILDING_SHIP_BRIDGE,
-        BUILDING_SHIPYARD, BUILDING_DOCK, BUILDING_WHARF, 0},
-    {
+        BUILDING_SHIPYARD, BUILDING_DOCK, BUILDING_WHARF, 0],
+    [
         BUILDING_WALL, BUILDING_TOWER, BUILDING_GATEHOUSE, BUILDING_PREFECTURE,
-        BUILDING_FORT, BUILDING_MILITARY_ACADEMY, BUILDING_BARRACKS, 0},
-    {
+        BUILDING_FORT, BUILDING_MILITARY_ACADEMY, BUILDING_BARRACKS, 0],
+    [
         BUILDING_MENU_FARMS, BUILDING_MENU_RAW_MATERIALS, BUILDING_MENU_WORKSHOPS,
-        BUILDING_MARKET, BUILDING_GRANARY, BUILDING_WAREHOUSE, 0},
-    {
+        BUILDING_MARKET, BUILDING_GRANARY, BUILDING_WAREHOUSE, 0],
+    [
         BUILDING_WHEAT_FARM, BUILDING_VEGETABLE_FARM, BUILDING_FRUIT_FARM,
-        BUILDING_OLIVE_FARM, BUILDING_VINES_FARM, BUILDING_PIG_FARM, 0},
-    { BUILDING_CLAY_PIT, BUILDING_MARBLE_QUARRY, BUILDING_IRON_MINE, BUILDING_TIMBER_YARD, 0},
-    {
+        BUILDING_OLIVE_FARM, BUILDING_VINES_FARM, BUILDING_PIG_FARM, 0],
+    [BUILDING_CLAY_PIT, BUILDING_MARBLE_QUARRY, BUILDING_IRON_MINE, BUILDING_TIMBER_YARD, 0],
+    [
         BUILDING_WINE_WORKSHOP, BUILDING_OIL_WORKSHOP, BUILDING_WEAPONS_WORKSHOP,
-        BUILDING_FURNITURE_WORKSHOP, BUILDING_POTTERY_WORKSHOP, 0},
-    {
+        BUILDING_FURNITURE_WORKSHOP, BUILDING_POTTERY_WORKSHOP, 0],
+    [
         BUILDING_MENU_SMALL_TEMPLES, BUILDING_SMALL_TEMPLE_CERES, BUILDING_SMALL_TEMPLE_NEPTUNE,
-        BUILDING_SMALL_TEMPLE_MERCURY, BUILDING_SMALL_TEMPLE_MARS, BUILDING_SMALL_TEMPLE_VENUS, 0},
-    {
+        BUILDING_SMALL_TEMPLE_MERCURY, BUILDING_SMALL_TEMPLE_MARS, BUILDING_SMALL_TEMPLE_VENUS, 0],
+    [
         BUILDING_MENU_LARGE_TEMPLES, BUILDING_LARGE_TEMPLE_CERES, BUILDING_LARGE_TEMPLE_NEPTUNE,
-        BUILDING_LARGE_TEMPLE_MERCURY, BUILDING_LARGE_TEMPLE_MARS, BUILDING_LARGE_TEMPLE_VENUS, 0},
-    { BUILDING_FORT_LEGIONARIES, BUILDING_FORT_JAVELIN, BUILDING_FORT_MOUNTED, 0},
-});
+        BUILDING_LARGE_TEMPLE_MERCURY, BUILDING_LARGE_TEMPLE_MARS, BUILDING_LARGE_TEMPLE_VENUS, 0],
+    [BUILDING_FORT_LEGIONARIES, BUILDING_FORT_JAVELIN, BUILDING_FORT_MOUNTED, 0],
+];
 let menu_enabled: number[] = new Array(BUILD_MENU_MAX);
 let changed: number = 1;
 export function building_menu_enable_all() {
@@ -182,39 +188,39 @@ export function building_menu_enable_all() {
         }
     }
 }
-function enable_house(enabled: number, menu_building_type: building_type) {
+function enable_house(enabled: Ref<number>, menu_building_type: building_type) {
     if (menu_building_type >= BUILDING_HOUSE_VACANT_LOT && menu_building_type <= BUILDING_HOUSE_LUXURY_PALACE) {
-        * enabled = 1;
+        enabled.v = 1;
     }
 }
-function enable_clear(enabled: number, menu_building_type: building_type) {
+function enable_clear(enabled: Ref<number>, menu_building_type: building_type) {
     if (menu_building_type == BUILDING_CLEAR_LAND) {
-        * enabled = 1;
+        enabled.v = 1;
     }
 }
 function enable_cycling_temples_if_allowed(type: building_type) {
     let sub: number = (type == BUILDING_MENU_SMALL_TEMPLES) ? BUILD_MENU_SMALL_TEMPLES : BUILD_MENU_LARGE_TEMPLES;
     menu_enabled[sub][0] = config_get(CONFIG_UI_ALLOW_CYCLING_TEMPLES);
 }
-function enable_if_allowed(enabled: number, menu_building_type: building_type, type: building_type) {
+function enable_if_allowed(enabled: Ref<number>, menu_building_type: building_type, type: building_type) {
     if (menu_building_type == type && scenario_building_allowed(type)) {
-        * enabled = 1;
+        enabled.v = 1;
         if (type == BUILDING_MENU_SMALL_TEMPLES || type == BUILDING_MENU_LARGE_TEMPLES) {
             enable_cycling_temples_if_allowed(type);
         }
     }
 }
-function disable_raw(enabled: number, menu_building_type: building_type, type: building_type, resource: number) {
+function disable_raw(enabled: Ref<number>, menu_building_type: building_type, type: building_type, resource: number) {
     if (type == menu_building_type && !empire_can_produce_resource(resource)) {
-        * enabled = 0;
+        enabled.v = 0;
     }
 }
-function disable_finished(enabled: number, menu_building_type: building_type, type: building_type, resource: number) {
+function disable_finished(enabled: Ref<number>, menu_building_type: building_type, type: building_type, resource: number) {
     if (type == menu_building_type && !empire_can_produce_resource_potentially(resource)) {
-        * enabled = 0;
+        enabled.v = 0;
     }
 }
-function enable_normal(enabled: number, type: building_type) {
+function enable_normal(enabled: Ref<number>, type: building_type) {
     enable_house(enabled, type);
     enable_clear(enabled, type);
     enable_if_allowed(enabled, type, BUILDING_ROAD);
@@ -273,27 +279,27 @@ function enable_normal(enabled: number, type: building_type) {
     enable_if_allowed(enabled, type, BUILDING_SHIP_BRIDGE);
     if (type == BUILDING_TRIUMPHAL_ARCH) {
         if (city_buildings_triumphal_arch_available()) {
-            * enabled = 1;
+            enabled.v = 1;
         }
     }
 }
-function enable_tutorial1_start(enabled: number, type: building_type) {
+function enable_tutorial1_start(enabled: Ref<number>, type: building_type) {
     enable_house(enabled, type);
     enable_clear(enabled, type);
     enable_if_allowed(enabled, type, BUILDING_WELL);
     enable_if_allowed(enabled, type, BUILDING_ROAD);
 }
-function enable_tutorial1_after_fire(enabled: number, type: building_type) {
+function enable_tutorial1_after_fire(enabled: Ref<number>, type: building_type) {
     enable_tutorial1_start(enabled, type);
     enable_if_allowed(enabled, type, BUILDING_PREFECTURE);
     enable_if_allowed(enabled, type, BUILDING_MARKET);
 }
-function enable_tutorial1_after_collapse(enabled: number, type: building_type) {
+function enable_tutorial1_after_collapse(enabled: Ref<number>, type: building_type) {
     enable_tutorial1_after_fire(enabled, type);
     enable_if_allowed(enabled, type, BUILDING_ENGINEERS_POST);
     enable_if_allowed(enabled, type, BUILDING_SENATE);
 }
-function enable_tutorial2_start(enabled: number, type: building_type) {
+function enable_tutorial2_start(enabled: Ref<number>, type: building_type) {
     enable_house(enabled, type);
     enable_clear(enabled, type);
     enable_if_allowed(enabled, type, BUILDING_WELL);
@@ -306,13 +312,13 @@ function enable_tutorial2_start(enabled: number, type: building_type) {
     enable_if_allowed(enabled, type, BUILDING_MENU_FARMS);
     enable_if_allowed(enabled, type, BUILDING_MENU_SMALL_TEMPLES);
 }
-function enable_tutorial2_up_to_250(enabled: number, type: building_type) {
+function enable_tutorial2_up_to_250(enabled: Ref<number>, type: building_type) {
     enable_tutorial2_start(enabled, type);
     enable_if_allowed(enabled, type, BUILDING_DRAGGABLE_RESERVOIR);
     enable_if_allowed(enabled, type, BUILDING_AQUEDUCT);
     enable_if_allowed(enabled, type, BUILDING_FOUNTAIN);
 }
-function enable_tutorial2_up_to_450(enabled: number, type: building_type) {
+function enable_tutorial2_up_to_450(enabled: Ref<number>, type: building_type) {
     enable_tutorial2_up_to_250(enabled, type);
     enable_if_allowed(enabled, type, BUILDING_GARDENS);
     enable_if_allowed(enabled, type, BUILDING_ACTOR_COLONY);
@@ -320,7 +326,7 @@ function enable_tutorial2_up_to_450(enabled: number, type: building_type) {
     enable_if_allowed(enabled, type, BUILDING_BATHHOUSE);
     enable_if_allowed(enabled, type, BUILDING_SCHOOL);
 }
-function enable_tutorial2_after_450(enabled: number, type: building_type) {
+function enable_tutorial2_after_450(enabled: Ref<number>, type: building_type) {
     enable_tutorial2_up_to_450(enabled, type);
     enable_if_allowed(enabled, type, BUILDING_MENU_RAW_MATERIALS);
     enable_if_allowed(enabled, type, BUILDING_MENU_WORKSHOPS);
@@ -329,7 +335,7 @@ function enable_tutorial2_after_450(enabled: number, type: building_type) {
     enable_if_allowed(enabled, type, BUILDING_AMPHITHEATER);
     enable_if_allowed(enabled, type, BUILDING_GLADIATOR_SCHOOL);
 }
-function disable_resources(enabled: number, type: building_type) {
+function disable_resources(enabled: Ref<number>, type: building_type) {
     disable_raw(enabled, type, BUILDING_WHEAT_FARM, RESOURCE_WHEAT);
     disable_raw(enabled, type, BUILDING_VEGETABLE_FARM, RESOURCE_VEGETABLES);
     disable_raw(enabled, type, BUILDING_FRUIT_FARM, RESOURCE_FRUIT);
@@ -351,39 +357,40 @@ export function building_menu_update() {
     for (let sub: number = 0; sub < BUILD_MENU_MAX; sub++) {
         for (let item: number = 0; item < BUILD_MENU_ITEM_MAX; item++) {
             let building_type: number = MENU_BUILDING_TYPE[sub][item];
-            let menu_item: number = menu_enabled[sub][item];
+            let menu_item_ref: Ref<number> = new Ref(menu_enabled[sub][item]);
             if (sub < 12) {
-                * menu_item = 0;
+                menu_item_ref.v = 0;
             } else {
-                * menu_item = 1;
+                menu_item_ref.v = 1;
             }
             switch (tutorial_buttons) {
                 case TUT1_BUILD_START:
-                    enable_tutorial1_start(menu_item, building_type);
+                    enable_tutorial1_start(menu_item_ref, building_type);
                     break
                 case TUT1_BUILD_AFTER_FIRE:
-                    enable_tutorial1_after_fire(menu_item, building_type);
+                    enable_tutorial1_after_fire(menu_item_ref, building_type);
                     break
                 case TUT1_BUILD_AFTER_COLLAPSE:
-                    enable_tutorial1_after_collapse(menu_item, building_type);
+                    enable_tutorial1_after_collapse(menu_item_ref, building_type);
                     break
                 case TUT2_BUILD_START:
-                    enable_tutorial2_start(menu_item, building_type);
+                    enable_tutorial2_start(menu_item_ref, building_type);
                     break
                 case TUT2_BUILD_UP_TO_250:
-                    enable_tutorial2_up_to_250(menu_item, building_type);
+                    enable_tutorial2_up_to_250(menu_item_ref, building_type);
                     break
                 case TUT2_BUILD_UP_TO_450:
-                    enable_tutorial2_up_to_450(menu_item, building_type);
+                    enable_tutorial2_up_to_450(menu_item_ref, building_type);
                     break
                 case TUT2_BUILD_AFTER_450:
-                    enable_tutorial2_after_450(menu_item, building_type);
+                    enable_tutorial2_after_450(menu_item_ref, building_type);
                     break
                 default:
-                    enable_normal(menu_item, building_type)
+                    enable_normal(menu_item_ref, building_type)
                     break
             }
-            disable_resources(menu_item, building_type);
+            disable_resources(menu_item_ref, building_type);
+            menu_enabled[sub][item] = menu_item_ref.v;
         }
     }
     changed = 1;

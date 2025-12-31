@@ -17,6 +17,14 @@ const typeMap = new Map<string, string>([
     ["float", "number"],
     ["string", "string"],
     ["bool", "boolean"],
+    ["int8_t", "number"],
+    ["int16_t", "number"],
+    ["int32_t", "number"],
+    ["int64_t", "bigint"],
+    ["uint8_t", "number"],
+    ["uint16_t", "number"],
+    ["uint32_t", "number"],
+    ["uint64_t", "bigint"],
 ]);
 
 const typeDefaultValMap = new Map<string, string>([
@@ -42,8 +50,8 @@ export class TypeNode {
         this.isPointer = typeInfo["qualType"].includes("*");
         this.isReference = typeInfo["qualType"].includes("&");
         this.isArray = typeInfo["qualType"].includes("[");
-        this.isStruct = typeInfo["qualType"].includes("struct");
-        this.isUnion = typeInfo["qualType"].includes("union");
+        this.isStruct = typeInfo["qualType"].startsWith("struct");
+        this.isUnion = typeInfo["qualType"].startsWith("union");
         let type = this.typeInfo["qualType"];
         type = type.split("*")[0].trim();
         type = type.split("&")[0].trim();
@@ -58,7 +66,9 @@ export class TypeNode {
                 const localNameParts = type.split("(")[1].split(")")[0].split(":");
                 type = `unnamed${localNameParts[1]}_${localNameParts[2]}`;
             } else {
-                type = type.split(this.isStruct ? "struct " : "union ")[1].trim();
+                if (!this.typeInfo["typeAliasDeclId"]) {
+                    type = type.split(this.isStruct ? "struct " : "union ")[1].trim();
+                }
             }
         }
 

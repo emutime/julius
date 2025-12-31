@@ -1,9 +1,9 @@
 export const MAX_SMALL = 500;
 export const MAX_LARGE = 2000;
 export const MAX_BURNING = 500;
-;
 import { buffer, buffer_read_i16, buffer_read_i32, buffer_write_i16, buffer_write_i32 } from 'core/buffer';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { memset } from '../../ext/crt';
+
 class small {
     public size: number = 0;
     public items: number[] = new Array(MAX_SMALL).fill(0);

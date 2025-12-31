@@ -6,8 +6,8 @@ import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
 import { figure, figure_get } from 'figure/figure';
 import { figure_state } from 'figure/type';
 import { resource_type } from 'game/resource';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-;
+import { memset } from '../../ext/crt';
+
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
 import BUILDING_THEATER = building_type.BUILDING_THEATER;
 import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;
@@ -99,13 +99,13 @@ let data: unnamed15_8 = new unnamed15_8();
 function clear_counters() {
     memset(data, 0);
 }
-function increase_count(type: building_type, active: number) {
+function increase_count(type: building_type, active: boolean) {
     ++data.buildings[type].total;
     if (active) {
         ++data.buildings[type].active;
     }
 }
-function increase_industry_count(resource: resource_type, active: number) {
+function increase_industry_count(resource: resource_type, active: boolean) {
     ++data.industry[resource].total;
     if (active) {
         ++data.industry[resource].active;
@@ -148,7 +148,7 @@ export function building_count_update() {
                 break
             case BUILDING_RESERVOIR:
             case BUILDING_FOUNTAIN:
-                increase_count(type, b.has_water_access);
+                increase_count(type, !!b.has_water_access);
                 break
             case BUILDING_SCHOOL:
             case BUILDING_LIBRARY:

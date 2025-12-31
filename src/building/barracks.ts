@@ -1,4 +1,3 @@
-export const INFINITE = 10000;
 import { building, building_get, MAX_BUILDINGS } from 'building/building';
 import { building_count_active } from 'building/count';
 import { model_get_building } from 'building/model';
@@ -14,7 +13,7 @@ import { figure, figure_create } from 'figure/figure';
 import { formation, formation_calculate_figures, formation_get, legion_recruit, MAX_FORMATIONS } from 'figure/formation';
 import { figure_state, figure_type } from 'figure/type';
 import { resource_type } from 'game/resource';
-import { GRID, map_grid_offset } from 'map/grid';
+import { map_grid_offset } from 'map/grid';
 import { map_point } from 'map/point';
 import { map_has_road_access } from 'map/road_access';
 import BUILDING_TOWER = building_type.BUILDING_TOWER;
@@ -22,7 +21,6 @@ import BUILDING_MILITARY_ACADEMY = building_type.BUILDING_MILITARY_ACADEMY;
 import BUILDING_BARRACKS = building_type.BUILDING_BARRACKS;
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
 import RESOURCE_WEAPONS = resource_type.RESOURCE_WEAPONS;
-import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import FIGURE_ACTION_81_SOLDIER_GOING_TO_FORT = figure_action.FIGURE_ACTION_81_SOLDIER_GOING_TO_FORT;
 import FIGURE_ACTION_85_SOLDIER_GOING_TO_MILITARY_ACADEMY = figure_action.FIGURE_ACTION_85_SOLDIER_GOING_TO_MILITARY_ACADEMY;
@@ -32,8 +30,10 @@ import FIGURE_TOWER_SENTRY = figure_type.FIGURE_TOWER_SENTRY;
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
 import LEGION_RECRUIT_NONE = legion_recruit.LEGION_RECRUIT_NONE;
 import LEGION_RECRUIT_LEGIONARY = legion_recruit.LEGION_RECRUIT_LEGIONARY;
-import GRID_SIZE = GRID.GRID_SIZE;
+export const INFINITE = 10000;
+
 let tower_sentry_request: number = 0;
+
 export function building_get_barracks_for_weapon(resource: number, road_network_id: number, dst: map_point) {
     if (resource != RESOURCE_WEAPONS) {
         return 0;

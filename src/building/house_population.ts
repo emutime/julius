@@ -79,7 +79,7 @@ export function house_population_update_room() {
     city_population_clear_capacity();
     fill_building_list_with_houses();
     let total_houses: number = building_list_large_size();
-    let houses: number = building_list_large_items();
+    let houses: number[] = building_list_large_items();
     for (let i: number = 0; i < total_houses; i++) {
         let b: building = building_get(houses[i]);
         b.house_population_room = 0;
@@ -100,7 +100,7 @@ export function house_population_update_room() {
 }
 export function house_population_create_immigrants(num_people: number) {
     let total_houses: number = building_list_large_size();
-    let houses: number = building_list_large_items();
+    let houses: number[] = building_list_large_items();
     let to_immigrate: number = num_people;
     for (let i: number = 0; i < total_houses; i++) {
         let b: building = building_get(houses[i]);
@@ -136,7 +136,7 @@ export function house_population_create_immigrants(num_people: number) {
 }
 export function house_population_create_emigrants(num_people: number) {
     let total_houses: number = building_list_large_size();
-    let houses: number = building_list_large_items();
+    let houses: number[] = building_list_large_items();
     let to_emigrate: number = num_people;
     for (let level: number = HOUSE_SMALL_TENT; level < HOUSE_LARGE_INSULA && to_emigrate > 0; level++) {
         for (let i: number = 0; i < total_houses && to_emigrate > 0; i++) {
@@ -164,7 +164,7 @@ function calculate_working_population() {
     let num_plebs: number = 0;
     let num_patricians: number = 0;
     let total_houses: number = building_list_large_size();
-    let houses: number = building_list_large_items();
+    let houses: number[] = building_list_large_items();
     for (let i: number = 0; i < total_houses; i++) {
         let b: building = building_get(houses[i]);
         if (b.house_population > 0) {
@@ -212,7 +212,7 @@ export function house_population_update_migration() {
 }
 export function house_population_evict_overcrowded() {
     let size: number = building_list_large_size();
-    let items: number = building_list_large_items();
+    let items: number[] = building_list_large_items();
     for (let i: number = 0; i < size; i++) {
         let b: building = building_get(items[i]);
         if (b.house_population_room < 0) {

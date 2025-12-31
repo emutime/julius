@@ -1,8 +1,14 @@
 export const TMP_BUFFER_SIZE = 100000;
 export const NUM_BUILDINGS = 130;
 export const NUM_HOUSES = 20;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
+import { building_type, house_level } from 'building/type';
+import { localized } from 'core/dir';
+import { io_read_file_into_buffer } from 'core/io';
+import { log_error, log_info } from 'core/log';
+import { string_length, string_to_int } from 'core/string';
+import { free, malloc, memset, PtrBuffer } from '../../ext/crt';
+import NOT_LOCALIZED = localized.NOT_LOCALIZED;
+
 export class model_building {
     public cost: number = 0;
     public desirability_value: number = 0;
@@ -57,81 +63,63 @@ export class model_house {
         args.length >= 17 && (this.tax_multiplier = args[16]);
     }
 }
-import { localized } from 'core/dir';
-import NOT_LOCALIZED = localized.NOT_LOCALIZED;
-import { dir_listing } from 'core/dir';
-import { io_read_file_into_buffer } from 'core/io';
-import { log_info } from 'core/log';
-import { log_error } from 'core/log';;
-import { string_length } from 'core/string';
-import { string_to_int } from 'core/string';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stddef';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-let ALL_BUILDINGS: uint8_t[] = new Array().fill({ 'A', 'L', 'L', ' ', 'B', 'U', 'I', 'L', 'D', 'I', 'N', 'G', 'S', 0});
-let ALL_HOUSES: uint8_t[] = new Array().fill({ 'A', 'L', 'L', ' ', 'H', 'O', 'U', 'S', 'E', 'S', 0});
+
+let ALL_BUILDINGS = new Uint8Array(['A'.charCodeAt(0), 'L'.charCodeAt(0), 'L'.charCodeAt(0), ' '.charCodeAt(0), 'B'.charCodeAt(0), 'U'.charCodeAt(0), 'I'.charCodeAt(0), 'L'.charCodeAt(0), 'D'.charCodeAt(0), 'I'.charCodeAt(0), 'N'.charCodeAt(0), 'G'.charCodeAt(0), 'S'.charCodeAt(0), 0]);
+let ALL_HOUSES = new Uint8Array(['A'.charCodeAt(0), 'L'.charCodeAt(0), 'L'.charCodeAt(0), ' '.charCodeAt(0), 'H'.charCodeAt(0), 'O'.charCodeAt(0), 'U'.charCodeAt(0), 'S'.charCodeAt(0), 'E'.charCodeAt(0), 'S'.charCodeAt(0), 0]);
 let buildings: model_building[] = new Array(NUM_BUILDINGS);
 let houses: model_house[] = new Array(NUM_HOUSES);
-function strings_equal(a: uint8_t, b: uint8_t, len: number) {
-    for (let i: number = 0; i < len; i++, a++, b++) {
-        if (* a != * b) {
+function strings_equal(a: Uint8Array, b: Uint8Array, len: number) {
+    for (let i: number = 0; i < len; i++) {
+        if (a[i] != b[i]) {
             return 0;
         }
     }
     return 1;
 }
-function index_of_string(haystack: uint8_t, needle: uint8_t, haystack_length: number) {
+function index_of_string(haystack: Uint8Array, needle: Uint8Array, haystack_length: number) {
     let needle_length: number = string_length(needle);
     for (let i: number = 0; i < haystack_length; i++) {
-        if (haystack[i] == needle[0] && strings_equal(haystack[i], needle, needle_length)) {
+        if (haystack[i] == needle[0] && strings_equal(haystack.subarray(i), needle, needle_length)) {
             return i + 1;
         }
     }
     return 0;
 }
-function index_of(haystack: uint8_t, needle: uint8_t, haystack_length: number) {
+function index_of(haystack: PtrBuffer, needle: number, haystack_length: number) {
+    const buffer = new Uint8Array(haystack.buffer.buffer, haystack.offset)
     for (let i: number = 0; i < haystack_length; i++) {
-        if (haystack[i] == needle) {
+        if (buffer[i] == needle) {
             return i + 1;
         }
     }
     return 0;
 }
-function skip_non_digits(str: uint8_t) {
+function skip_non_digits(str: PtrBuffer) {
     let safeguard: number = 0;
+    const charCode0 = '0'.charCodeAt(0);
+    const charCode9 = '9'.charCodeAt(0);
+    const charCodeHyphen = '-'.charCodeAt(0);
     while (1) {
-        if (++safeguard >= 1000) {
+        if (safeguard >= 1000) {
             break;
         }
-        if ((* str >= '0' && * str <= '9') || * str == '-') {
+        const charCodeStr = str[safeguard];
+        if ((charCodeStr >= charCode0 && charCodeStr <= charCode9) || charCodeStr == charCodeHyphen) {
             break;
         }
-        str++;
+        safeguard++;
     }
-    return str;
+    return str.inc(safeguard);
 }
-function get_value(ptr: uint8_t, end_ptr: uint8_t, value: number) {
-    ptr = skip_non_digits(ptr);
-    * value = string_to_int(ptr);
-    ptr += index_of(ptr, ',', (int)(end_ptr - ptr))
-    return ptr;
+function get_value(ptrBuffer: PtrBuffer, len: number) {
+    skip_non_digits(ptrBuffer);
+    const value = string_to_int(ptrBuffer);
+    const offset = index_of(ptrBuffer, ','.charCodeAt(0), len);
+    ptrBuffer.inc(offset);
+    return value;
 }
 export function model_load() {
-    let buffer: uint8_t = (uint8_t *) malloc(TMP_BUFFER_SIZE);
+    let buffer = malloc(TMP_BUFFER_SIZE);
     if (!buffer) {
         log_error("No memory for model", 0, 0);
         return 0;
@@ -146,12 +134,12 @@ export function model_load() {
     let num_lines: number = 0;
     let guard: number = 200;
     let brace_index: number;
-    let ptr: uint8_t = buffer[index_of_string(buffer, ALL_BUILDINGS, filesize)];
+    let ptr = new PtrBuffer(buffer, index_of_string(buffer, ALL_BUILDINGS, filesize));
     do {
         guard--;
-        brace_index = index_of(ptr, '{', filesize);
+        brace_index = index_of(ptr, '{'.charCodeAt(0), filesize);
         if (brace_index) {
-            ptr += brace_index;
+            ptr.inc(brace_index);
             num_lines++;
         }
     } while (brace_index && guard > 0)
@@ -161,42 +149,42 @@ export function model_load() {
         return 0;
     }
     let dummy: number;
-    ptr = buffer[index_of_string(buffer, ALL_BUILDINGS, filesize)];
-    let end_ptr: uint8_t = buffer[filesize];
+    ptr = new PtrBuffer(buffer, index_of_string(buffer, ALL_BUILDINGS, filesize));
+    let end_ptr: number = filesize;
     for (let i: number = 0; i < NUM_BUILDINGS; i++) {
-        ptr += index_of(ptr, '{', filesize)
-        ptr = get_value(ptr, end_ptr, buildings[i].cost);
-        ptr = get_value(ptr, end_ptr, buildings[i].desirability_value);
-        ptr = get_value(ptr, end_ptr, buildings[i].desirability_step);
-        ptr = get_value(ptr, end_ptr, buildings[i].desirability_step_size);
-        ptr = get_value(ptr, end_ptr, buildings[i].desirability_range);
-        ptr = get_value(ptr, end_ptr, buildings[i].laborers);
-        ptr = get_value(ptr, end_ptr, dummy);
-        ptr = get_value(ptr, end_ptr, dummy);
+        ptr.inc(index_of(ptr, '{'.charCodeAt(0), filesize));
+        buildings[i].cost = get_value(ptr, end_ptr);
+        buildings[i].desirability_value = get_value(ptr, end_ptr);
+        buildings[i].desirability_step = get_value(ptr, end_ptr);
+        buildings[i].desirability_step_size = get_value(ptr, end_ptr);
+        buildings[i].desirability_range = get_value(ptr, end_ptr);
+        buildings[i].laborers = get_value(ptr, end_ptr);
+        dummy = get_value(ptr, end_ptr);
+        dummy = get_value(ptr, end_ptr);
     }
-    ptr = buffer[index_of_string(buffer, ALL_HOUSES, filesize)];
+    ptr = new PtrBuffer(buffer, index_of_string(buffer, ALL_HOUSES, filesize));
     for (let i: number = 0; i < NUM_HOUSES; i++) {
-        ptr += index_of(ptr, '{', filesize)
-        ptr = get_value(ptr, end_ptr, houses[i].devolve_desirability);
-        ptr = get_value(ptr, end_ptr, houses[i].evolve_desirability);
-        ptr = get_value(ptr, end_ptr, houses[i].entertainment);
-        ptr = get_value(ptr, end_ptr, houses[i].water);
-        ptr = get_value(ptr, end_ptr, houses[i].religion);
-        ptr = get_value(ptr, end_ptr, houses[i].education);
-        ptr = get_value(ptr, end_ptr, dummy);
-        ptr = get_value(ptr, end_ptr, houses[i].barber);
-        ptr = get_value(ptr, end_ptr, houses[i].bathhouse);
-        ptr = get_value(ptr, end_ptr, houses[i].health);
-        ptr = get_value(ptr, end_ptr, houses[i].food_types);
-        ptr = get_value(ptr, end_ptr, houses[i].pottery);
-        ptr = get_value(ptr, end_ptr, houses[i].oil);
-        ptr = get_value(ptr, end_ptr, houses[i].furniture);
-        ptr = get_value(ptr, end_ptr, houses[i].wine);
-        ptr = get_value(ptr, end_ptr, dummy);
-        ptr = get_value(ptr, end_ptr, dummy);
-        ptr = get_value(ptr, end_ptr, houses[i].prosperity);
-        ptr = get_value(ptr, end_ptr, houses[i].max_people);
-        ptr = get_value(ptr, end_ptr, houses[i].tax_multiplier);
+        ptr.inc(index_of(ptr, '{'.charCodeAt(0), filesize));
+        houses[i].devolve_desirability = get_value(ptr, end_ptr);
+        houses[i].evolve_desirability = get_value(ptr, end_ptr);
+        houses[i].entertainment = get_value(ptr, end_ptr);
+        houses[i].water = get_value(ptr, end_ptr);
+        houses[i].religion = get_value(ptr, end_ptr);
+        houses[i].education = get_value(ptr, end_ptr);
+        dummy = get_value(ptr, end_ptr);
+        houses[i].barber = get_value(ptr, end_ptr);
+        houses[i].bathhouse = get_value(ptr, end_ptr);
+        houses[i].health = get_value(ptr, end_ptr);
+        houses[i].food_types = get_value(ptr, end_ptr);
+        houses[i].pottery = get_value(ptr, end_ptr);
+        houses[i].oil = get_value(ptr, end_ptr);
+        houses[i].furniture = get_value(ptr, end_ptr);
+        houses[i].wine = get_value(ptr, end_ptr);
+        dummy = get_value(ptr, end_ptr);
+        dummy = get_value(ptr, end_ptr);
+        houses[i].prosperity = get_value(ptr, end_ptr);
+        houses[i].max_people = get_value(ptr, end_ptr);
+        houses[i].tax_multiplier = get_value(ptr, end_ptr);
     }
     log_info("Model loaded", 0, 0);
     free(buffer);

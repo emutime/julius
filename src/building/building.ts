@@ -18,7 +18,7 @@ import { map_random_get } from 'map/random';
 import { map_routing_update_land } from 'map/routing_terrain';
 import { map_terrain_is_adjacent_to_water, terrain } from 'map/terrain';
 import { map_tiles_update_all_aqueducts, map_tiles_update_all_roads, map_tiles_update_all_walls } from 'map/tiles';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { memset } from '../../ext/crt';
 import BUILDING_HOUSE_VACANT_LOT = building_type.BUILDING_HOUSE_VACANT_LOT;
 import BUILDING_HOUSE_SMALL_TENT = building_type.BUILDING_HOUSE_SMALL_TENT;
 import BUILDING_HOUSE_MEDIUM_INSULA = building_type.BUILDING_HOUSE_MEDIUM_INSULA;
@@ -387,6 +387,9 @@ export class unnamed25_8 {
 let extra: unnamed25_8 = new unnamed25_8(0, 0, 0, 0);
 export function building_get(id: number) {
     return all_buildings[id];
+}
+export function building_set(id: number, building: building) {
+    all_buildings[id] = building;
 }
 export function building_main(b: building) {
     for (let guard: number = 0; guard < 9; guard++) {
