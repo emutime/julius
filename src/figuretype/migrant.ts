@@ -18,8 +18,9 @@ import { figure_route_remove } from 'figure/route';
 import { figure_state, figure_type, terrain_usage } from 'figure/type';
 import { map_tile } from 'map/point';
 import { map_closest_road_within_radius } from 'map/road_access';
+import { Ref } from '../../ext/crt';
 import BUILDING_HOUSE_SMALL_TENT = building_type.BUILDING_HOUSE_SMALL_TENT;
-import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;;
+import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
@@ -123,12 +124,12 @@ export function figure_immigrant_action(f: figure) {
             f.image_offset = 0;
             f.wait_ticks--;
             if (f.wait_ticks <= 0) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number> = new Ref<number>(0);
+                let y_road: Ref<number> = new Ref<number>(0);
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                     f.action_state = FIGURE_ACTION_2_IMMIGRANT_ARRIVING;
-                    f.destination_x = x_road;
-                    f.destination_y = y_road;
+                    f.destination_x = x_road.v;
+                    f.destination_y = y_road.v;
                     f.roam_length = 0;
                 } else {
                     f.state = FIGURE_STATE_DEAD;
@@ -199,13 +200,13 @@ export function figure_emigrant_action(f: figure) {
             f.image_offset = 0;
             f.wait_ticks++;
             if (f.wait_ticks >= 5) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number> = new Ref<number>(0);
+                let y_road: Ref<number> = new Ref<number>(0);
                 if (!map_closest_road_within_radius(f.x, f.y, 1, 5, x_road, y_road)) {
                     f.state = FIGURE_STATE_DEAD;
                 }
                 f.action_state = FIGURE_ACTION_5_EMIGRANT_EXITING_HOUSE;
-                figure_movement_set_cross_country_destination(f, x_road, y_road);
+                figure_movement_set_cross_country_destination(f, x_road.v, y_road.v);
                 f.roam_length = 0;
             }
             break
@@ -252,14 +253,14 @@ export function figure_homeless_action(f: figure) {
                 let building_id: number = closest_house_with_room(f.x, f.y);
                 if (building_id) {
                     let b: building = building_get(building_id);
-                    let x_road: number
-                    let y_road: number;
+                    let x_road: Ref<number> = new Ref<number>(0);
+                    let y_road: Ref<number> = new Ref<number>(0);
                     if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                         b.immigrant_figure_id = f.id;
                         f.immigrant_building_id = building_id;
                         f.action_state = FIGURE_ACTION_8_HOMELESS_GOING_TO_HOUSE;
-                        f.destination_x = x_road;
-                        f.destination_y = y_road;
+                        f.destination_x = x_road.v;
+                        f.destination_y = y_road.v;
                         f.roam_length = 0;
                     } else {
                         f.state = FIGURE_STATE_DEAD;
@@ -328,14 +329,14 @@ export function figure_homeless_action(f: figure) {
                 let building_id: number = closest_house_with_room(f.x, f.y);
                 if (building_id > 0) {
                     let b: building = building_get(building_id);
-                    let x_road: number
-                    let y_road: number;
+                    let x_road: Ref<number> = new Ref<number>(0);
+                    let y_road: Ref<number> = new Ref<number>(0);
                     if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                         b.immigrant_figure_id = f.id;
                         f.immigrant_building_id = building_id;
                         f.action_state = FIGURE_ACTION_8_HOMELESS_GOING_TO_HOUSE;
-                        f.destination_x = x_road;
-                        f.destination_y = y_road;
+                        f.destination_x = x_road.v;
+                        f.destination_y = y_road.v;
                         f.roam_length = 0;
                         figure_route_remove(f);
                     }

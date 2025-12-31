@@ -1,13 +1,28 @@
-import { MAX_FIGURES } from 'figure/figure';
-;
-import { buffer } from 'core/buffer';
+import { building, building_get } from 'building/building';
+import { model_get_building } from 'building/model';
+import { building_state } from 'building/type';
+import { city_god_neptune_create_shipwreck_flotsam } from 'city/gods';
+import { city_message_post_with_message_delay, city_message_type, message_category } from 'city/message';
+import { calc_percentage } from 'core/calc';
 import { direction_type } from 'core/direction';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { random_byte } from 'core/random';
+import { figure_action } from 'figure/action';
+import { figure, figure_create, figure_delete, figure_get, MAX_FIGURES } from 'figure/figure';
+import { figure_image_increase_offset, figure_image_normalize_direction } from 'figure/image';
+import { figure_movement_move_ticks } from 'figure/movement';
+import { figure_route_remove } from 'figure/route';
+import { figure_state, figure_type, terrain_usage } from 'figure/type';
+import { map_figure_add, map_figure_delete } from 'map/figure';
+import { GRID, map_grid_offset } from 'map/grid';
+import { map_point } from 'map/point';
+import { map_water_find_alternative_fishing_boat_tile, map_water_find_shipwreck_tile, map_water_get_wharf_for_new_fishing_boat } from 'map/water';
+import { scenario_map_closest_fishing_point, scenario_map_has_flotsam, scenario_map_has_river_entry, scenario_map_has_river_exit, scenario_map_river_entry, scenario_map_river_exit } from 'scenario/map';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_128_FLOTSAM_CREATED = figure_action.FIGURE_ACTION_128_FLOTSAM_CREATED;
 import FIGURE_ACTION_129_FLOTSAM_FLOATING = figure_action.FIGURE_ACTION_129_FLOTSAM_FLOATING;
 import FIGURE_ACTION_130_FLOTSAM_OFF_MAP = figure_action.FIGURE_ACTION_130_FLOTSAM_OFF_MAP;
@@ -17,44 +32,16 @@ import FIGURE_ACTION_192_FISHING_BOAT_FISHING = figure_action.FIGURE_ACTION_192_
 import FIGURE_ACTION_193_FISHING_BOAT_GOING_TO_WHARF = figure_action.FIGURE_ACTION_193_FISHING_BOAT_GOING_TO_WHARF;
 import FIGURE_ACTION_194_FISHING_BOAT_AT_WHARF = figure_action.FIGURE_ACTION_194_FISHING_BOAT_AT_WHARF;
 import FIGURE_ACTION_195_FISHING_BOAT_RETURNING_WITH_FISH = figure_action.FIGURE_ACTION_195_FISHING_BOAT_RETURNING_WITH_FISH;
-import { figure_type } from 'figure/type';
 import FIGURE_TRADE_SHIP = figure_type.FIGURE_TRADE_SHIP;
 import FIGURE_FISHING_BOAT = figure_type.FIGURE_FISHING_BOAT;
 import FIGURE_FLOTSAM = figure_type.FIGURE_FLOTSAM;
 import FIGURE_SHIPWRECK = figure_type.FIGURE_SHIPWRECK;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_ALIVE = figure_state.FIGURE_STATE_ALIVE;
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { terrain_usage } from 'figure/type';
 import TERRAIN_USAGE_ANY = terrain_usage.TERRAIN_USAGE_ANY;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_create } from 'figure/figure';
-import { figure_delete } from 'figure/figure';
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_building } from 'building/model';
-import { city_god_neptune_create_shipwreck_flotsam } from 'city/gods';
-import { message_category } from 'city/message';
 import MESSAGE_CAT_FISHING_BLOCKED = message_category.MESSAGE_CAT_FISHING_BLOCKED;
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
 import MESSAGE_FISHING_BOAT_BLOCKED = city_message_type.MESSAGE_FISHING_BOAT_BLOCKED;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_post_with_message_delay } from 'city/message';
-import { calc_percentage } from 'core/calc';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_FIGURE_FLOTSAM_0 = group_terrain.GROUP_FIGURE_FLOTSAM_0;
 import GROUP_FIGURE_FLOTSAM_1 = group_terrain.GROUP_FIGURE_FLOTSAM_1;
 import GROUP_FIGURE_FLOTSAM_2 = group_terrain.GROUP_FIGURE_FLOTSAM_2;
@@ -62,43 +49,21 @@ import GROUP_FIGURE_FLOTSAM_3 = group_terrain.GROUP_FIGURE_FLOTSAM_3;
 import GROUP_FIGURE_SHIP = group_terrain.GROUP_FIGURE_SHIP;
 import GROUP_FIGURE_SHIPWRECK = group_terrain.GROUP_FIGURE_SHIPWRECK;
 import GROUP_FIGURE_FLOTSAM_SHEEP = group_terrain.GROUP_FIGURE_FLOTSAM_SHEEP;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { random_byte } from 'core/random';
-import { figure_image_increase_offset } from 'figure/image';
-import { figure_image_normalize_direction } from 'figure/image';
-import { figure_movement_move_ticks } from 'figure/movement';
-import { figure_route_remove } from 'figure/route';
-import { map_figure_add } from 'map/figure';
-import { map_figure_delete } from 'map/figure';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_point } from 'map/point';
-import { map_water_get_wharf_for_new_fishing_boat } from 'map/water';
-import { map_water_find_alternative_fishing_boat_tile } from 'map/water';
-import { map_water_find_shipwreck_tile } from 'map/water';
-import { scenario_map_has_river_entry } from 'scenario/map';
-import { scenario_map_river_entry } from 'scenario/map';
-import { scenario_map_has_river_exit } from 'scenario/map';
-import { scenario_map_river_exit } from 'scenario/map';
-import { scenario_map_closest_fishing_point } from 'scenario/map';
-import { scenario_map_has_flotsam } from 'scenario/map';
-let FLOTSAM_RESOURCE_IDS: number[] = new Array().fill({
+let FLOTSAM_RESOURCE_IDS: number[] = [
     3, 1, 3, 2, 1, 3, 2, 3, 2, 1, 3, 3, 2, 3, 3, 3, 1, 2, 0, 1
-});
-let FLOTSAM_WAIT_TICKS: number[] = new Array().fill({
+];
+let FLOTSAM_WAIT_TICKS: number[] = [
     10, 50, 100, 130, 200, 250, 400, 430, 500, 600, 70, 750, 820, 830, 900, 980, 1010, 1030, 1200, 1300
-});
-let FLOTSAM_TYPE_0: number[] = new Array().fill({ 0, 1, 2, 3, 4, 4, 4, 3, 2, 1, 0, 0});
-let FLOTSAM_TYPE_12: number[] = new Array().fill({
+];
+let FLOTSAM_TYPE_0: number[] = [0, 1, 2, 3, 4, 4, 4, 3, 2, 1, 0, 0];
+let FLOTSAM_TYPE_12: number[] = [
     0, 1, 1, 2, 2, 3, 3, 4, 4, 4, 3, 2, 1, 0, 0, 1, 1, 2, 2, 1, 1, 0, 0, 0
-});
-let FLOTSAM_TYPE_3: number[] = new Array().fill({
-    0, 0, 1, 1, 2, 2, 3, 3, 4, 4, - 1, -1,
+];
+let FLOTSAM_TYPE_3: number[] = [
+    0, 0, 1, 1, 2, 2, 3, 3, 4, 4, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1
-});
+];
 export function figure_create_flotsam() {
     if (!scenario_map_has_river_entry() || !scenario_map_has_river_exit() || !scenario_map_has_flotsam()) {
         return;

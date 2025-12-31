@@ -1,5 +1,4 @@
 
-;
 import { building, building_get } from 'building/building';
 import { building_state } from 'building/type';
 import { city_figures_add_attacking_native } from 'city/figures';

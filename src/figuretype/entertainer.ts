@@ -16,6 +16,7 @@ import { GRID, map_grid_offset } from 'map/grid';
 import { map_closest_road_within_radius } from 'map/road_access';
 import { map_road_network_get } from 'map/road_network';
 import { scenario_gladiator_revolt_is_in_progress } from 'scenario/gladiator_revolt';
+import { Ref } from '../../ext/crt';
 ;
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
@@ -70,7 +71,7 @@ function determine_destination(x: number, y: number, type1: building_type, type2
     if (total_venues <= 0) {
         return 0;
     }
-    let venues: number = building_list_small_items();
+    let venues: number[] = building_list_small_items();
     let min_building_id: number = 0;
     let min_distance: number = 10000;
     for (let i: number = 0; i < total_venues; i++) {
@@ -202,11 +203,11 @@ export function figure_entertainer_action(f: figure) {
             f.wait_ticks_missile = 0;
             f.wait_ticks--;
             if (f.wait_ticks <= 0) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number>
+                let y_road: Ref<number>;
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                     f.action_state = FIGURE_ACTION_91_ENTERTAINER_EXITING_SCHOOL;
-                    figure_movement_set_cross_country_destination(f, x_road, y_road);
+                    figure_movement_set_cross_country_destination(f, x_road.v, y_road.v);
                     f.roam_length = 0;
                 } else {
                     f.state = FIGURE_STATE_DEAD;
@@ -234,13 +235,13 @@ export function figure_entertainer_action(f: figure) {
                 }
                 if (dst_building_id) {
                     let b_dst: building = building_get(dst_building_id);
-                    let x_road: number
-                    let y_road: number;
+                    let x_road: Ref<number>
+                    let y_road: Ref<number>;
                     if (map_closest_road_within_radius(b_dst.x, b_dst.y, b_dst.size, 2, x_road, y_road)) {
                         f.destination_building_id = dst_building_id;
                         f.action_state = FIGURE_ACTION_92_ENTERTAINER_GOING_TO_VENUE;
-                        f.destination_x = x_road;
-                        f.destination_y = y_road;
+                        f.destination_x = x_road.v;
+                        f.destination_y = y_road.v;
                         f.roam_length = 0;
                     } else {
                         f.state = FIGURE_STATE_DEAD;
@@ -271,12 +272,12 @@ export function figure_entertainer_action(f: figure) {
             f.is_ghost = 0;
             f.roam_length++;
             if (f.roam_length >= f.max_roam_length) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number>
+                let y_road: Ref<number>;
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                     f.action_state = FIGURE_ACTION_95_ENTERTAINER_RETURNING;
-                    f.destination_x = x_road;
-                    f.destination_y = y_road;
+                    f.destination_x = x_road.v;
+                    f.destination_y = y_road.v;
                 } else {
                     f.state = FIGURE_STATE_DEAD;
                 }

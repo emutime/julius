@@ -1,109 +1,63 @@
 
-;
-import { buffer } from 'core/buffer';
+import { building, building_get, building_get_highest_id } from 'building/building';
+import { building_destroy_by_rioter } from 'building/destruction';
+import { building_state, building_type, house_level } from 'building/type';
+import { city_figures_add_rioter } from 'city/figures';
+import { city_finance_overview_this_year, city_finance_process_stolen } from 'city/finance';
+import { city_message_apply_sound_interval, city_message_increase_category_count, city_message_post, city_message_post_with_popup_delay, city_message_type, message_category } from 'city/message';
+import { city_population } from 'city/population';
+import { city_ratings_peace_record_criminal, city_ratings_peace_record_rioter } from 'city/ratings';
+import { city_sentiment, city_sentiment_add_criminal, city_sentiment_add_protester, city_sentiment_change_happiness } from 'city/sentiment';
 import { direction_type } from 'core/direction';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { random_byte } from 'core/random';
+import { figure_action } from 'figure/action';
+import { figure_combat_handle_attack, figure_combat_handle_corpse } from 'figure/combat';
+import { figure, figure_create } from 'figure/figure';
+import { formation_rioter_get_target_building } from 'figure/formation_enemy';
+import { figure_image_corpse_offset, figure_image_increase_offset, figure_image_normalize_direction } from 'figure/image';
+import { figure_movement_move_ticks } from 'figure/movement';
+import { figure_route_remove } from 'figure/route';
+import { figure_state, figure_type, terrain_usage } from 'figure/type';
+import { tutorial_on_crime } from 'game/tutorial';
+import { map_building_at } from 'map/building';
+import { map_grid_direction_delta, map_grid_offset } from 'map/grid';
+import { map_closest_road_within_radius } from 'map/road_access';
+import { scenario_is_tutorial_1, scenario_is_tutorial_2 } from 'scenario/property';
+import { Ref } from '../../ext/crt';
+import MESSAGE_CAT_RIOT = message_category.MESSAGE_CAT_RIOT;
+import MESSAGE_CAT_RIOT_COLLAPSE = message_category.MESSAGE_CAT_RIOT_COLLAPSE;
+import MESSAGE_RIOT = city_message_type.MESSAGE_RIOT;
+import MESSAGE_DESTROYED_BUILDING = city_message_type.MESSAGE_DESTROYED_BUILDING;
+import MESSAGE_THEFT = city_message_type.MESSAGE_THEFT;
 import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;
 import DIR_FIGURE_ATTACK = direction_type.DIR_FIGURE_ATTACK;
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_120_RIOTER_CREATED = figure_action.FIGURE_ACTION_120_RIOTER_CREATED;
 import FIGURE_ACTION_121_RIOTER_MOVING = figure_action.FIGURE_ACTION_121_RIOTER_MOVING;
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_ACTION_150_ATTACK = figure_action.FIGURE_ACTION_150_ATTACK;
-import { figure_type } from 'figure/type';
 import FIGURE_PROTESTER = figure_type.FIGURE_PROTESTER;
 import FIGURE_CRIMINAL = figure_type.FIGURE_CRIMINAL;
 import FIGURE_RIOTER = figure_type.FIGURE_RIOTER;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { terrain_usage } from 'figure/type';
 import TERRAIN_USAGE_ROADS = terrain_usage.TERRAIN_USAGE_ROADS;
 import TERRAIN_USAGE_ENEMY = terrain_usage.TERRAIN_USAGE_ENEMY;
-import { figure } from 'figure/figure';
-import { figure_create } from 'figure/figure';
-import { building_type } from 'building/type';
 import BUILDING_FORT_GROUND = building_type.BUILDING_FORT_GROUND;
 import BUILDING_FORT = building_type.BUILDING_FORT;
 import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
 import BUILDING_WAREHOUSE_SPACE = building_type.BUILDING_WAREHOUSE_SPACE;
 import BUILDING_BURNING_RUIN = building_type.BUILDING_BURNING_RUIN;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';
 import HOUSE_SMALL_CASA = house_level.HOUSE_SMALL_CASA;
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_get_highest_id } from 'building/building';
-import { building_destroy_by_rioter } from 'building/destruction';
-import { city_figures_add_rioter } from 'city/figures';
-import { city_finance_process_stolen } from 'city/finance';
-import { finance_overview } from 'city/finance';
-import { city_finance_overview_this_year } from 'city/finance';
-import { message_category } from 'city/message';
-import MESSAGE_CAT_RIOT = message_category.MESSAGE_CAT_RIOT;
-import MESSAGE_CAT_RIOT_COLLAPSE = message_category.MESSAGE_CAT_RIOT_COLLAPSE;
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
-import MESSAGE_RIOT = city_message_type.MESSAGE_RIOT;
-import MESSAGE_DESTROYED_BUILDING = city_message_type.MESSAGE_DESTROYED_BUILDING;
-import MESSAGE_THEFT = city_message_type.MESSAGE_THEFT;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_apply_sound_interval } from 'city/message';
-import { city_message_post } from 'city/message';
-import { city_message_post_with_popup_delay } from 'city/message';
-import { city_message_increase_category_count } from 'city/message';
-import { city_population } from 'city/population';
-import { selected_rating } from 'city/ratings';
-import { city_ratings_peace_record_criminal } from 'city/ratings';
-import { city_ratings_peace_record_rioter } from 'city/ratings';
-import { city_sentiment } from 'city/sentiment';
-import { city_sentiment_change_happiness } from 'city/sentiment';
-import { city_sentiment_add_protester } from 'city/sentiment';
-import { city_sentiment_add_criminal } from 'city/sentiment';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_FIGURE_CRIMINAL = group_terrain.GROUP_FIGURE_CRIMINAL;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { random_byte } from 'core/random';
-import { map_point } from 'map/point';
-import { figure_combat_handle_corpse } from 'figure/combat';
-import { figure_combat_handle_attack } from 'figure/combat';
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_rioter_get_target_building } from 'figure/formation_enemy';
-import { figure_image_increase_offset } from 'figure/image';
-import { figure_image_corpse_offset } from 'figure/image';
-import { figure_image_normalize_direction } from 'figure/image';
-import { figure_movement_move_ticks } from 'figure/movement';
-import { figure_route_remove } from 'figure/route';
-import { tutorial_availability } from 'game/tutorial';
-import { tutorial_build_buttons } from 'game/tutorial';
-import { tutorial_on_crime } from 'game/tutorial';
-import { map_building_at } from 'map/building';
-import { GRID } from 'map/grid';
-import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_direction_delta } from 'map/grid';
-import { map_closest_road_within_radius } from 'map/road_access';
-import { scenario_climate } from 'scenario/property';
-import { scenario_is_tutorial_1 } from 'scenario/property';
-import { scenario_is_tutorial_2 } from 'scenario/property';
-let CRIMINAL_OFFSETS: number[] = new Array().fill({
-    0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1
-});
+let CRIMINAL_OFFSETS: number[] = [0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 6, 5, 4, 3, 2, 1];
 function generate_rioter(b: building) {
-    let x_road: number
-    let y_road: number;
+    let x_road: Ref<number> = new Ref(0);
+    let y_road: Ref<number> = new Ref(0);
     if (!map_closest_road_within_radius(b.x, b.y, b.size, 4, x_road, y_road)) {
         return;
     }
@@ -123,17 +77,17 @@ function generate_rioter(b: building) {
     } else {
         people_in_mob = 6;
     }
-    let x_target: number
-    let y_target: number;
+    let x_target: Ref<number> = new Ref(0);
+    let y_target: Ref<number> = new Ref(0);
     let target_building_id: number = formation_rioter_get_target_building(x_target, y_target);
     for (let i: number = 0; i < people_in_mob; i++) {
-        let f: figure = figure_create(FIGURE_RIOTER, x_road, y_road, DIR_4_BOTTOM);
+        let f: figure = figure_create(FIGURE_RIOTER, x_road.v, y_road.v, DIR_4_BOTTOM);
         f.action_state = FIGURE_ACTION_120_RIOTER_CREATED;
         f.roam_length = 0;
         f.wait_ticks = 10 + 4 * i;
         if (target_building_id) {
-            f.destination_x = x_target;
-            f.destination_y = y_target;
+            f.destination_x = x_target.v;
+            f.destination_y = y_target.v;
             f.destination_building_id = target_building_id;
         } else {
             f.state = FIGURE_STATE_DEAD;
@@ -144,16 +98,16 @@ function generate_rioter(b: building) {
     city_sentiment_change_happiness(20);
     tutorial_on_crime();
     city_message_apply_sound_interval(MESSAGE_CAT_RIOT);
-    city_message_post_with_popup_delay(MESSAGE_CAT_RIOT, MESSAGE_RIOT, b.type, map_grid_offset(x_road, y_road));
+    city_message_post_with_popup_delay(MESSAGE_CAT_RIOT, MESSAGE_RIOT, b.type, map_grid_offset(x_road.v, y_road.v));
 }
 function generate_mugger(b: building) {
     city_sentiment_add_criminal();
     if (b.house_criminal_active < 2) {
         b.house_criminal_active = 2;
-        let x_road: number
-        let y_road: number;
+        let x_road: Ref<number> = new Ref(0);
+        let y_road: Ref<number> = new Ref(0);
         if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
-            let f: figure = figure_create(FIGURE_CRIMINAL, x_road, y_road, DIR_4_BOTTOM);
+            let f: figure = figure_create(FIGURE_CRIMINAL, x_road.v, y_road.v, DIR_4_BOTTOM);
             f.wait_ticks = 10 + (b.house_figure_generation_delay & 0xf);
             city_ratings_peace_record_criminal();
             let taxes_this_year: number = city_finance_overview_this_year().income.taxes;
@@ -162,7 +116,7 @@ function generate_mugger(b: building) {
                 if (money_stolen > 400) {
                     money_stolen = 400 - random_byte() / 2;
                 }
-                city_message_post(1, MESSAGE_THEFT, money_stolen, f.grid_offset);
+                city_message_post(true, MESSAGE_THEFT, money_stolen, f.grid_offset);
                 city_finance_process_stolen(money_stolen);
             }
         }
@@ -172,10 +126,10 @@ function generate_protestor(b: building) {
     city_sentiment_add_protester();
     if (b.house_criminal_active < 1) {
         b.house_criminal_active = 1;
-        let x_road: number
-        let y_road: number;
+        let x_road: Ref<number> = new Ref(0);
+        let y_road: Ref<number> = new Ref(0);
         if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
-            let f: figure = figure_create(FIGURE_PROTESTER, x_road, y_road, DIR_4_BOTTOM);
+            let f: figure = figure_create(FIGURE_PROTESTER, x_road.v, y_road.v, DIR_4_BOTTOM);
             f.wait_ticks = 10 + (b.house_figure_generation_delay & 0xf);
             city_ratings_peace_record_criminal();
         }
@@ -282,12 +236,12 @@ export function figure_rioter_action(f: figure) {
             f.wait_ticks++;
             if (f.wait_ticks >= 160) {
                 f.action_state = FIGURE_ACTION_121_RIOTER_MOVING;
-                let x_tile: number
-                let y_tile: number;
+                let x_tile: Ref<number> = new Ref(0);
+                let y_tile: Ref<number> = new Ref(0);
                 let building_id: number = formation_rioter_get_target_building(x_tile, y_tile);
                 if (building_id) {
-                    f.destination_x = x_tile;
-                    f.destination_y = y_tile;
+                    f.destination_x = x_tile.v;
+                    f.destination_y = y_tile.v;
                     f.destination_building_id = building_id;
                     figure_route_remove(f);
                 } else {
@@ -299,12 +253,12 @@ export function figure_rioter_action(f: figure) {
             figure_image_increase_offset(f, 12);
             figure_movement_move_ticks(f, 1);
             if (f.direction == DIR_FIGURE_AT_DESTINATION) {
-                let x_tile: number
-                let y_tile: number;
+                let x_tile: Ref<number> = new Ref(0);
+                let y_tile: Ref<number> = new Ref(0);
                 let building_id: number = formation_rioter_get_target_building(x_tile, y_tile);
                 if (building_id) {
-                    f.destination_x = x_tile;
-                    f.destination_y = y_tile;
+                    f.destination_x = x_tile.v;
+                    f.destination_y = y_tile.v;
                     f.destination_building_id = building_id;
                     figure_route_remove(f);
                 } else {
@@ -358,7 +312,7 @@ export function figure_rioter_collapse_building(f: figure) {
             continue
         }
         city_message_apply_sound_interval(MESSAGE_CAT_RIOT_COLLAPSE);
-        city_message_post(0, MESSAGE_DESTROYED_BUILDING, b.type, f.grid_offset);
+        city_message_post(false, MESSAGE_DESTROYED_BUILDING, b.type, f.grid_offset);
         city_message_increase_category_count(MESSAGE_CAT_RIOT_COLLAPSE);
         building_destroy_by_rioter(b);
         f.action_state = FIGURE_ACTION_120_RIOTER_CREATED;

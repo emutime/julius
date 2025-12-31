@@ -1,7 +1,26 @@
-import { MAX_FIGURES } from 'figure/figure';
-;
-import { buffer } from 'core/buffer';
+import { building, building_get } from 'building/building';
+import { building_state } from 'building/type';
+import { city_view_orientation } from 'city/view';
+import { calc_maximum_distance, calc_missile_shooter_direction } from 'core/calc';
 import { direction_type } from 'core/direction';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { figure_action } from 'figure/action';
+import { figure_combat_get_missile_target_for_soldier, figure_combat_handle_attack, figure_combat_handle_corpse } from 'figure/combat';
+import { enemy_army_total_enemy_formations } from 'figure/enemy_army';
+import { MAX_FIGURES, figure, figure_get, figure_is_dead } from 'figure/figure';
+import { figure_image_corpse_offset, figure_image_direction, figure_image_increase_offset } from 'figure/image';
+import { figure_movement_move_ticks, figure_movement_move_ticks_tower_sentry } from 'figure/movement';
+import { figure_properties_for_type } from 'figure/properties';
+import { figure_route_remove } from 'figure/route';
+import { figure_state, figure_type, terrain_usage } from 'figure/type';
+import { figure_create_missile } from 'figuretype/missile';
+import { map_figure_add, map_figure_delete } from 'map/figure';
+import { map_grid_bound, map_grid_offset } from 'map/grid';
+import { map_point } from 'map/point';
+import { map_routing_is_wall_passable, map_routing_wall_tile_in_radius } from 'map/routing_terrain';
+import { map_terrain_is, terrain } from 'map/terrain';
+import { sound_effect, sound_effect_play } from 'sound/effect';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
 import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
@@ -9,8 +28,6 @@ import DIR_6_LEFT = direction_type.DIR_6_LEFT;
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_ACTION_150_ATTACK = figure_action.FIGURE_ACTION_150_ATTACK;
 import FIGURE_ACTION_170_TOWER_SENTRY_AT_REST = figure_action.FIGURE_ACTION_170_TOWER_SENTRY_AT_REST;
@@ -20,69 +37,19 @@ import FIGURE_ACTION_173_TOWER_SENTRY_RETURNING = figure_action.FIGURE_ACTION_17
 import FIGURE_ACTION_174_TOWER_SENTRY_GOING_TO_TOWER = figure_action.FIGURE_ACTION_174_TOWER_SENTRY_GOING_TO_TOWER;
 import FIGURE_ACTION_180_BALLISTA_CREATED = figure_action.FIGURE_ACTION_180_BALLISTA_CREATED;
 import FIGURE_ACTION_181_BALLISTA_FIRING = figure_action.FIGURE_ACTION_181_BALLISTA_FIRING;
-import { figure_type } from 'figure/type';
 import FIGURE_TOWER_SENTRY = figure_type.FIGURE_TOWER_SENTRY;
 import FIGURE_JAVELIN = figure_type.FIGURE_JAVELIN;
 import FIGURE_BOLT = figure_type.FIGURE_BOLT;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { terrain_usage } from 'figure/type';
 import TERRAIN_USAGE_ROADS = terrain_usage.TERRAIN_USAGE_ROADS;
 import TERRAIN_USAGE_WALLS = terrain_usage.TERRAIN_USAGE_WALLS;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_is_dead } from 'figure/figure';
-import { building_type } from 'building/type';
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_orientation } from 'city/view';
-import { calc_maximum_distance } from 'core/calc';
-import { calc_missile_shooter_direction } from 'core/calc';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_FIGURE_TOWER_SENTRY = group_terrain.GROUP_FIGURE_TOWER_SENTRY;
 import GROUP_FIGURE_BALLISTA = group_terrain.GROUP_FIGURE_BALLISTA;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { map_point } from 'map/point';
-import { figure_combat_handle_corpse } from 'figure/combat';
-import { figure_combat_handle_attack } from 'figure/combat';
-import { figure_combat_get_missile_target_for_soldier } from 'figure/combat';
-import { enemy_army } from 'figure/enemy_army';
-import { enemy_army_total_enemy_formations } from 'figure/enemy_army';
-import { figure_image_increase_offset } from 'figure/image';
-import { figure_image_corpse_offset } from 'figure/image';
-import { figure_image_direction } from 'figure/image';
-import { figure_movement_move_ticks } from 'figure/movement';
-import { figure_movement_move_ticks_tower_sentry } from 'figure/movement';
-import { figure_category } from 'figure/properties';
-import { figure_properties } from 'figure/properties';
-import { figure_properties_for_type } from 'figure/properties';
-import { figure_route_remove } from 'figure/route';
-import { figure_create_missile } from 'figuretype/missile';
-import { map_figure_add } from 'map/figure';
-import { map_figure_delete } from 'map/figure';
-import { GRID } from 'map/grid';
-import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_bound } from 'map/grid';
-import { map_routing_is_wall_passable } from 'map/routing_terrain';
-import { map_routing_wall_tile_in_radius } from 'map/routing_terrain';
-import { terrain } from 'map/terrain';
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_is } from 'map/terrain';
-import { sound_effect } from 'sound/effect';
 import SOUND_EFFECT_BALLISTA_SHOOT = sound_effect.SOUND_EFFECT_BALLISTA_SHOOT;
-import { sound_effect_play } from 'sound/effect';
-let BALLISTA_FIRING_OFFSETS: number[] = new Array().fill({
+let BALLISTA_FIRING_OFFSETS: number[] = [
     0, 1, 2, 3, 4, 5, 6, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -91,8 +58,8 @@ let BALLISTA_FIRING_OFFSETS: number[] = new Array().fill({
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-});
-let TOWER_SENTRY_FIRING_OFFSETS: number[] = new Array().fill({
+];
+let TOWER_SENTRY_FIRING_OFFSETS: number[] = [
     0, 1, 2, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -101,7 +68,7 @@ let TOWER_SENTRY_FIRING_OFFSETS: number[] = new Array().fill({
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-});
+];
 export function figure_ballista_action(f: figure) {
     let b: building = building_get(f.building_id);
     f.terrain_usage = TERRAIN_USAGE_WALLS;

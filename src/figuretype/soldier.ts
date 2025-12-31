@@ -1,12 +1,27 @@
 
-;
-import { buffer } from 'core/buffer';
+import { city_figures_add_soldier } from 'city/figures';
+import { city_map_exit_point } from 'city/map';
+import { calc_missile_shooter_direction } from 'core/calc';
 import { direction_type } from 'core/direction';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { figure_action } from 'figure/action';
+import { figure_combat_attack_figure_at, figure_combat_get_missile_target_for_soldier, figure_combat_get_target_for_soldier, figure_combat_handle_attack, figure_combat_handle_corpse } from 'figure/combat';
+import { figure, figure_get, figure_is_dead } from 'figure/figure';
+import { formation, formation_get, formation_record_missile_fired, formation_type } from 'figure/formation';
+import { formation_layout_position_x, formation_layout_position_y } from 'figure/formation_layout';
+import { figure_image_corpse_offset, figure_image_increase_offset, figure_image_missile_launcher_offset, figure_image_normalize_direction } from 'figure/image';
+import { figure_movement_move_ticks } from 'figure/movement';
+import { figure_properties_for_type } from 'figure/properties';
+import { figure_route_remove } from 'figure/route';
+import { figure_state, figure_type, terrain_usage } from 'figure/type';
+import { figure_create_missile } from 'figuretype/missile';
+import { map_figure_add, map_figure_delete, map_figure_update } from 'map/figure';
+import { map_grid_direction_delta, map_grid_offset } from 'map/grid';
+import { map_point, map_point_get_last_result, map_tile } from 'map/point';
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_80_SOLDIER_AT_REST = figure_action.FIGURE_ACTION_80_SOLDIER_AT_REST;
 import FIGURE_ACTION_81_SOLDIER_GOING_TO_FORT = figure_action.FIGURE_ACTION_81_SOLDIER_GOING_TO_FORT;
 import FIGURE_ACTION_82_SOLDIER_RETURNING_TO_BARRACKS = figure_action.FIGURE_ACTION_82_SOLDIER_RETURNING_TO_BARRACKS;
@@ -20,90 +35,43 @@ import FIGURE_ACTION_89_SOLDIER_AT_DISTANT_BATTLE = figure_action.FIGURE_ACTION_
 import FIGURE_ACTION_148_FLEEING = figure_action.FIGURE_ACTION_148_FLEEING;
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_ACTION_150_ATTACK = figure_action.FIGURE_ACTION_150_ATTACK;
-import { figure_type } from 'figure/type';
 import FIGURE_FORT_JAVELIN = figure_type.FIGURE_FORT_JAVELIN;
 import FIGURE_FORT_MOUNTED = figure_type.FIGURE_FORT_MOUNTED;
 import FIGURE_FORT_LEGIONARY = figure_type.FIGURE_FORT_LEGIONARY;
 import FIGURE_JAVELIN = figure_type.FIGURE_JAVELIN;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { terrain_usage } from 'figure/type';
 import TERRAIN_USAGE_ANY = terrain_usage.TERRAIN_USAGE_ANY;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_is_dead } from 'figure/figure';
-import { city_figures_add_soldier } from 'city/figures';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { map_point_get_last_result } from 'map/point';
-import { city_map_exit_point } from 'city/map';
-import { calc_missile_shooter_direction } from 'core/calc';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_FIGURE_FORT_FLAGS = group_terrain.GROUP_FIGURE_FORT_FLAGS;
 import GROUP_BUILDING_FORT_JAVELIN = group_terrain.GROUP_BUILDING_FORT_JAVELIN;
 import GROUP_BUILDING_FORT_LEGIONARY = group_terrain.GROUP_BUILDING_FORT_LEGIONARY;
 import GROUP_FIGURE_FORT_MOUNTED = group_terrain.GROUP_FIGURE_FORT_MOUNTED;
 import GROUP_FIGURE_FORT_STANDARD_POLE = group_terrain.GROUP_FIGURE_FORT_STANDARD_POLE;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { figure_combat_handle_corpse } from 'figure/combat';
-import { figure_combat_handle_attack } from 'figure/combat';
-import { figure_combat_get_target_for_soldier } from 'figure/combat';
-import { figure_combat_get_missile_target_for_soldier } from 'figure/combat';
-import { figure_combat_attack_figure_at } from 'figure/combat';
-import { formation } from 'figure/formation';
-import FORMATION_COLUMN = formation.FORMATION_COLUMN;
-import FORMATION_AT_REST = formation.FORMATION_AT_REST;
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_get } from 'figure/formation';
-import { formation_record_missile_fired } from 'figure/formation';
-import { formation_layout_position_x } from 'figure/formation_layout';
-import { formation_layout_position_y } from 'figure/formation_layout';
-import { figure_image_increase_offset } from 'figure/image';
-import { figure_image_corpse_offset } from 'figure/image';
-import { figure_image_missile_launcher_offset } from 'figure/image';
-import { figure_image_normalize_direction } from 'figure/image';
-import { figure_movement_move_ticks } from 'figure/movement';
-import { figure_category } from 'figure/properties';
-import { figure_properties } from 'figure/properties';
-import { figure_properties_for_type } from 'figure/properties';
-import { figure_route_remove } from 'figure/route';
-import { figure_create_missile } from 'figuretype/missile';
-import { map_figure_add } from 'map/figure';
-import { map_figure_update } from 'map/figure';
-import { map_figure_delete } from 'map/figure';
-import { GRID } from 'map/grid';
-import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_direction_delta } from 'map/grid';
-let ALTERNATIVE_POINTS: map_point[] = new Array().fill({{- 1, -6},
-{ 0, -1 }, { 1, -1 }, { 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 }, { -1, -1 },
-{ 0, -2 }, { 1, -2 }, { 2, -2 }, { 2, -1 }, { 2, 0 }, { 2, 1 }, { 2, 2 }, { 1, 2 },
-{ 0, 2 }, { -1, 2 }, { -2, 2 }, { -2, 1 }, { -2, 0 }, { -2, -1 }, { -2, -2 }, { -1, -2 },
-{ 0, -3 }, { 1, -3 }, { 2, -3 }, { 3, -3 }, { 3, -2 }, { 3, -1 }, { 3, 0 }, { 3, 1 },
-{ 3, 2 }, { 3, 3 }, { 2, 3 }, { 1, 3 }, { 0, 3 }, { -1, 3 }, { -2, 3 }, { -3, 3 },
-{ -3, 2 }, { -3, 1 }, { -3, 0 }, { -3, -1 }, { -3, -2 }, { -3, -3 }, { -2, -3 }, { -1, -3 },
-{ 0, -4 }, { 1, -4 }, { 2, -4 }, { 3, -4 }, { 4, -4 }, { 4, -3 }, { 4, -2 }, { 4, -1 },
-{ 4, 0 }, { 4, 1 }, { 4, 2 }, { 4, 3 }, { 4, 4 }, { 3, 4 }, { 2, 4 }, { 1, 4 },
-{ 0, 4 }, { -1, 4 }, { -2, 4 }, { -3, 4 }, { -4, 4 }, { -4, 3 }, { -4, 2 }, { -4, 1 },
-{ -4, 0 }, { -4, -1 }, { -4, -2 }, { -4, -3 }, { -4, -4 }, { -3, -4 }, { -2, -4 }, { -1, -4 },
-{ 0, -5 }, { 1, -5 }, { 2, -5 }, { 3, -5 }, { 4, -5 }, { 5, -5 }, { 5, -4 }, { 5, -3 },
-{ 5, -2 }, { 5, -1 }, { 5, 0 }, { 5, 1 }, { 5, 2 }, { 5, 3 }, { 5, 4 }, { 5, 5 },
-{ 4, 5 }, { 3, 5 }, { 2, 5 }, { 1, 5 }, { 0, 5 }, { -1, 5 }, { -2, 5 }, { -3, 5 },
-{ -4, 5 }, { -5, 5 }, { -5, 4 }, { -5, 3 }, { -5, 2 }, { -5, 1 }, { -5, 0 }, { -5, -1 },
-{ -5, -2 }, { -5, -3 }, { -5, -4 }, { -5, -5 }, { -4, -5 }, { -3, -5 }, { -2, -5 }, { -1, -5 },
-{ 0, -6 }, { 1, -6 }, { 2, -6 }, { 3, -6 }, { 4, -6 }, { 5, -6 }, { 6, -6 }, { 6, -5 },
-{ 6, -4 }, { 6, -3 }, { 6, -2 }, { 6, -1 }, { 6, 0 }, { 6, 1 }, { 6, 2 }, { 6, 3 },
-{ 6, 4 }, { 6, 5 }, { 6, 6 }, { 5, 6 }, { 4, 6 }, { 3, 6 }, { 2, 6 }, { 1, 6 },
-{ 0, 6 }, { -1, 6 }, { -2, 6 }, { -3, 6 }, { -4, 6 }, { -5, 6 }, { -6, 6 }, { -6, 5 },
-{ -6, 4 }, { -6, 3 }, { -6, 2 }, { -6, 1 }, { -6, 0 }, { -6, -1 }, { -6, -2 }, { -6, -3 },
-{ -6, -4 }, { -6, -5 }, { -6, -6 }, { -5, -6 }, { -4, -6 }, { -3, -6 }, { -2, -6 }, { -1, -6 },
-});
+import FORMATION_COLUMN = formation_type.FORMATION_COLUMN;
+import FORMATION_AT_REST = formation_type.FORMATION_AT_REST;
+let ALTERNATIVE_POINTS: map_point[] = [
+    { x: -1, y: -6 },
+    { x: 0, y: -1 }, { x: 1, y: -1 }, { x: 1, y: 0 }, { x: 1, y: 1 }, { x: 0, y: 1 }, { x: -1, y: 1 }, { x: -1, y: 0 }, { x: -1, y: -1 },
+    { x: 0, y: -2 }, { x: 1, y: -2 }, { x: 2, y: -2 }, { x: 2, y: -1 }, { x: 2, y: 0 }, { x: 2, y: 1 }, { x: 2, y: 2 }, { x: 1, y: 2 },
+    { x: 0, y: 2 }, { x: -1, y: 2 }, { x: -2, y: 2 }, { x: -2, y: 1 }, { x: -2, y: 0 }, { x: -2, y: -1 }, { x: -2, y: -2 }, { x: -1, y: -2 },
+    { x: 0, y: -3 }, { x: 1, y: -3 }, { x: 2, y: -3 }, { x: 3, y: -3 }, { x: 3, y: -2 }, { x: 3, y: -1 }, { x: 3, y: 0 }, { x: 3, y: 1 },
+    { x: 3, y: 2 }, { x: 3, y: 3 }, { x: 2, y: 3 }, { x: 1, y: 3 }, { x: 0, y: 3 }, { x: -1, y: 3 }, { x: -2, y: 3 }, { x: -3, y: 3 },
+    { x: -3, y: 2 }, { x: -3, y: 1 }, { x: -3, y: 0 }, { x: -3, y: -1 }, { x: -3, y: -2 }, { x: -3, y: -3 }, { x: -2, y: -3 }, { x: -1, y: -3 },
+    { x: 0, y: -4 }, { x: 1, y: -4 }, { x: 2, y: -4 }, { x: 3, y: -4 }, { x: 4, y: -4 }, { x: 4, y: -3 }, { x: 4, y: -2 }, { x: 4, y: -1 },
+    { x: 4, y: 0 }, { x: 4, y: 1 }, { x: 4, y: 2 }, { x: 4, y: 3 }, { x: 4, y: 4 }, { x: 3, y: 4 }, { x: 2, y: 4 }, { x: 1, y: 4 },
+    { x: 0, y: 4 }, { x: -1, y: 4 }, { x: -2, y: 4 }, { x: -3, y: 4 }, { x: -4, y: 4 }, { x: -4, y: 3 }, { x: -4, y: 2 }, { x: -4, y: 1 },
+    { x: -4, y: 0 }, { x: -4, y: -1 }, { x: -4, y: -2 }, { x: -4, y: -3 }, { x: -4, y: -4 }, { x: -3, y: -4 }, { x: -2, y: -4 }, { x: -1, y: -4 },
+    { x: 0, y: -5 }, { x: 1, y: -5 }, { x: 2, y: -5 }, { x: 3, y: -5 }, { x: 4, y: -5 }, { x: 5, y: -5 }, { x: 5, y: -4 }, { x: 5, y: -3 },
+    { x: 5, y: -2 }, { x: 5, y: -1 }, { x: 5, y: 0 }, { x: 5, y: 1 }, { x: 5, y: 2 }, { x: 5, y: 3 }, { x: 5, y: 4 }, { x: 5, y: 5 },
+    { x: 4, y: 5 }, { x: 3, y: 5 }, { x: 2, y: 5 }, { x: 1, y: 5 }, { x: 0, y: 5 }, { x: -1, y: 5 }, { x: -2, y: 5 }, { x: -3, y: 5 },
+    { x: -4, y: 5 }, { x: -5, y: 5 }, { x: -5, y: 4 }, { x: -5, y: 3 }, { x: -5, y: 2 }, { x: -5, y: 1 }, { x: -5, y: 0 }, { x: -5, y: -1 },
+    { x: -5, y: -2 }, { x: -5, y: -3 }, { x: -5, y: -4 }, { x: -5, y: -5 }, { x: -4, y: -5 }, { x: -3, y: -5 }, { x: -2, y: -5 }, { x: -1, y: -5 },
+    { x: 0, y: -6 }, { x: 1, y: -6 }, { x: 2, y: -6 }, { x: 3, y: -6 }, { x: 4, y: -6 }, { x: 5, y: -6 }, { x: 6, y: -6 }, { x: 6, y: -5 },
+    { x: 6, y: -4 }, { x: 6, y: -3 }, { x: 6, y: -2 }, { x: 6, y: -1 }, { x: 6, y: 0 }, { x: 6, y: 1 }, { x: 6, y: 2 }, { x: 6, y: 3 },
+    { x: 6, y: 4 }, { x: 6, y: 5 }, { x: 6, y: 6 }, { x: 5, y: 6 }, { x: 4, y: 6 }, { x: 3, y: 6 }, { x: 2, y: 6 }, { x: 1, y: 6 },
+    { x: 0, y: 6 }, { x: -1, y: 6 }, { x: -2, y: 6 }, { x: -3, y: 6 }, { x: -4, y: 6 }, { x: -5, y: 6 }, { x: -6, y: 6 }, { x: -6, y: 5 },
+    { x: -6, y: 4 }, { x: -6, y: 3 }, { x: -6, y: 2 }, { x: -6, y: 1 }, { x: -6, y: 0 }, { x: -6, y: -1 }, { x: -6, y: -2 }, { x: -6, y: -3 },
+    { x: -6, y: -4 }, { x: -6, y: -5 }, { x: -6, y: -6 }, { x: -5, y: -6 }, { x: -4, y: -6 }, { x: -3, y: -6 }, { x: -2, y: -6 }, { x: -1, y: -6 },
+];
 export function figure_military_standard_action(f: figure) {
     let m: formation = formation_get(f.formation_id);
     f.terrain_usage = TERRAIN_USAGE_ANY;
@@ -142,31 +110,30 @@ export function figure_military_standard_action(f: figure) {
     }
 }
 function javelin_launch_missile(f: figure) {
-    let tile: map_point = {- 1, -1
-};
-f.wait_ticks_missile++;
-if (f.wait_ticks_missile > figure_properties_for_type(f.type).missile_delay) {
-    f.wait_ticks_missile = 0;
-    if (figure_combat_get_missile_target_for_soldier(f, 10, tile)) {
-        f.attack_image_offset = 1;
-        f.direction = calc_missile_shooter_direction(f.x, f.y, tile.x, tile.y);
-    } else {
-        f.attack_image_offset = 0;
-    }
-}
-if (f.attack_image_offset) {
-    if (f.attack_image_offset == 1) {
-        if (tile.x == -1 || tile.y == -1) {
-            map_point_get_last_result(tile);
+    let tile: map_point = { x: -1, y: -1 };
+    f.wait_ticks_missile++;
+    if (f.wait_ticks_missile > figure_properties_for_type(f.type).missile_delay) {
+        f.wait_ticks_missile = 0;
+        if (figure_combat_get_missile_target_for_soldier(f, 10, tile)) {
+            f.attack_image_offset = 1;
+            f.direction = calc_missile_shooter_direction(f.x, f.y, tile.x, tile.y);
+        } else {
+            f.attack_image_offset = 0;
         }
-        figure_create_missile(f.id, f.x, f.y, tile.x, tile.y, FIGURE_JAVELIN);
-        formation_record_missile_fired(formation_get(f.formation_id));
     }
-    f.attack_image_offset++;
-    if (f.attack_image_offset > 100) {
-        f.attack_image_offset = 0;
+    if (f.attack_image_offset) {
+        if (f.attack_image_offset == 1) {
+            if (tile.x == -1 || tile.y == -1) {
+                map_point_get_last_result(tile);
+            }
+            figure_create_missile(f.id, f.x, f.y, tile.x, tile.y, FIGURE_JAVELIN);
+            formation_record_missile_fired(formation_get(f.formation_id));
+        }
+        f.attack_image_offset++;
+        if (f.attack_image_offset > 100) {
+            f.attack_image_offset = 0;
+        }
     }
-}
 }
 function legionary_attack_adjacent_enemy(f: figure) {
     for (let i: number = 0; i < 8 && f.action_state != FIGURE_ACTION_150_ATTACK; i++) {

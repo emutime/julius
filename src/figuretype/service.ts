@@ -1,5 +1,4 @@
 
-;
 import { building, building_get } from 'building/building';
 import { building_market_get_max_food_stock, building_market_get_max_goods_stock } from 'building/market';
 import { building_state, building_type } from 'building/type';
@@ -15,6 +14,7 @@ import { figure_route_remove } from 'figure/route';
 import { figure_state, terrain_usage } from 'figure/type';
 import { map_building_at } from 'map/building';
 import { map_closest_road_within_radius } from 'map/road_access';
+import { Ref } from '../../ext/crt';
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;
@@ -53,13 +53,13 @@ function roamer_action(f: figure, num_ticks: number) {
             f.is_ghost = 0;
             f.roam_length++;
             if (f.roam_length >= f.max_roam_length) {
-                let x: number
-                let y: number;
+                let x: Ref<number>;
+                let y: Ref<number>;
                 let b: building = building_get(f.building_id);
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x, y)) {
                     f.action_state = FIGURE_ACTION_126_ROAMER_RETURNING;
-                    f.destination_x = x;
-                    f.destination_y = y;
+                    f.destination_x = x.v;
+                    f.destination_y = y.v;
                     figure_route_remove(f);
                     f.roam_length = 0;
                 } else {
@@ -209,11 +209,11 @@ export function figure_tax_collector_action(f: figure) {
             f.image_offset = 0;
             f.wait_ticks--;
             if (f.wait_ticks <= 0) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number>
+                let y_road: Ref<number>;
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                     f.action_state = FIGURE_ACTION_41_TAX_COLLECTOR_ENTERING_EXITING;
-                    figure_movement_set_cross_country_destination(f, x_road, y_road);
+                    figure_movement_set_cross_country_destination(f, x_road.v, y_road.v);
                     f.roam_length = 0;
                 } else {
                     f.state = FIGURE_STATE_DEAD;
@@ -237,12 +237,12 @@ export function figure_tax_collector_action(f: figure) {
             f.is_ghost = 0;
             f.roam_length++;
             if (f.roam_length >= f.max_roam_length) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number>
+                let y_road: Ref<number>;
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                     f.action_state = FIGURE_ACTION_43_TAX_COLLECTOR_RETURNING;
-                    f.destination_x = x_road;
-                    f.destination_y = y_road;
+                    f.destination_x = x_road.v;
+                    f.destination_y = y_road.v;
                 } else {
                     f.state = FIGURE_STATE_DEAD;
                 }

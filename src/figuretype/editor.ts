@@ -1,50 +1,48 @@
 
-;
-import { buffer } from 'core/buffer';
-import { direction_type } from 'core/direction';
-import { figure_type } from 'figure/type';
-import FIGURE_MAP_FLAG = figure_type.FIGURE_MAP_FLAG;
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { figure_create } from 'figure/figure';
-import { map_flag_e } from 'figuretype/editor';
-import MAP_FLAG_EARTHQUAKE = map_flag_e.MAP_FLAG_EARTHQUAKE;
-import MAP_FLAG_ENTRY = map_flag_e.MAP_FLAG_ENTRY;
-import MAP_FLAG_EXIT = map_flag_e.MAP_FLAG_EXIT;
-import MAP_FLAG_RIVER_ENTRY = map_flag_e.MAP_FLAG_RIVER_ENTRY;
-import MAP_FLAG_RIVER_EXIT = map_flag_e.MAP_FLAG_RIVER_EXIT;
-import MAP_FLAG_INVASION_MIN = map_flag_e.MAP_FLAG_INVASION_MIN;
-import MAP_FLAG_INVASION_MAX = map_flag_e.MAP_FLAG_INVASION_MAX;
-import MAP_FLAG_FISHING_MIN = map_flag_e.MAP_FLAG_FISHING_MIN;
-import MAP_FLAG_FISHING_MAX = map_flag_e.MAP_FLAG_FISHING_MAX;
-import MAP_FLAG_HERD_MIN = map_flag_e.MAP_FLAG_HERD_MIN;
-import MAP_FLAG_HERD_MAX = map_flag_e.MAP_FLAG_HERD_MAX;
-import MAP_FLAG_MIN = map_flag_e.MAP_FLAG_MIN;
-import MAP_FLAG_MAX = map_flag_e.MAP_FLAG_MAX;
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
+import { image_group } from 'core/image';
 import { group_terrain } from 'core/image_group';
+import { figure, figure_create } from 'figure/figure';
+import { figure_image_increase_offset } from 'figure/image';
+import { figure_type } from 'figure/type';
+import { map_figure_add, map_figure_delete } from 'map/figure';
+import { GRID, map_grid_offset } from 'map/grid';
+import { map_point } from 'map/point';
+import { scenario_editor_earthquake_point, scenario_editor_fishing_point, scenario_editor_herd_point, scenario_editor_invasion_point } from 'scenario/editor_map';
+import { scenario_map_entry, scenario_map_exit, scenario_map_river_entry, scenario_map_river_exit } from 'scenario/map';
+export const enum map_flag {
+    MAP_FLAG_EARTHQUAKE = 1,
+    MAP_FLAG_ENTRY = 2,
+    MAP_FLAG_EXIT = 3,
+    MAP_FLAG_RIVER_ENTRY = 12,
+    MAP_FLAG_RIVER_EXIT = 13,
+    MAP_FLAG_INVASION_MIN = 4,
+    MAP_FLAG_INVASION_MAX = 12,
+    MAP_FLAG_FISHING_MIN = 14,
+    MAP_FLAG_FISHING_MAX = 22,
+    MAP_FLAG_HERD_MIN = 22,
+    MAP_FLAG_HERD_MAX = 26,
+
+    MAP_FLAG_MIN = 1,
+    MAP_FLAG_MAX = 26,
+};
+import FIGURE_MAP_FLAG = figure_type.FIGURE_MAP_FLAG;
+import MAP_FLAG_EARTHQUAKE = map_flag.MAP_FLAG_EARTHQUAKE;
+import MAP_FLAG_ENTRY = map_flag.MAP_FLAG_ENTRY;
+import MAP_FLAG_EXIT = map_flag.MAP_FLAG_EXIT;
+import MAP_FLAG_RIVER_ENTRY = map_flag.MAP_FLAG_RIVER_ENTRY;
+import MAP_FLAG_RIVER_EXIT = map_flag.MAP_FLAG_RIVER_EXIT;
+import MAP_FLAG_INVASION_MIN = map_flag.MAP_FLAG_INVASION_MIN;
+import MAP_FLAG_INVASION_MAX = map_flag.MAP_FLAG_INVASION_MAX;
+import MAP_FLAG_FISHING_MIN = map_flag.MAP_FLAG_FISHING_MIN;
+import MAP_FLAG_FISHING_MAX = map_flag.MAP_FLAG_FISHING_MAX;
+import MAP_FLAG_HERD_MIN = map_flag.MAP_FLAG_HERD_MIN;
+import MAP_FLAG_HERD_MAX = map_flag.MAP_FLAG_HERD_MAX;
+import MAP_FLAG_MIN = map_flag.MAP_FLAG_MIN;
+import MAP_FLAG_MAX = map_flag.MAP_FLAG_MAX;
 import GROUP_FIGURE_FORT_STANDARD_ICONS = group_terrain.GROUP_FIGURE_FORT_STANDARD_ICONS;
 import GROUP_FIGURE_MAP_FLAG_FLAGS = group_terrain.GROUP_FIGURE_MAP_FLAG_FLAGS;
 import GROUP_FIGURE_MAP_FLAG_ICONS = group_terrain.GROUP_FIGURE_MAP_FLAG_ICONS;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { figure_image_increase_offset } from 'figure/image';
-import { map_figure_add } from 'map/figure';
-import { map_figure_delete } from 'map/figure';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_point } from 'map/point';
-import { scenario_editor_herd_point } from 'scenario/editor_map';
-import { scenario_editor_fishing_point } from 'scenario/editor_map';
-import { scenario_editor_invasion_point } from 'scenario/editor_map';
-import { scenario_editor_earthquake_point } from 'scenario/editor_map';
-import { scenario_map_entry } from 'scenario/map';
-import { scenario_map_exit } from 'scenario/map';
-import { scenario_map_river_entry } from 'scenario/map';
-import { scenario_map_river_exit } from 'scenario/map';
 export function figure_create_editor_flags() {
     for (let id: number = MAP_FLAG_MIN; id < MAP_FLAG_MAX; id++) {
         figure_create(FIGURE_MAP_FLAG, -1, -1, 0).resource_id = id;
@@ -54,7 +52,7 @@ export function figure_editor_flag_action(f: figure) {
     figure_image_increase_offset(f, 16);
     f.image_id = image_group(GROUP_FIGURE_MAP_FLAG_FLAGS) + f.image_offset / 2;
     map_figure_delete(f);
-    let point: map_point = { 0, 0};
+    let point: map_point = { x: 0, y: 0 };
     let id: number = f.resource_id;
     let image_base: number = image_group(GROUP_FIGURE_MAP_FLAG_ICONS);
     if (id == MAP_FLAG_EARTHQUAKE) {

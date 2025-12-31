@@ -1,13 +1,32 @@
 
-;
-import { buffer } from 'core/buffer';
+import { city_figures_add_enemy, city_figures_add_imperial_soldier, city_figures_set_gladiator_revolt, city_figures_soldiers } from 'city/figures';
+import { city_sound_update_march_enemy, city_sound_update_march_horse, city_sound_update_shoot_arrow } from 'city/sound';
+import { calc_general_direction, calc_missile_shooter_direction } from 'core/calc';
 import { direction_type } from 'core/direction';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { figure_action } from 'figure/action';
+import { figure_combat_get_missile_target_for_enemy, figure_combat_get_target_for_enemy, figure_combat_handle_attack, figure_combat_handle_corpse } from 'figure/combat';
+import { figure, figure_get, figure_is_dead } from 'figure/figure';
+import { formation, formation_get, formation_record_missile_fired, formation_type } from 'figure/formation';
+import { formation_rioter_get_target_building } from 'figure/formation_enemy';
+import { formation_layout_position_x, formation_layout_position_y } from 'figure/formation_layout';
+import { figure_image_corpse_offset, figure_image_increase_offset, figure_image_missile_launcher_offset, figure_image_normalize_direction } from 'figure/image';
+import { figure_movement_move_ticks } from 'figure/movement';
+import { figure_properties_for_type } from 'figure/properties';
+import { figure_route_remove } from 'figure/route';
+import { enemy_type, figure_state, figure_type, terrain_usage } from 'figure/type';
+import { figure_create_missile } from 'figuretype/missile';
+import { map_figure_update } from 'map/figure';
+import { map_point, map_point_get_last_result } from 'map/point';
+import { scenario_gladiator_revolt_is_finished } from 'scenario/gladiator_revolt';
+import { sound_effect, sound_effect_play } from 'sound/effect';
+import { sound_speech_play_file } from 'sound/speech';
+import { Ref } from '../../ext/crt';
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;
 import DIR_FIGURE_ATTACK = direction_type.DIR_FIGURE_ATTACK;
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_84_SOLDIER_AT_STANDARD = figure_action.FIGURE_ACTION_84_SOLDIER_AT_STANDARD;
 import FIGURE_ACTION_148_FLEEING = figure_action.FIGURE_ACTION_148_FLEEING;
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
@@ -18,7 +37,6 @@ import FIGURE_ACTION_153_ENEMY_MARCHING = figure_action.FIGURE_ACTION_153_ENEMY_
 import FIGURE_ACTION_154_ENEMY_FIGHTING = figure_action.FIGURE_ACTION_154_ENEMY_FIGHTING;
 import FIGURE_ACTION_158_NATIVE_CREATED = figure_action.FIGURE_ACTION_158_NATIVE_CREATED;
 import FIGURE_ACTION_159_NATIVE_ATTACKING = figure_action.FIGURE_ACTION_159_NATIVE_ATTACKING;
-import { figure_type } from 'figure/type';
 import FIGURE_ENEMY43_SPEAR = figure_type.FIGURE_ENEMY43_SPEAR;
 import FIGURE_ENEMY46_CAMEL = figure_type.FIGURE_ENEMY46_CAMEL;
 import FIGURE_ENEMY47_ELEPHANT = figure_type.FIGURE_ENEMY47_ELEPHANT;
@@ -27,8 +45,6 @@ import FIGURE_ENEMY51_SPEAR = figure_type.FIGURE_ENEMY51_SPEAR;
 import FIGURE_ENEMY52_MOUNTED_ARCHER = figure_type.FIGURE_ENEMY52_MOUNTED_ARCHER;
 import FIGURE_ARROW = figure_type.FIGURE_ARROW;
 import FIGURE_SPEAR = figure_type.FIGURE_SPEAR;
-import { figure_type } from 'figure/type';
-import { enemy_type } from 'figure/type';
 import ENEMY_0_BARBARIAN = enemy_type.ENEMY_0_BARBARIAN;
 import ENEMY_1_NUMIDIAN = enemy_type.ENEMY_1_NUMIDIAN;
 import ENEMY_2_GAUL = enemy_type.ENEMY_2_GAUL;
@@ -40,67 +56,18 @@ import ENEMY_7_ETRUSCAN = enemy_type.ENEMY_7_ETRUSCAN;
 import ENEMY_8_GREEK = enemy_type.ENEMY_8_GREEK;
 import ENEMY_9_EGYPTIAN = enemy_type.ENEMY_9_EGYPTIAN;
 import ENEMY_10_CARTHAGINIAN = enemy_type.ENEMY_10_CARTHAGINIAN;
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { terrain_usage } from 'figure/type';
 import TERRAIN_USAGE_ANY = terrain_usage.TERRAIN_USAGE_ANY;
 import TERRAIN_USAGE_ENEMY = terrain_usage.TERRAIN_USAGE_ENEMY;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_is_dead } from 'figure/figure';
-import { city_figures_add_enemy } from 'city/figures';
-import { city_figures_add_imperial_soldier } from 'city/figures';
-import { city_figures_set_gladiator_revolt } from 'city/figures';
-import { city_figures_soldiers } from 'city/figures';
-import { city_sound_update_march_enemy } from 'city/sound';
-import { city_sound_update_march_horse } from 'city/sound';
-import { city_sound_update_shoot_arrow } from 'city/sound';
-import { calc_general_direction } from 'core/calc';
-import { calc_missile_shooter_direction } from 'core/calc';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_FIGURE_GLADIATOR = group_terrain.GROUP_FIGURE_GLADIATOR;
 import GROUP_BUILDING_FORT_LEGIONARY = group_terrain.GROUP_BUILDING_FORT_LEGIONARY;
 import GROUP_FIGURE_CAESAR_LEGIONARY = group_terrain.GROUP_FIGURE_CAESAR_LEGIONARY;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { map_point } from 'map/point';
-import { map_point_get_last_result } from 'map/point';
-import { figure_combat_handle_corpse } from 'figure/combat';
-import { figure_combat_handle_attack } from 'figure/combat';
-import { figure_combat_get_target_for_enemy } from 'figure/combat';
-import { figure_combat_get_missile_target_for_enemy } from 'figure/combat';
-import { formation } from 'figure/formation';
-import FORMATION_COLUMN = formation.FORMATION_COLUMN;
-import FORMATION_ENEMY_MOB = formation.FORMATION_ENEMY_MOB;
-import FORMATION_ENEMY12 = formation.FORMATION_ENEMY12;
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_get } from 'figure/formation';
-import { formation_record_missile_fired } from 'figure/formation';
-import { formation_rioter_get_target_building } from 'figure/formation_enemy';
-import { formation_layout_position_x } from 'figure/formation_layout';
-import { formation_layout_position_y } from 'figure/formation_layout';
-import { figure_image_increase_offset } from 'figure/image';
-import { figure_image_corpse_offset } from 'figure/image';
-import { figure_image_missile_launcher_offset } from 'figure/image';
-import { figure_image_normalize_direction } from 'figure/image';
-import { figure_movement_move_ticks } from 'figure/movement';
-import { figure_category } from 'figure/properties';
-import { figure_properties } from 'figure/properties';
-import { figure_properties_for_type } from 'figure/properties';
-import { figure_route_remove } from 'figure/route';
-import { figure_create_missile } from 'figuretype/missile';
-import { map_figure_update } from 'map/figure';
-import { scenario_gladiator_revolt_is_finished } from 'scenario/gladiator_revolt';
-import { sound_effect } from 'sound/effect';
+import FORMATION_COLUMN = formation_type.FORMATION_COLUMN;
+import FORMATION_ENEMY_MOB = formation_type.FORMATION_ENEMY_MOB;
+import FORMATION_ENEMY12 = formation_type.FORMATION_ENEMY12;
 import SOUND_EFFECT_ARROW = sound_effect.SOUND_EFFECT_ARROW;
 import SOUND_EFFECT_HORSE_MOVING = sound_effect.SOUND_EFFECT_HORSE_MOVING;
 import SOUND_EFFECT_MARCHING = sound_effect.SOUND_EFFECT_MARCHING;
-import { sound_effect_play } from 'sound/effect';
-import { sound_speech_play_file } from 'sound/speech';
 function enemy_initial(f: figure, m: formation) {
     map_figure_update(f);
     f.image_offset = 0;
@@ -130,7 +97,7 @@ function enemy_initial(f: figure, m: formation) {
     if (f.type == FIGURE_ENEMY43_SPEAR || f.type == FIGURE_ENEMY46_CAMEL ||
         f.type == FIGURE_ENEMY51_SPEAR || f.type == FIGURE_ENEMY52_MOUNTED_ARCHER) {
         f.wait_ticks_missile++;
-        let tile: map_point = { 0, 0};
+        let tile: map_point = { x: 0, y: 0 };
         if (f.wait_ticks_missile > figure_properties_for_type(f.type).missile_delay) {
             f.wait_ticks_missile = 0;
             if (figure_combat_get_missile_target_for_enemy(f, 10, city_figures_soldiers() < 4, tile)) {
@@ -601,12 +568,12 @@ export function figure_enemy_gladiator_action(f: figure) {
             if (f.wait_ticks > 10 + (f.id & 3)) {
                 f.wait_ticks = 0;
                 f.action_state = FIGURE_ACTION_159_NATIVE_ATTACKING;
-                let x_tile: number
-                let y_tile: number;
+                let x_tile: Ref<number>
+                let y_tile: Ref<number>;
                 let building_id: number = formation_rioter_get_target_building(x_tile, y_tile);
                 if (building_id) {
-                    f.destination_x = x_tile;
-                    f.destination_y = y_tile;
+                    f.destination_x = x_tile.v;
+                    f.destination_y = y_tile.v;
                     f.destination_building_id = building_id;
                     figure_route_remove(f);
                 } else {

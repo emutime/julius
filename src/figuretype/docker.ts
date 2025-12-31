@@ -1,12 +1,31 @@
-import { MAX_BUILDINGS } from 'building/building';
-;
-import { buffer } from 'core/buffer';
+import { building, building_get, building_next, MAX_BUILDINGS } from 'building/building';
+import { building_storage, building_storage_get, building_storage_state } from 'building/storage';
+import { building_state, building_type } from 'building/type';
+import { building_warehouse_space_add_import, building_warehouse_space_remove_export } from 'building/warehouse';
+import { city_buildings_get_trade_center } from 'city/buildings';
+import { city_trade_next_docker_export_resource, city_trade_next_docker_import_resource } from 'city/trade';
+import { calc_distance_with_penalty } from 'core/calc';
 import { direction_type } from 'core/direction';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { empire_city_get_route_id } from 'empire/city';
+import { empire_can_export_resource_to_city, empire_can_import_resource_from_city } from 'empire/empire';
+import { trade_route_increase_traded } from 'empire/trade_route';
+import { figure_action } from 'figure/action';
+import { figure_combat_handle_attack, figure_combat_handle_corpse } from 'figure/combat';
+import { figure, figure_get } from 'figure/figure';
+import { figure_image_corpse_offset, figure_image_increase_offset, figure_image_normalize_direction, figure_image_set_cart_offset } from 'figure/image';
+import { figure_movement_move_ticks } from 'figure/movement';
+import { figure_route_remove } from 'figure/route';
+import { trader_has_traded_max, trader_record_bought_resource, trader_record_sold_resource } from 'figure/trader';
+import { figure_state, figure_type, terrain_usage } from 'figure/type';
+import { resource_image_offset, resource_image_type, resource_type } from 'game/resource';
+import { map_point, map_point_store_result } from 'map/point';
+import { map_has_road_access } from 'map/road_access';
+import { Ref } from '../../ext/crt';
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_112_TRADE_SHIP_MOORED = figure_action.FIGURE_ACTION_112_TRADE_SHIP_MOORED;
 import FIGURE_ACTION_115_TRADE_SHIP_LEAVING = figure_action.FIGURE_ACTION_115_TRADE_SHIP_LEAVING;
 import FIGURE_ACTION_132_DOCKER_IDLING = figure_action.FIGURE_ACTION_132_DOCKER_IDLING;
@@ -20,74 +39,21 @@ import FIGURE_ACTION_139_DOCKER_IMPORT_AT_WAREHOUSE = figure_action.FIGURE_ACTIO
 import FIGURE_ACTION_140_DOCKER_EXPORT_AT_WAREHOUSE = figure_action.FIGURE_ACTION_140_DOCKER_EXPORT_AT_WAREHOUSE;
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_ACTION_150_ATTACK = figure_action.FIGURE_ACTION_150_ATTACK;
-import { figure_type } from 'figure/type';
 import FIGURE_TRADE_SHIP = figure_type.FIGURE_TRADE_SHIP;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_ALIVE = figure_state.FIGURE_STATE_ALIVE;
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { terrain_usage } from 'figure/type';
 import TERRAIN_USAGE_ROADS = terrain_usage.TERRAIN_USAGE_ROADS;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { building_type } from 'building/type';
 import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
 import BUILDING_DOCK = building_type.BUILDING_DOCK;
 import BUILDING_WHARF = building_type.BUILDING_WHARF;
-import { building_type } from 'building/type';
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_next } from 'building/building';
-import { resource_type } from 'game/resource';
 import RESOURCE_NONE = resource_type.RESOURCE_NONE;
 import RESOURCE_MIN = resource_type.RESOURCE_MIN;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
 import RESOURCE_IMAGE_CART = resource_image_type.RESOURCE_IMAGE_CART;
-import { resource_image_type } from 'game/resource';
-import { resource_image_offset } from 'game/resource';
-import { building_storage_state } from 'building/storage';
 import BUILDING_STORAGE_STATE_NOT_ACCEPTING = building_storage_state.BUILDING_STORAGE_STATE_NOT_ACCEPTING;
-import { building_storage_state } from 'building/storage';
-import { building_storage } from 'building/storage';
-import { building_storage_get } from 'building/storage';
-import { map_point } from 'map/point';
-import { map_point_store_result } from 'map/point';
-import { building_warehouse_space_add_import } from 'building/warehouse';
-import { building_warehouse_space_remove_export } from 'building/warehouse';
-import { city_buildings_get_trade_center } from 'city/buildings';
-import { city_trade_next_docker_import_resource } from 'city/trade';
-import { city_trade_next_docker_export_resource } from 'city/trade';
-import { calc_distance_with_penalty } from 'core/calc';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_FIGURE_CARTPUSHER_CART = group_terrain.GROUP_FIGURE_CARTPUSHER_CART;
 import GROUP_FIGURE_CARTPUSHER = group_terrain.GROUP_FIGURE_CARTPUSHER;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { empire_city } from 'empire/city';
-import { empire_city_get_route_id } from 'empire/city';
-import { empire_can_export_resource_to_city } from 'empire/empire';
-import { empire_can_import_resource_from_city } from 'empire/empire';
-import { trade_route_increase_traded } from 'empire/trade_route';
-import { figure_combat_handle_corpse } from 'figure/combat';
-import { figure_combat_handle_attack } from 'figure/combat';
-import { figure_image_increase_offset } from 'figure/image';
-import { figure_image_set_cart_offset } from 'figure/image';
-import { figure_image_corpse_offset } from 'figure/image';
-import { figure_image_normalize_direction } from 'figure/image';
-import { figure_movement_move_ticks } from 'figure/movement';
-import { figure_route_remove } from 'figure/route';
-import { trader_record_bought_resource } from 'figure/trader';
-import { trader_record_sold_resource } from 'figure/trader';
-import { trader_has_traded_max } from 'figure/trader';
-import { map_has_road_access } from 'map/road_access';
 function try_import_resource(building_id: number, resource: number, city_id: number) {
     let warehouse: building = building_get(building_id);
     if (warehouse.type != BUILDING_WAREHOUSE) {
@@ -136,9 +102,8 @@ function try_export_resource(building_id: number, resource: number, city_id: num
     }
     return 0;
 }
-function get_closest_warehouse_for_import(x: number, y: number, city_id: number, distance_from_entry: number, road_network_id: number, warehouse: map_point, import_resource: number) {
-    let importable: number[];
-    importable[RESOURCE_NONE] = 0;
+function get_closest_warehouse_for_import(x: number, y: number, city_id: number, distance_from_entry: number, road_network_id: number, warehouse: map_point, import_resource: Ref<number>) {
+    let importable: boolean[] = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
     for (let r: number = RESOURCE_MIN; r < RESOURCE_MAX; r++) {
         importable[r] = empire_can_import_resource_from_city(city_id, r);
     }
@@ -195,12 +160,11 @@ function get_closest_warehouse_for_import(x: number, y: number, city_id: number,
     } else if (!map_has_road_access(min.x, min.y, 3, warehouse)) {
         return 0;
     }
-    * import_resource = resource;
+    import_resource.v = resource;
     return min_building_id;
 }
-function get_closest_warehouse_for_export(x: number, y: number, city_id: number, distance_from_entry: number, road_network_id: number, warehouse: map_point, export_resource: number) {
-    let exportable: number[];
-    exportable[RESOURCE_NONE] = 0;
+function get_closest_warehouse_for_export(x: number, y: number, city_id: number, distance_from_entry: number, road_network_id: number, warehouse: map_point, export_resource: Ref<number>) {
+    let exportable: boolean[] = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
     for (let r: number = RESOURCE_MIN; r < RESOURCE_MAX; r++) {
         exportable[r] = empire_can_export_resource_to_city(city_id, r);
     }
@@ -250,18 +214,18 @@ function get_closest_warehouse_for_export(x: number, y: number, city_id: number,
     } else if (!map_has_road_access(min.x, min.y, 3, warehouse)) {
         return 0;
     }
-    * export_resource = resource;
+    export_resource.v = resource;
     return min_building_id;
 }
-function get_trade_center_location(f: figure, x: number, y: number) {
+function get_trade_center_location(f: figure, x: Ref<number>, y: Ref<number>) {
     let trade_center_id: number = city_buildings_get_trade_center();
     if (trade_center_id) {
         let trade_center: building = building_get(trade_center_id);
-        * x = trade_center.x;
-        * y = trade_center.y;
+        x.v = trade_center.x;
+        y.v = trade_center.y;
     } else {
-        * x = f.x;
-        * y = f.y;
+        x.v = f.x;
+        y.v = f.y;
     }
 }
 function deliver_import_resource(f: figure, dock: building) {
@@ -273,12 +237,12 @@ function deliver_import_resource(f: figure, dock: building) {
     if (ship.action_state != FIGURE_ACTION_112_TRADE_SHIP_MOORED || ship.loads_sold_or_carrying <= 0) {
         return 0;
     }
-    let x: number
-    let y: number;
+    let x: Ref<number> = new Ref(0);
+    let y: Ref<number> = new Ref(0);
     get_trade_center_location(f, x, y);
     let tile: map_point;
-    let resource: number;
-    let warehouse_id: number = get_closest_warehouse_for_import(x, y, ship.empire_city_id,
+    let resource: Ref<number> = new Ref(0);
+    let warehouse_id: number = get_closest_warehouse_for_import(x.v, y.v, ship.empire_city_id,
         dock.distance_from_entry, dock.road_network_id, tile, resource);
     if (!warehouse_id) {
         return 0;
@@ -289,7 +253,7 @@ function deliver_import_resource(f: figure, dock: building) {
     f.action_state = FIGURE_ACTION_133_DOCKER_IMPORT_QUEUE;
     f.destination_x = tile.x;
     f.destination_y = tile.y;
-    f.resource_id = resource;
+    f.resource_id = resource.v;
     return 1;
 }
 function fetch_export_resource(f: figure, dock: building) {
@@ -301,12 +265,12 @@ function fetch_export_resource(f: figure, dock: building) {
     if (ship.action_state != FIGURE_ACTION_112_TRADE_SHIP_MOORED || ship.trader_amount_bought >= 12) {
         return 0;
     }
-    let x: number
-    let y: number;
+    let x: Ref<number> = new Ref(0);
+    let y: Ref<number> = new Ref(0);
     get_trade_center_location(f, x, y);
     let tile: map_point;
-    let resource: number;
-    let warehouse_id: number = get_closest_warehouse_for_export(x, y, ship.empire_city_id,
+    let resource: Ref<number> = new Ref(0);
+    let warehouse_id: number = get_closest_warehouse_for_export(x.v, y.v, ship.empire_city_id,
         dock.distance_from_entry, dock.road_network_id, tile, resource);
     if (!warehouse_id) {
         return 0;
@@ -317,7 +281,7 @@ function fetch_export_resource(f: figure, dock: building) {
     f.wait_ticks = 0;
     f.destination_x = tile.x;
     f.destination_y = tile.y;
-    f.resource_id = resource;
+    f.resource_id = resource.v;
     return 1;
 }
 function set_cart_graphic(f: figure) {

@@ -1,5 +1,4 @@
 
-;
 import { building, building_get } from 'building/building';
 import { building_granary_remove_resource } from 'building/granary';
 import { building_state } from 'building/type';

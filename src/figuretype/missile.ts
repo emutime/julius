@@ -1,13 +1,21 @@
 
-;
-import { buffer } from 'core/buffer';
+import { city_view_orientation } from 'city/view';
 import { direction_type } from 'core/direction';
-import DIR_0_TOP = direction_type.DIR_0_TOP;
-import { direction_type } from 'core/direction';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
 import { figure_action } from 'figure/action';
+import { figure, figure_create, figure_get, figure_is_enemy } from 'figure/figure';
+import { formation, formation_get, formation_record_missile_attack, formation_type, formation_update_morale_after_death } from 'figure/formation';
+import { figure_movement_move_ticks_cross_country, figure_movement_set_cross_country_direction } from 'figure/movement';
+import { figure_properties, figure_properties_for_type } from 'figure/properties';
+import { figure_play_die_sound } from 'figure/sound';
+import { figure_state, figure_type } from 'figure/type';
+import { map_figure_foreach_until } from 'map/figure';
+import { map_point } from 'map/point';
+import { sound_effect, sound_effect_play } from 'sound/effect';
+import DIR_0_TOP = direction_type.DIR_0_TOP;
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_ACTION_159_NATIVE_ATTACKING = figure_action.FIGURE_ACTION_159_NATIVE_ATTACKING;
-import { figure_type } from 'figure/type';
 import FIGURE_EXPLOSION = figure_type.FIGURE_EXPLOSION;
 import FIGURE_FORT_LEGIONARY = figure_type.FIGURE_FORT_LEGIONARY;
 import FIGURE_FORT_STANDARD = figure_type.FIGURE_FORT_STANDARD;
@@ -19,59 +27,28 @@ import FIGURE_BOLT = figure_type.FIGURE_BOLT;
 import FIGURE_SHEEP = figure_type.FIGURE_SHEEP;
 import FIGURE_WOLF = figure_type.FIGURE_WOLF;
 import FIGURE_ZEBRA = figure_type.FIGURE_ZEBRA;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_create } from 'figure/figure';
-import { figure_is_enemy } from 'figure/figure';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_orientation } from 'city/view';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_FIGURE_EXPLOSION = group_terrain.GROUP_FIGURE_EXPLOSION;
 import GROUP_FIGURE_MISSILE = group_terrain.GROUP_FIGURE_MISSILE;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { formation } from 'figure/formation';
-import FORMATION_COLUMN = formation.FORMATION_COLUMN;
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_get } from 'figure/formation';
-import { formation_record_missile_attack } from 'figure/formation';
-import { formation_update_morale_after_death } from 'figure/formation';
-import { figure_movement_set_cross_country_direction } from 'figure/movement';
-import { figure_movement_move_ticks_cross_country } from 'figure/movement';
-import { figure_category } from 'figure/properties';
-import { figure_properties } from 'figure/properties';
-import { figure_properties_for_type } from 'figure/properties';
-import { figure_play_die_sound } from 'figure/sound';
-import { map_figure_foreach_until } from 'map/figure';
-import { map_point } from 'map/point';
-import { sound_effect } from 'sound/effect';
+import FORMATION_COLUMN = formation_type.FORMATION_COLUMN;
 import SOUND_EFFECT_EXPLOSION = sound_effect.SOUND_EFFECT_EXPLOSION;
 import SOUND_EFFECT_ARROW_HIT = sound_effect.SOUND_EFFECT_ARROW_HIT;
 import SOUND_EFFECT_BALLISTA_HIT_GROUND = sound_effect.SOUND_EFFECT_BALLISTA_HIT_GROUND;
 import SOUND_EFFECT_BALLISTA_HIT_PERSON = sound_effect.SOUND_EFFECT_BALLISTA_HIT_PERSON;
 import SOUND_EFFECT_JAVELIN = sound_effect.SOUND_EFFECT_JAVELIN;
-import { sound_effect_play } from 'sound/effect';
-let CLOUD_TILE_OFFSETS: number[] = new Array().fill({ 0, 0, 0, 1, 1, 2});
-let CLOUD_CC_OFFSETS: number[] = new Array().fill({ 0, 7, 14, 7, 14, 7});
-let CLOUD_SPEED: number[] = new Array().fill({
+let CLOUD_TILE_OFFSETS: number[] = [0, 0, 0, 1, 1, 2];
+let CLOUD_CC_OFFSETS: number[] = [0, 7, 14, 7, 14, 7];
+let CLOUD_SPEED: number[] = [
     1, 2, 1, 3, 2, 1, 3, 2, 1, 1, 2, 1, 2, 1, 3, 1
-});
-let CLOUD_DIRECTION: map_point[] = new Array().fill({
-    { 0, - 6}, { -2, -5 }, { -4, -4 }, { -5, -2 }, { -6, 0 }, { -5, -2 }, { -4, -4 }, { -2, -5 },
-{ 0, -6 }, { -2, -5 }, { -4, -4 }, { -5, -2 }, { -6, 0 }, { -5, -2 }, { -4, -4 }, { -2, -5 }
-});
-let CLOUD_IMAGE_OFFSETS: number[] = new Array().fill({
+];
+let CLOUD_DIRECTION: map_point[] = [
+    { x: 0, y: -6 }, { x: -2, y: -5 }, { x: -4, y: -4 }, { x: -5, y: -2 }, { x: -6, y: 0 }, { x: -5, y: -2 }, { x: -4, y: -4 }, { x: -2, y: -5 },
+    { x: 0, y: -6 }, { x: -2, y: -5 }, { x: -4, y: -4 }, { x: -5, y: -2 }, { x: -6, y: 0 }, { x: -5, y: -2 }, { x: -4, y: -4 }, { x: -2, y: -5 }
+];
+let CLOUD_IMAGE_OFFSETS: number[] = [
     0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 2,
     2, 2, 2, 2, 3, 3, 3, 4, 4, 5, 6, 7
-});
+];
 export function figure_create_explosion_cloud(x: number, y: number, size: number) {
     let tile_offset: number = CLOUD_TILE_OFFSETS[size];
     let cc_offset: number = CLOUD_CC_OFFSETS[size];

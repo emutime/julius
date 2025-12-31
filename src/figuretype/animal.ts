@@ -1,14 +1,32 @@
-import { MAX_FIGURES } from 'figure/figure';
-;
-import { buffer } from 'core/buffer';
+import { building, building_get } from 'building/building';
+import { city_entertainment_hippodrome_has_race, city_entertainment_set_hippodrome_has_race } from 'city/entertainment';
+import { city_figures_add_animal } from 'city/figures';
+import { city_view_orientation } from 'city/view';
+import { calc_general_direction } from 'core/calc';
 import { direction_type } from 'core/direction';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { random_byte, random_generate_next } from 'core/random';
+import { figure_action } from 'figure/action';
+import { figure_combat_get_target_for_wolf, figure_combat_handle_attack, figure_combat_handle_corpse } from 'figure/combat';
+import { figure, figure_create, figure_get, MAX_FIGURES } from 'figure/figure';
+import { formation, formation_create_herd, formation_get, formation_type } from 'figure/formation';
+import { formation_layout_position_x, formation_layout_position_y } from 'figure/formation_layout';
+import { figure_image_corpse_offset, figure_image_direction, figure_image_increase_offset, figure_image_set_cart_offset } from 'figure/image';
+import { figure_movement_move_ticks, figure_movement_move_ticks_cross_country, figure_movement_set_cross_country_destination, figure_movement_set_cross_country_direction } from 'figure/movement';
+import { figure_route_remove } from 'figure/route';
+import { figure_state, figure_type, terrain_usage } from 'figure/type';
+import { map_figure_add, map_figure_delete } from 'map/figure';
+import { GRID, map_grid_bound, map_grid_offset } from 'map/grid';
+import { map_point } from 'map/point';
+import { scenario_map_foreach_fishing_point, scenario_map_foreach_herd_point } from 'scenario/map';
+import { scenario_climate, scenario_property_climate } from 'scenario/property';
+import { Ref } from '../../ext/crt';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_6_LEFT = direction_type.DIR_6_LEFT;
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_ACTION_150_ATTACK = figure_action.FIGURE_ACTION_150_ATTACK;
 import FIGURE_ACTION_196_HERD_ANIMAL_AT_REST = figure_action.FIGURE_ACTION_196_HERD_ANIMAL_AT_REST;
@@ -17,35 +35,15 @@ import FIGURE_ACTION_199_WOLF_ATTACKING = figure_action.FIGURE_ACTION_199_WOLF_A
 import FIGURE_ACTION_200_HIPPODROME_HORSE_CREATED = figure_action.FIGURE_ACTION_200_HIPPODROME_HORSE_CREATED;
 import FIGURE_ACTION_201_HIPPODROME_HORSE_RACING = figure_action.FIGURE_ACTION_201_HIPPODROME_HORSE_RACING;
 import FIGURE_ACTION_202_HIPPODROME_HORSE_DONE = figure_action.FIGURE_ACTION_202_HIPPODROME_HORSE_DONE;
-import { figure_type } from 'figure/type';
 import FIGURE_FISH_GULLS = figure_type.FIGURE_FISH_GULLS;
 import FIGURE_SHEEP = figure_type.FIGURE_SHEEP;
 import FIGURE_WOLF = figure_type.FIGURE_WOLF;
 import FIGURE_ZEBRA = figure_type.FIGURE_ZEBRA;
 import FIGURE_HIPPODROME_HORSES = figure_type.FIGURE_HIPPODROME_HORSES;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_ALIVE = figure_state.FIGURE_STATE_ALIVE;
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { terrain_usage } from 'figure/type';
 import TERRAIN_USAGE_ANY = terrain_usage.TERRAIN_USAGE_ANY;
 import TERRAIN_USAGE_ANIMAL = terrain_usage.TERRAIN_USAGE_ANIMAL;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_create } from 'figure/figure';
-import { building_type } from 'building/type';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { city_entertainment_set_hippodrome_has_race } from 'city/entertainment';
-import { city_entertainment_hippodrome_has_race } from 'city/entertainment';
-import { city_figures_add_animal } from 'city/figures';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_orientation } from 'city/view';
-import { calc_general_direction } from 'core/calc';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_FIGURE_SEAGULLS = group_terrain.GROUP_FIGURE_SEAGULLS;
 import GROUP_FIGURE_HIPPODROME_HORSE_1 = group_terrain.GROUP_FIGURE_HIPPODROME_HORSE_1;
 import GROUP_FIGURE_HIPPODROME_HORSE_2 = group_terrain.GROUP_FIGURE_HIPPODROME_HORSE_2;
@@ -54,68 +52,39 @@ import GROUP_FIGURE_HIPPODROME_CART_2 = group_terrain.GROUP_FIGURE_HIPPODROME_CA
 import GROUP_FIGURE_SHEEP = group_terrain.GROUP_FIGURE_SHEEP;
 import GROUP_FIGURE_WOLF = group_terrain.GROUP_FIGURE_WOLF;
 import GROUP_FIGURE_ZEBRA = group_terrain.GROUP_FIGURE_ZEBRA;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { random_generate_next } from 'core/random';
-import { random_byte } from 'core/random';
-import { map_point } from 'map/point';
-import { figure_combat_handle_corpse } from 'figure/combat';
-import { figure_combat_handle_attack } from 'figure/combat';
-import { figure_combat_get_target_for_wolf } from 'figure/combat';
-import { formation } from 'figure/formation';
-import FORMATION_HERD = formation.FORMATION_HERD;
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_create_herd } from 'figure/formation';
-import { formation_get } from 'figure/formation';
-import { formation_layout_position_x } from 'figure/formation_layout';
-import { formation_layout_position_y } from 'figure/formation_layout';
-import { figure_image_increase_offset } from 'figure/image';
-import { figure_image_set_cart_offset } from 'figure/image';
-import { figure_image_corpse_offset } from 'figure/image';
-import { figure_image_direction } from 'figure/image';
-import { figure_movement_move_ticks } from 'figure/movement';
-import { figure_movement_set_cross_country_direction } from 'figure/movement';
-import { figure_movement_set_cross_country_destination } from 'figure/movement';
-import { figure_movement_move_ticks_cross_country } from 'figure/movement';
-import { figure_route_remove } from 'figure/route';
-import { map_figure_add } from 'map/figure';
-import { map_figure_delete } from 'map/figure';
-import { GRID } from 'map/grid';
+import FORMATION_HERD = formation_type.FORMATION_HERD;
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_bound } from 'map/grid';
-import { scenario_map_foreach_herd_point } from 'scenario/map';
-import { scenario_map_foreach_fishing_point } from 'scenario/map';
-import { scenario_climate } from 'scenario/property';
 import CLIMATE_CENTRAL = scenario_climate.CLIMATE_CENTRAL;
 import CLIMATE_NORTHERN = scenario_climate.CLIMATE_NORTHERN;
 import CLIMATE_DESERT = scenario_climate.CLIMATE_DESERT;
-import { scenario_climate } from 'scenario/property';
-import { scenario_property_climate } from 'scenario/property';
-let SEAGULL_OFFSETS: map_point[] = new Array().fill({
-    { 0, 0}, { 0, - 2}, { -2, 0 }, { 1, 2 }, { 2, 0 }, { -3, 1 }, { 4, -3 }, { -2, 4 }, { 0, 0 }
-});
-let HORSE_DESTINATION_1: map_point[] = new Array().fill({
-    { 2, 1}, { 3, 1}, { 4, 1}, { 5, 1}, { 6, 1}, { 7, 1}, { 8, 1}, { 9, 1}, { 10, 1}, { 11, 1}, { 12, 2},
-    { 12, 3}, { 11, 3}, { 10, 3}, { 9, 3}, { 8, 3}, { 7, 3}, { 6, 3}, { 5, 3}, { 4, 3}, { 3, 3}, { 2, 2}
-});
-let HORSE_DESTINATION_2: map_point[] = new Array().fill({
-    { 12, 3}, { 11, 3}, { 10, 3}, { 9, 3}, { 8, 3}, { 7, 3}, { 6, 3}, { 5, 3}, { 4, 3}, { 3, 3}, { 2, 2},
-    { 2, 1}, { 3, 1}, { 4, 1}, { 5, 1}, { 6, 1}, { 7, 1}, { 8, 1}, { 9, 1}, { 10, 1}, { 11, 1}, { 12, 2}
-});
-let SHEEP_IMAGE_OFFSETS: number[] = new Array().fill({
+
+let SEAGULL_OFFSETS: map_point[] = [
+    { x: 0, y: 0 }, { x: 0, y: -2 }, { x: -2, y: 0 }, { x: 1, y: 2 }, { x: 2, y: 0 }, { x: -3, y: 1 }, { x: 4, y: -3 }, { x: -2, y: 4 }, { x: 0, y: 0 }
+];
+let HORSE_DESTINATION_1: map_point[] = [
+    { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 5, y: 1 }, { x: 6, y: 1 }, { x: 7, y: 1 }, { x: 8, y: 1 }, { x: 9, y: 1 }, { x: 10, y: 1 }, { x: 11, y: 1 }, { x: 12, y: 2 },
+    { x: 12, y: 3 }, { x: 11, y: 3 }, { x: 10, y: 3 }, { x: 9, y: 3 }, { x: 8, y: 3 }, { x: 7, y: 3 }, { x: 6, y: 3 }, { x: 5, y: 3 }, { x: 4, y: 3 }, { x: 3, y: 3 }, { x: 2, y: 2 }
+];
+let HORSE_DESTINATION_2: map_point[] = [
+    { x: 12, y: 3 }, { x: 11, y: 3 }, { x: 10, y: 3 }, { x: 9, y: 3 }, { x: 8, y: 3 }, { x: 7, y: 3 }, { x: 6, y: 3 }, { x: 5, y: 3 }, { x: 4, y: 3 }, { x: 3, y: 3 }, { x: 2, y: 2 },
+    { x: 2, y: 1 }, { x: 3, y: 1 }, { x: 4, y: 1 }, { x: 5, y: 1 }, { x: 6, y: 1 }, { x: 7, y: 1 }, { x: 8, y: 1 }, { x: 9, y: 1 }, { x: 10, y: 1 }, { x: 11, y: 1 }, { x: 12, y: 2 }
+];
+let SHEEP_IMAGE_OFFSETS: number[] = [
     0, 0, 1, 1, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
     3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-    3, 3, 3, 3, 4, 4, 5, 5, - 1, -1, -1, -1, -1, -1, -1, -1
-});
+    3, 3, 3, 3, 4, 4, 5, 5, -1, -1, -1, -1, -1, -1, -1, -1
+];
 export const enum horse {
     HORSE_CREATED = 0,
     HORSE_RACING = 1,
     HORSE_FINISHED = 2,
 }
+
+import HORSE_CREATED = horse.HORSE_CREATED;
+import HORSE_RACING = horse.HORSE_RACING;
+import HORSE_FINISHED = horse.HORSE_FINISHED;
+
 function create_fishing_point(x: number, y: number) {
     random_generate_next();
     let fish: figure = figure_create(FIGURE_FISH_GULLS, x, y, DIR_0_TOP);
@@ -182,14 +151,14 @@ export function figure_seagulls_action(f: figure) {
         f.image_id = image_group(GROUP_FIGURE_SEAGULLS) + 18 + f.image_offset / 3;
     }
 }
-function herd_get_destination(index: number, m: formation, x: number, y: number) {
+function herd_get_destination(index: number, m: formation, x: Ref<number>, y: Ref<number>) {
     let offset_x: number = formation_layout_position_x(FORMATION_HERD, index);
     let offset_y: number = formation_layout_position_y(FORMATION_HERD, index);
     let destination_x: number = m.destination_x + offset_x;
     let destination_y: number = m.destination_y + offset_y;
     map_grid_bound(destination_x, destination_y);
-    * x = destination_x;
-    * y = destination_y;
+    x.v = destination_x;
+    y.v = destination_y;
 }
 export function figure_sheep_action(f: figure) {
     let m: formation = formation_get(f.formation_id);
@@ -210,7 +179,11 @@ export function figure_sheep_action(f: figure) {
             if (f.wait_ticks > 400) {
                 f.wait_ticks = f.id & 0x1f;
                 f.action_state = FIGURE_ACTION_197_HERD_ANIMAL_MOVING;
-                herd_get_destination(f.index_in_formation, m, f.destination_x, f.destination_y);
+                let dst_x: Ref<number> = new Ref<number>(0);
+                let dst_y: Ref<number> = new Ref<number>(0);
+                herd_get_destination(f.index_in_formation, m, dst_x, dst_y);
+                f.destination_x = dst_x.v;
+                f.destination_y = dst_y.v;
                 f.roam_length = 0;
             }
             break
@@ -259,7 +232,11 @@ export function figure_wolf_action(f: figure) {
             if (f.wait_ticks > 400) {
                 f.wait_ticks = f.id & 0x1f;
                 f.action_state = FIGURE_ACTION_197_HERD_ANIMAL_MOVING;
-                herd_get_destination(f.index_in_formation, m, f.destination_x, f.destination_y);
+                let dst_x: Ref<number> = new Ref<number>(0);
+                let dst_y: Ref<number> = new Ref<number>(0);
+                herd_get_destination(f.index_in_formation, m, dst_x, dst_y);
+                f.destination_x = dst_x.v;
+                f.destination_y = dst_y.v;
                 f.roam_length = 0;
             }
             break
@@ -330,7 +307,11 @@ export function figure_zebra_action(f: figure) {
             if (f.wait_ticks > 200) {
                 f.wait_ticks = f.id & 0x1f;
                 f.action_state = FIGURE_ACTION_197_HERD_ANIMAL_MOVING;
-                herd_get_destination(f.index_in_formation, m, f.destination_x, f.destination_y);
+                let dst_x: Ref<number> = new Ref<number>(0);
+                let dst_y: Ref<number> = new Ref<number>(0);
+                herd_get_destination(f.index_in_formation, m, dst_x, dst_y);
+                f.destination_x = dst_x.v;
+                f.destination_y = dst_y.v;
                 f.roam_length = 0;
             }
             break

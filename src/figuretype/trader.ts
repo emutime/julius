@@ -25,12 +25,16 @@ import { figure_movement_follow_ticks, figure_movement_move_ticks } from 'figure
 import { figure_route_remove } from 'figure/route';
 import { trader_record_bought_resource, trader_record_sold_resource } from 'figure/trader';
 import { figure_state, figure_type, terrain_usage } from 'figure/type';
-import { trade_ship } from 'figuretype/trader';
 import { resource_type } from 'game/resource';
 import { map_figure_at } from 'map/figure';
 import { map_point, map_point_store_result, map_tile } from 'map/point';
 import { map_has_road_access } from 'map/road_access';
 import { scenario_map_river_entry, scenario_map_river_exit } from 'scenario/map';
+export const enum trade_ship {
+    TRADE_SHIP_NONE = 0,
+    TRADE_SHIP_BUYING = 1,
+    TRADE_SHIP_SELLING = 2,
+};
 ;
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
@@ -254,22 +258,22 @@ function trader_get_sell_resource(warehouse_id: number, city_id: number) {
     return 0;
 }
 function get_closest_warehouse(f: figure, x: number, y: number, city_id: number, distance_from_entry: number, warehouse: map_point) {
-    let exportable: number[];
-    let importable: number[];
-    exportable[RESOURCE_NONE] = 0;
-    importable[RESOURCE_NONE] = 0;
+    let exportable: boolean[] = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
+    let importable: boolean[] = [false, false, false, false, false, false, false, false, false, false, false, false, false, false, false];
+    exportable[RESOURCE_NONE] = false;
+    importable[RESOURCE_NONE] = false;
     for (let r: number = RESOURCE_MIN; r < RESOURCE_MAX; r++) {
         exportable[r] = empire_can_export_resource_to_city(city_id, r);
         if (f.trader_amount_bought >= 8) {
-            exportable[r] = 0;
+            exportable[r] = false;
         }
         if (city_id) {
             importable[r] = empire_can_import_resource_from_city(city_id, r);
         } else {
-            importable[r] = 0;
+            importable[r] = false;
         }
         if (f.loads_sold_or_carrying >= 8) {
-            importable[r] = 0;
+            importable[r] = false;
         }
     }
     let num_importable: number = 0;
@@ -675,7 +679,7 @@ export function figure_trade_ship_action(f: figure) {
             } else if (f.direction == DIR_FIGURE_LOST) {
                 f.state = FIGURE_STATE_DEAD;
                 if (!city_message_get_category_count(MESSAGE_CAT_BLOCKED_DOCK)) {
-                    city_message_post(1, MESSAGE_NAVIGATION_IMPOSSIBLE, 0, 0);
+                    city_message_post(true, MESSAGE_NAVIGATION_IMPOSSIBLE, 0, 0);
                     city_message_increase_category_count(MESSAGE_CAT_BLOCKED_DOCK);
                 }
             }

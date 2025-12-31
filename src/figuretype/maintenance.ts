@@ -1,12 +1,27 @@
-import { MAX_FIGURES } from 'figure/figure';
-;
-import { buffer } from 'core/buffer';
+import { building, building_get } from 'building/building';
+import { building_list_burning_size } from 'building/list';
+import { building_maintenance_get_closest_burning_ruin } from 'building/maintenance';
+import { building_state, building_type } from 'building/type';
+import { city_figures_has_security_breach } from 'city/figures';
+import { calc_general_direction, calc_maximum_distance } from 'core/calc';
 import { direction_type } from 'core/direction';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { figure_action } from 'figure/action';
+import { figure_combat_handle_attack, figure_combat_handle_corpse } from 'figure/combat';
+import { enemy_army_total_enemy_formations } from 'figure/enemy_army';
+import { figure, figure_get, figure_is_dead, figure_is_enemy, MAX_FIGURES } from 'figure/figure';
+import { figure_image_corpse_offset, figure_image_increase_offset, figure_image_normalize_direction, figure_image_update } from 'figure/image';
+import { figure_movement_init_roaming, figure_movement_move_ticks, figure_movement_move_ticks_cross_country, figure_movement_roam_ticks, figure_movement_set_cross_country_destination } from 'figure/movement';
+import { figure_route_remove } from 'figure/route';
+import { figure_state, figure_type, terrain_usage } from 'figure/type';
+import { map_building_at } from 'map/building';
+import { map_closest_road_within_radius } from 'map/road_access';
+import { sound_effect, sound_effect_play } from 'sound/effect';
+import { Ref } from '../../ext/crt';
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_60_ENGINEER_CREATED = figure_action.FIGURE_ACTION_60_ENGINEER_CREATED;
 import FIGURE_ACTION_61_ENGINEER_ENTERING_EXITING = figure_action.FIGURE_ACTION_61_ENGINEER_ENTERING_EXITING;
 import FIGURE_ACTION_62_ENGINEER_ROAMING = figure_action.FIGURE_ACTION_62_ENGINEER_ROAMING;
@@ -22,63 +37,20 @@ import FIGURE_ACTION_77_PREFECT_AT_ENEMY = figure_action.FIGURE_ACTION_77_PREFEC
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
 import FIGURE_ACTION_150_ATTACK = figure_action.FIGURE_ACTION_150_ATTACK;
 import FIGURE_ACTION_159_NATIVE_ATTACKING = figure_action.FIGURE_ACTION_159_NATIVE_ATTACKING;
-import { figure_type } from 'figure/type';
 import FIGURE_RIOTER = figure_type.FIGURE_RIOTER;
 import FIGURE_INDIGENOUS_NATIVE = figure_type.FIGURE_INDIGENOUS_NATIVE;
 import FIGURE_ENEMY54_GLADIATOR = figure_type.FIGURE_ENEMY54_GLADIATOR;
 import FIGURE_WOLF = figure_type.FIGURE_WOLF;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_ALIVE = figure_state.FIGURE_STATE_ALIVE;
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { terrain_usage } from 'figure/type';
 import TERRAIN_USAGE_ANY = terrain_usage.TERRAIN_USAGE_ANY;
 import TERRAIN_USAGE_ROADS = terrain_usage.TERRAIN_USAGE_ROADS;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_is_dead } from 'figure/figure';
-import { figure_is_enemy } from 'figure/figure';
-import { building_type } from 'building/type';
 import BUILDING_BURNING_RUIN = building_type.BUILDING_BURNING_RUIN;
-import { building_type } from 'building/type';
-import { building_state } from 'building/type';
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_list_burning_size } from 'building/list';
-import { building_maintenance_get_closest_burning_ruin } from 'building/maintenance';
-import { city_figures_has_security_breach } from 'city/figures';
-import { calc_maximum_distance } from 'core/calc';
-import { calc_general_direction } from 'core/calc';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_FIGURE_ENGINEER = group_terrain.GROUP_FIGURE_ENGINEER;
 import GROUP_FIGURE_PREFECT = group_terrain.GROUP_FIGURE_PREFECT;
 import GROUP_FIGURE_PREFECT_WITH_BUCKET = group_terrain.GROUP_FIGURE_PREFECT_WITH_BUCKET;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { map_point } from 'map/point';
-import { figure_combat_handle_corpse } from 'figure/combat';
-import { figure_combat_handle_attack } from 'figure/combat';
-import { enemy_army } from 'figure/enemy_army';
-import { enemy_army_total_enemy_formations } from 'figure/enemy_army';
-import { figure_image_update } from 'figure/image';
-import { figure_image_increase_offset } from 'figure/image';
-import { figure_image_corpse_offset } from 'figure/image';
-import { figure_image_normalize_direction } from 'figure/image';
-import { figure_movement_init_roaming } from 'figure/movement';
-import { figure_movement_move_ticks } from 'figure/movement';
-import { figure_movement_roam_ticks } from 'figure/movement';
-import { figure_movement_set_cross_country_destination } from 'figure/movement';
-import { figure_movement_move_ticks_cross_country } from 'figure/movement';
-import { figure_route_remove } from 'figure/route';
-import { map_building_at } from 'map/building';
-import { map_closest_road_within_radius } from 'map/road_access';
-import { sound_effect } from 'sound/effect';
 import SOUND_EFFECT_FIRE_SPLASH = sound_effect.SOUND_EFFECT_FIRE_SPLASH;
-import { sound_effect_play } from 'sound/effect';
 export function figure_engineer_action(f: figure) {
     let b: building = building_get(f.building_id);
     f.terrain_usage = TERRAIN_USAGE_ROADS;
@@ -100,11 +72,11 @@ export function figure_engineer_action(f: figure) {
             f.image_offset = 0;
             f.wait_ticks--;
             if (f.wait_ticks <= 0) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number>;
+                let y_road: Ref<number>;
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                     f.action_state = FIGURE_ACTION_61_ENGINEER_ENTERING_EXITING;
-                    figure_movement_set_cross_country_destination(f, x_road, y_road);
+                    figure_movement_set_cross_country_destination(f, x_road.v, y_road.v);
                     f.roam_length = 0;
                 } else {
                     f.state = FIGURE_STATE_DEAD;
@@ -128,12 +100,12 @@ export function figure_engineer_action(f: figure) {
             f.is_ghost = 0;
             f.roam_length++;
             if (f.roam_length >= f.max_roam_length) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number>;
+                let y_road: Ref<number>;
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                     f.action_state = FIGURE_ACTION_63_ENGINEER_RETURNING;
-                    f.destination_x = x_road;
-                    f.destination_y = y_road;
+                    f.destination_x = x_road.v;
+                    f.destination_y = y_road.v;
                 } else {
                     f.state = FIGURE_STATE_DEAD;
                 }
@@ -153,7 +125,7 @@ export function figure_engineer_action(f: figure) {
     }
     figure_image_update(f, image_group(GROUP_FIGURE_ENGINEER));
 }
-function get_nearest_enemy(x: number, y: number, distance: number) {
+function get_nearest_enemy(x: number, y: number, distance: Ref<number>) {
     let min_enemy_id: number = 0;
     let min_dist: number = 10000;
     for (let i: number = 1; i < MAX_FIGURES; i++) {
@@ -178,7 +150,7 @@ function get_nearest_enemy(x: number, y: number, distance: number) {
             min_enemy_id = i;
         }
     }
-    * distance = min_dist;
+    distance.v = min_dist;
     return min_enemy_id;
 }
 function fight_enemy(f: figure) {
@@ -201,9 +173,9 @@ function fight_enemy(f: figure) {
         return 0;
     }
     f.wait_ticks_next_target = 0;
-    let distance: number;
+    let distance: Ref<number> = new Ref(0);
     let enemy_id: number = get_nearest_enemy(f.x, f.y, distance);
-    if (enemy_id > 0 && distance <= 30) {
+    if (enemy_id > 0 && distance.v <= 30) {
         let enemy: figure = figure_get(enemy_id);
         f.wait_ticks_next_target = 0;
         f.action_state = FIGURE_ACTION_76_PREFECT_GOING_TO_ENEMY;
@@ -236,9 +208,9 @@ function fight_fire(f: figure) {
     if (f.wait_ticks_missile < 20) {
         return 0;
     }
-    let distance: number;
+    let distance: Ref<number>;
     let ruin_id: number = building_maintenance_get_closest_burning_ruin(f.x, f.y, distance);
-    if (ruin_id > 0 && distance <= 25) {
+    if (ruin_id > 0 && distance.v <= 25) {
         let ruin: building = building_get(ruin_id);
         f.wait_ticks_missile = 0;
         f.action_state = FIGURE_ACTION_74_PREFECT_GOING_TO_FIRE;
@@ -269,12 +241,12 @@ function extinguish_fire(f: figure) {
         f.wait_ticks_missile = 20;
         if (!fight_fire(f)) {
             let b: building = building_get(f.building_id);
-            let x_road: number
-            let y_road: number;
+            let x_road: Ref<number>
+            let y_road: Ref<number>;
             if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                 f.action_state = FIGURE_ACTION_73_PREFECT_RETURNING;
-                f.destination_x = x_road;
-                f.destination_y = y_road;
+                f.destination_x = x_road.v;
+                f.destination_y = y_road.v;
                 figure_route_remove(f);
             } else {
                 f.state = FIGURE_STATE_DEAD;
@@ -316,11 +288,11 @@ export function figure_prefect_action(f: figure) {
             f.image_offset = 0;
             f.wait_ticks--;
             if (f.wait_ticks <= 0) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number>;
+                let y_road: Ref<number>;
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                     f.action_state = FIGURE_ACTION_71_PREFECT_ENTERING_EXITING;
-                    figure_movement_set_cross_country_destination(f, x_road, y_road);
+                    figure_movement_set_cross_country_destination(f, x_road.v, y_road.v);
                     f.roam_length = 0;
                 } else {
                     f.state = FIGURE_STATE_DEAD;
@@ -344,12 +316,12 @@ export function figure_prefect_action(f: figure) {
             f.is_ghost = 0;
             f.roam_length++;
             if (f.roam_length >= f.max_roam_length) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number>
+                let y_road: Ref<number>;
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                     f.action_state = FIGURE_ACTION_73_PREFECT_RETURNING;
-                    f.destination_x = x_road;
-                    f.destination_y = y_road;
+                    f.destination_x = x_road.v;
+                    f.destination_y = y_road.v;
                     figure_route_remove(f);
                 } else {
                     f.state = FIGURE_STATE_DEAD;
@@ -385,12 +357,12 @@ export function figure_prefect_action(f: figure) {
         case FIGURE_ACTION_76_PREFECT_GOING_TO_ENEMY:
             f.terrain_usage = TERRAIN_USAGE_ANY;
             if (!target_is_alive(f)) {
-                let x_road: number
-                let y_road: number;
+                let x_road: Ref<number>
+                let y_road: Ref<number>;
                 if (map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                     f.action_state = FIGURE_ACTION_73_PREFECT_RETURNING;
-                    f.destination_x = x_road;
-                    f.destination_y = y_road;
+                    f.destination_x = x_road.v;
+                    f.destination_y = y_road.v;
                     figure_route_remove(f);
                     f.roam_length = 0;
                 } else {
