@@ -1,5 +1,3 @@
-
-;
 import { building_update_desirability, building_update_highest_id, building_update_state } from 'building/building';
 import { building_count_update } from 'building/count';
 import { building_dock_update_open_water_access } from 'building/dock';

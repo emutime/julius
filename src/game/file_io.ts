@@ -726,10 +726,10 @@ function savegame_save_to_state(state: savegame_state) {
     map_bookmark_save_state(state.bookmarks);
     buffer_skip(state.end_marker, 284);
 }
-export function game_file_io_read_scenario(filename: char) {
+export function game_file_io_read_scenario(filename: string) {
     log_info("Loading scenario", filename, 0);
     init_scenario_data();
-    let fp: FILE = file_open(dir_get_file(filename, NOT_LOCALIZED), "rb");
+    let fp = file_open(dir_get_file(filename, NOT_LOCALIZED), "rb");
     if (!fp) {
         return 0;
     }
@@ -745,7 +745,7 @@ export function game_file_io_read_scenario(filename: char) {
     scenario_load_from_state(scenario_data.state);
     return 1;
 }
-export function game_file_io_write_scenario(filename: char) {
+export function game_file_io_write_scenario(filename: string) {
     log_info("Saving scenario", filename, 0);
     init_scenario_data();
     scenario_save_to_state(scenario_data.state);

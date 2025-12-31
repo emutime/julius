@@ -1,5 +1,5 @@
 export const MAX_UNDO_BUILDINGS = 50;
-import { building, building_get, building_is_house, MAX_BUILDINGS } from 'building/building';
+import { building, building_get, building_is_house, building_set, MAX_BUILDINGS } from 'building/building';
 import { building_is_farm } from 'building/industry';
 import { building_properties_for_type } from 'building/properties';
 import { building_storage_reset_building_ids, building_storage_restore } from 'building/storage';
@@ -20,7 +20,6 @@ import { map_routing_update_land, map_routing_update_walls } from 'map/routing_t
 import { map_sprite_backup, map_sprite_restore } from 'map/sprite';
 import { map_terrain_backup, map_terrain_restore, terrain } from 'map/terrain';
 import { scenario_earthquake_is_in_progress } from 'scenario/earthquake';
-import { memcpy, memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
 import BUILDING_ROAD = building_type.BUILDING_ROAD;
 import BUILDING_WALL = building_type.BUILDING_WALL;
 import BUILDING_DRAGGABLE_RESERVOIR = building_type.BUILDING_DRAGGABLE_RESERVOIR;
@@ -97,7 +96,7 @@ export function game_undo_add_building(b: building) {
         for (let i: number = 0; i < MAX_UNDO_BUILDINGS; i++) {
             if (!data.buildings[i].id) {
                 data.num_buildings++;
-                memcpy(data.buildings[i], b, sizeof(building));
+                data.buildings[i] = { ...b };
                 return;
             }
         }
@@ -120,7 +119,7 @@ export function game_undo_contains_building(building_id: number) {
 }
 function clear_buildings() {
     data.num_buildings = 0;
-    memset(data.buildings, 0);
+    data.buildings.fill(null);
 }
 export function game_undo_start_build(type: building_type) {
     data.ready = 0;
@@ -234,8 +233,8 @@ export function game_undo_perform() {
     if (data.type == BUILDING_CLEAR_LAND) {
         for (let i: number = 0; i < data.num_buildings; i++) {
             if (data.buildings[i].id) {
-                let b: building = building_get(data.buildings[i].id);
-                memcpy(b, data.buildings[i], sizeof(building));
+                let b: building = data.buildings[i];
+                building_set(b.id, b);
                 if (b.type == BUILDING_WAREHOUSE || b.type == BUILDING_GRANARY) {
                     if (!building_storage_restore(b.storage_id)) {
                         building_storage_reset_building_ids();

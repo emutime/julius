@@ -1,5 +1,4 @@
 
-;
 import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
 export class unnamed3_8 {
     public tick: number = 0;

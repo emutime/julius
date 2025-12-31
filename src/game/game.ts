@@ -29,7 +29,6 @@ import { translation_load } from 'translation/translation';
 import { window_editor_map_show } from 'window/editor/map';
 import { message, window_logo_show } from 'window/logo';
 import { window_main_menu_show } from 'window/main_menu';
-;
 import ENCODING_JAPANESE = encoding_type.ENCODING_JAPANESE;
 import ENCODING_KOREAN = encoding_type.ENCODING_KOREAN;
 import ENEMY_0_BARBARIAN = enemy_type.ENEMY_0_BARBARIAN;
@@ -37,7 +36,7 @@ import CLIMATE_CENTRAL = scenario_climate.CLIMATE_CENTRAL;
 import MESSAGE_NONE = message.MESSAGE_NONE;
 import MESSAGE_MISSING_PATCH = message.MESSAGE_MISSING_PATCH;
 import MESSAGE_MISSING_FONTS = message.MESSAGE_MISSING_FONTS;
-function errlog(msg: char) {
+function errlog(msg: string) {
     log_error(msg, 0, 0);
 }
 function update_encoding() {
@@ -63,10 +62,10 @@ export function game_pre_init() {
     return 1;
 }
 function is_unpatched() {
-    let delete_game: number = lang_get_string(1, 6);
-    let option_menu: number = lang_get_string(2, 0);
-    let difficulty_option: number = lang_get_string(2, 6);
-    let help_menu: number = lang_get_string(3, 0);
+    let delete_game: number = lang_get_string(1, 6).byteOffset;
+    let option_menu: number = lang_get_string(2, 0).byteOffset;
+    let difficulty_option: number = lang_get_string(2, 6).byteOffset;
+    let help_menu: number = lang_get_string(3, 0).byteOffset;
     return difficulty_option == help_menu || delete_game == option_menu;
 }
 export function game_init() {

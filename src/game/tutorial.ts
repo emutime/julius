@@ -206,7 +206,7 @@ export function tutorial_extra_damage_risk() {
     return data.tutorial1.fire && !data.tutorial1.collapse;
 }
 function post_message(message: number) {
-    city_message_post(1, message, 0, 0);
+    city_message_post(true, message, 0, 0);
 }
 export function tutorial_handle_fire() {
     if (data.tutorial1.fire) {
@@ -288,7 +288,7 @@ export function tutorial_on_day_tick() {
 export function tutorial_on_month_tick() {
     if (scenario_is_tutorial_3()) {
         if (game_time_month() == 5) {
-            city_message_post_with_message_delay(MESSAGE_CAT_TUTORIAL3, 1,
+            city_message_post_with_message_delay(MESSAGE_CAT_TUTORIAL3, true,
                 MESSAGE_TUTORIAL_HUNGER_HALTS_IMMIGRANTS, 1200);
         }
     }

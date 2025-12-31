@@ -47,7 +47,6 @@ import { scenario_invasion_clear } from 'scenario/invasion';
 import { scenario_map_init } from 'scenario/map';
 import { scenario_property_climate } from 'scenario/property';
 import { sound_city_init } from 'sound/city';
-;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import GROUP_EDITOR_BUILDING_CROPS = group_editor.GROUP_EDITOR_BUILDING_CROPS;
 import GROUP_EDITOR_BUILDING_NATIVE = group_editor.GROUP_EDITOR_BUILDING_NATIVE;
@@ -126,7 +125,7 @@ export function game_file_editor_create_scenario(size: number) {
     create_blank_map(size);
     prepare_map_for_editing();
 }
-export function game_file_editor_load_scenario(scenario_file: char) {
+export function game_file_editor_load_scenario(scenario_file: string) {
     clear_map_data();
     if (!game_file_io_read_scenario(scenario_file)) {
         return 0;
@@ -135,7 +134,7 @@ export function game_file_editor_load_scenario(scenario_file: char) {
     prepare_map_for_editing();
     return 1;
 }
-export function game_file_editor_write_scenario(scenario_file: char) {
+export function game_file_editor_write_scenario(scenario_file: string) {
     scenario_editor_set_native_images(
         image_group(GROUP_EDITOR_BUILDING_NATIVE),
         image_group(GROUP_EDITOR_BUILDING_NATIVE) + 2,

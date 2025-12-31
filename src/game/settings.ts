@@ -43,27 +43,16 @@ export class set_sound {
     }
 }
 import { advisor_type } from 'city/constants';
+import { buffer, buffer_at_end, buffer_init, buffer_read_i32, buffer_read_raw, buffer_read_u8, buffer_skip, buffer_write_i32, buffer_write_raw, buffer_write_u8 } from 'core/buffer';
+import { calc_bound } from 'core/calc';
+import { localized } from 'core/dir';
+import { io_read_file_into_buffer, io_write_buffer_to_file } from 'core/io';
+import { string_copy } from 'core/string';
+import { Ref } from '../../ext/crt';
 import ADVISOR_NONE = advisor_type.ADVISOR_NONE;
 import ADVISOR_LABOR = advisor_type.ADVISOR_LABOR;
 import ADVISOR_CHIEF = advisor_type.ADVISOR_CHIEF;
-import { buffer } from 'core/buffer';
-import { buffer_init } from 'core/buffer';
-import { buffer_write_u8 } from 'core/buffer';
-import { buffer_write_i32 } from 'core/buffer';
-import { buffer_write_raw } from 'core/buffer';
-import { buffer_read_u8 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
-import { buffer_read_raw } from 'core/buffer';
-import { buffer_skip } from 'core/buffer';
-import { buffer_at_end } from 'core/buffer';
-import { direction_type } from 'core/direction';
-import { calc_bound } from 'core/calc';
-import { localized } from 'core/dir';
 import NOT_LOCALIZED = localized.NOT_LOCALIZED;
-import { dir_listing } from 'core/dir';
-import { io_read_file_into_buffer } from 'core/io';
-import { io_write_buffer_to_file } from 'core/io';
-import { string_copy } from 'core/string';
 export class unnamed13_8 {
     public fullscreen: number = 0;
     public window_width: number = 0;
@@ -81,9 +70,9 @@ export class unnamed13_8 {
     public gods_enabled: number = 0;
     public victory_video: number = 0;
     public last_advisor: number = 0;
-    public player_name: number[] = new Array(MAX_PLAYER_NAME).fill(0);
+    public player_name: Uint8Array = new Uint8Array(MAX_PLAYER_NAME);
     public personal_savings: number[] = new Array(MAX_PERSONAL_SAVINGS).fill(0);
-    public inf_file: number[] = new Array(INF_SIZE).fill(0);
+    public inf_file: Uint8Array = new Uint8Array(INF_SIZE);
     public constructor(...args: any[]) {
         args.length >= 1 && (this.fullscreen = args[0]);
         args.length >= 2 && (this.window_width = args[1]);
@@ -234,9 +223,9 @@ export function settings_save() {
 export function setting_fullscreen() {
     return data.fullscreen;
 }
-export function setting_window(width: number, height: number) {
-    * width = data.window_width;
-    * height = data.window_height;
+export function setting_window(width: Ref<number>, height: Ref<number>) {
+    width.v = data.window_width;
+    height.v = data.window_height;
 }
 export function setting_set_display(fullscreen: number, width: number, height: number) {
     data.fullscreen = fullscreen;
@@ -376,7 +365,7 @@ export function setting_set_last_advisor(advisor: number) {
 export function setting_player_name() {
     return data.player_name;
 }
-export function setting_set_player_name(player_name: number) {
+export function setting_set_player_name(player_name: Uint8Array) {
     string_copy(player_name, data.player_name, MAX_PLAYER_NAME);
 }
 export function setting_personal_savings_for_mission(mission_id: number) {
