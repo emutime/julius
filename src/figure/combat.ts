@@ -307,7 +307,7 @@ export function figure_combat_get_missile_target_for_soldier(shooter: figure, ma
     }
     return 0;
 }
-export function figure_combat_get_missile_target_for_enemy(enemy: figure, max_distance: number, attack_citizens: number, tile: map_point) {
+export function figure_combat_get_missile_target_for_enemy(enemy: figure, max_distance: number, attack_citizens: boolean, tile: map_point) {
     let x: number = enemy.x;
     let y: number = enemy.y;
     let min_figure: figure = null;

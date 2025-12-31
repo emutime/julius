@@ -19,6 +19,7 @@ import { map_random_get } from 'map/random';
 import { map_closest_road_within_radius, map_get_adjacent_road_tiles_for_roaming, map_get_diagonal_road_tiles_for_roaming } from 'map/road_access';
 import { destroyable, map_routing_get_destroyable, map_routing_is_destroyable, map_routing_is_wall_passable, map_routing_noncitizen_is_passable } from 'map/routing_terrain';
 import { map_terrain_is, terrain } from 'map/terrain';
+import { Ref } from '../../ext/crt';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_1_TOP_RIGHT = direction_type.DIR_1_TOP_RIGHT;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
@@ -294,11 +295,11 @@ export function figure_movement_init_roaming(f: figure) {
             break
     }
     map_grid_bound(x, y);
-    let x_road: number
-    let y_road: number;
+    let x_road: Ref<number> = new Ref<number>(0);
+    let y_road: Ref<number> = new Ref<number>(0);
     if (map_closest_road_within_radius(x, y, 1, 6, x_road, y_road)) {
-        f.destination_x = x_road;
-        f.destination_y = y_road;
+        f.destination_x = x_road.v;
+        f.destination_y = y_road.v;
     } else {
         f.roam_choose_destination = 1;
     }

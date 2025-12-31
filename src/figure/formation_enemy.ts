@@ -187,7 +187,7 @@ let LAYOUT_ORIENTATION_OFFSETS: number[][][] = [
         [0, 0, 0, -3, 0, 3, 0, -8, 0, 8, -8, -3, -8, 3, 0]
     ]
 ];
-export function formation_rioter_get_target_building(x_tile: { value: number }, y_tile: { value: number }) {
+export function formation_rioter_get_target_building(x_tile: Ref<number>, y_tile: Ref<number>) {
     let best_type_index: number = 100;
     let best_building: building = null;
     for (let i: number = 1; i < MAX_BUILDINGS; i++) {
@@ -209,12 +209,12 @@ export function formation_rioter_get_target_building(x_tile: { value: number }, 
         return 0;
     }
     if (best_building.type == BUILDING_WAREHOUSE) {
-        x_tile.value = best_building.x + 1;
-        y_tile.value = best_building.y;
+        x_tile.v = best_building.x + 1;
+        y_tile.v = best_building.y;
         return best_building.id + 1;
     } else {
-        x_tile.value = best_building.x;
-        y_tile.value = best_building.y;
+        x_tile.v = best_building.x;
+        y_tile.v = best_building.y;
         return best_building.id;
     }
 }

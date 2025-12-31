@@ -9,6 +9,7 @@ import { figure_rioter_collapse_building } from 'figuretype/crime';
 import { inventory_type } from 'game/resource';
 import { map_building_at } from 'map/building';
 import { GRID, map_grid_get_area, map_grid_offset } from 'map/grid';
+import { Ref } from '../../ext/crt';
 import FIGURE_ACTION_94_ENTERTAINER_ROAMING = figure_action.FIGURE_ACTION_94_ENTERTAINER_ROAMING;
 import FIGURE_ACTION_95_ENTERTAINER_RETURNING = figure_action.FIGURE_ACTION_95_ENTERTAINER_RETURNING;
 import FIGURE_LABOR_SEEKER = figure_type.FIGURE_LABOR_SEEKER;
@@ -197,29 +198,29 @@ function provide_service(x: number, y: number, data: any, callback: (b: building
     }
     return serviced;
 }
-function engineer_coverage(b: building, max_damage_seen: { value: number }) {
+function engineer_coverage(b: building, max_damage_seen: Ref<number>) {
     if (b.type == BUILDING_HIPPODROME) {
         b = building_main(b);
     }
-    if (b.damage_risk > max_damage_seen.value) {
-        max_damage_seen.value = b.damage_risk;
+    if (b.damage_risk > max_damage_seen.v) {
+        max_damage_seen.v = b.damage_risk;
     }
     b.damage_risk = 0;
 }
-function prefect_coverage(b: building, min_happiness_seen: { value: number }) {
+function prefect_coverage(b: building, min_happiness_seen: Ref<number>) {
     if (b.type == BUILDING_HIPPODROME) {
         b = building_main(b);
     }
     b.fire_risk = 0;
-    if (b.sentiment.house_happiness < min_happiness_seen.value) {
-        min_happiness_seen.value = b.sentiment.house_happiness;
+    if (b.sentiment.house_happiness < min_happiness_seen.v) {
+        min_happiness_seen.v = b.sentiment.house_happiness;
     }
 }
-function tax_collector_coverage(b: building, max_tax_multiplier: { value: number }) {
+function tax_collector_coverage(b: building, max_tax_multiplier: Ref<number>) {
     if (b.house_size && b.house_population > 0) {
         let tax_multiplier: number = model_get_house(b.subtype.house_level).tax_multiplier;
-        if (tax_multiplier > max_tax_multiplier.value) {
-            max_tax_multiplier.value = tax_multiplier;
+        if (tax_multiplier > max_tax_multiplier.v) {
+            max_tax_multiplier.v = tax_multiplier;
         }
         b.house_tax_coverage = 50;
     }
