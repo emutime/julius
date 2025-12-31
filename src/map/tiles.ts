@@ -14,7 +14,6 @@ import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
 import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
 import DIR_6_LEFT = direction_type.DIR_6_LEFT;
-import { direction_type } from 'core/direction';
 import { language_type } from 'core/locale';
 import { encoding_type } from 'core/encoding';
 import { group_terrain } from 'core/image_group';

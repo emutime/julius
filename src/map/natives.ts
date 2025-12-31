@@ -15,6 +15,7 @@ import { map_property_clear_all_native_land, map_property_mark_native_land } fro
 import { map_random_get } from 'map/random';
 import { map_terrain_is, terrain } from 'map/terrain';
 import { scenario_building_image_native_crops, scenario_building_image_native_hut, scenario_building_image_native_meeting } from 'scenario/building';
+import { map_data_t } from './data';
 import BUILDING_MISSION_POST = building_type.BUILDING_MISSION_POST;
 import BUILDING_NATIVE_HUT = building_type.BUILDING_NATIVE_HUT;
 import BUILDING_NATIVE_MEETING = building_type.BUILDING_NATIVE_MEETING;
@@ -30,11 +31,15 @@ import TERRAIN_BUILDING = terrain.TERRAIN_BUILDING;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 function mark_native_land(x: number, y: number, size: number, radius: number) {
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
-    map_grid_get_area(x, y, size, radius, x_min, y_min, x_max, y_max);
+    let xMinRef: { value: number } = { value: 0 };
+    let yMinRef: { value: number } = { value: 0 };
+    let xMaxRef: { value: number } = { value: 0 };
+    let yMaxRef: { value: number } = { value: 0 };
+    map_grid_get_area(x, y, size, radius, xMinRef, yMinRef, xMaxRef, yMaxRef);
+    let x_min: number = xMinRef.value;
+    let y_min: number = yMinRef.value;
+    let x_max: number = xMaxRef.value;
+    let y_max: number = yMaxRef.value;
     for (let yy: number = y_min; yy <= y_max; yy++) {
         for (let xx: number = x_min; xx <= x_max; xx++) {
             map_property_mark_native_land(map_grid_offset(xx, yy));
@@ -42,11 +47,15 @@ function mark_native_land(x: number, y: number, size: number, radius: number) {
     }
 }
 function has_building_on_native_land(x: number, y: number, size: number, radius: number) {
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
-    map_grid_get_area(x, y, size, radius, x_min, y_min, x_max, y_max);
+    let xMinRef: { value: number } = { value: 0 };
+    let yMinRef: { value: number } = { value: 0 };
+    let xMaxRef: { value: number } = { value: 0 };
+    let yMaxRef: { value: number } = { value: 0 };
+    map_grid_get_area(x, y, size, radius, xMinRef, yMinRef, xMaxRef, yMaxRef);
+    let x_min: number = xMinRef.value;
+    let y_min: number = yMinRef.value;
+    let x_max: number = xMaxRef.value;
+    let y_max: number = yMaxRef.value;
     for (let yy: number = y_min; yy <= y_max; yy++) {
         for (let xx: number = x_min; xx <= x_max; xx++) {
             let building_id: number = map_building_at(map_grid_offset(xx, yy));

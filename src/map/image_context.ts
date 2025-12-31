@@ -15,7 +15,6 @@ import { building_type } from 'building/type';
 import BUILDING_GATEHOUSE = building_type.BUILDING_GATEHOUSE;
 import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
 import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
-import { building_type } from 'building/type';;
 import { buffer } from 'core/buffer';
 import { building } from 'building/building';
 import { building_get } from 'building/building';
@@ -61,9 +60,9 @@ export class terrain_image_context {
         args.length >= 5 && (this.current_item_offset = args[4]);
     }
 }
-let terrain_images_water: terrain_image_context[] = new Array(48).fill({
-    {{ 1, 2, 1, 2, 1, 2, 1, 2}, { 79, 79, 79, 79}, 0, 1},
-{ { 1, 2, 1, 2, 1, 2, 0, 2 }, { 47, 46, 45, 44 }, 0, 1 },
+let terrain_images_water: terrain_image_context[] = [
+    { tiles: [1, 2, 1, 2, 1, 2, 1, 2], offset_for_orientation: [79, 79, 79, 79], aqueduct_offset: 0, max_item_offset: 1, current_item_offset: 0 },
+    { { 1, 2, 1, 2, 1, 2, 0, 2 }, { 47, 46, 45, 44 }, 0, 1 },
 { { 0, 2, 1, 2, 1, 2, 1, 2 }, { 44, 47, 46, 45 }, 0, 1 },
 { { 1, 2, 0, 2, 1, 2, 1, 2 }, { 45, 44, 47, 46 }, 0, 1 },
 { { 1, 2, 1, 2, 0, 2, 1, 2 }, { 46, 45, 44, 47 }, 0, 1 },
@@ -296,34 +295,34 @@ let terrain_images_aqueduct: terrain_image_context[] = new Array(16).fill({
 { { 2, 2, 2, 2, 2, 2, 2, 2 }, { 2, 2, 2, 2 }, 0, 1 },
 });
 export const enum context_wa {
-    CONTEXT_WATER = undefined,
-    CONTEXT_WALL = undefined,
-    CONTEXT_WALL_GATEHOUSE = undefined,
-    CONTEXT_ELEVATION = undefined,
-    CONTEXT_EARTHQUAKE = undefined,
-    CONTEXT_DIRT_ROAD = undefined,
-    CONTEXT_PAVED_ROAD = undefined,
-    CONTEXT_AQUEDUCT = undefined,
-    CONTEXT_MAX_ITEMS = undefined,
+    CONTEXT_WATER = 0,
+    CONTEXT_WALL = 1,
+    CONTEXT_WALL_GATEHOUSE = 2,
+    CONTEXT_ELEVATION = 3,
+    CONTEXT_EARTHQUAKE = 4,
+    CONTEXT_DIRT_ROAD = 5,
+    CONTEXT_PAVED_ROAD = 6,
+    CONTEXT_AQUEDUCT = 7,
+    CONTEXT_MAX_ITEMS = 8,
 }
 export class unnamed279_8 {
-    public context: terrain_image_context = null;
+    public context: terrain_image_context[];
     public size: number = 0;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.context = args[0]);
         args.length >= 2 && (this.size = args[1]);
     }
 }
-let context_pointers: unnamed279_8[] = new Array().fill({
-    { terrain_images_water, 48},
-    { terrain_images_wall, 48},
-    { terrain_images_wall_gatehouse, 10},
-    { terrain_images_elevation, 14},
-    { terrain_images_earthquake, 17},
-    { terrain_images_dirt_road, 17},
-    { terrain_images_paved_road, 48},
-    { terrain_images_aqueduct, 16}
-});
+let context_pointers: unnamed279_8[] = [
+    { context: terrain_images_water, size: 48 },
+    { context: terrain_images_wall, size: 48 },
+    { context: terrain_images_wall_gatehouse, size: 10 },
+    { context: terrain_images_elevation, size: 14 },
+    { context: terrain_images_earthquake, size: 17 },
+    { context: terrain_images_dirt_road, size: 17 },
+    { context: terrain_images_paved_road, size: 48 },
+    { context: terrain_images_aqueduct, size: 16 }
+];
 function clear_current_offset(items: terrain_image_context, num_items: number) {
     for (let i: number = 0; i < num_items; i++) {
         items[i].current_item_offset = 0;
@@ -340,7 +339,7 @@ export function map_image_context_reset_water() {
 export function map_image_context_reset_elevation() {
     clear_current_offset(context_pointers[CONTEXT_ELEVATION].context, context_pointers[CONTEXT_ELEVATION].size);
 }
-function context_matches_tiles(context: struct terrain_image_context, tiles: number) {
+function context_matches_tiles(context: terrain_image_context, tiles: number[]) {
     for (let i: number = 0; i < MAX_TILES; i++) {
         if (context.tiles[i] != 2 && tiles[i] != context.tiles[i]) {
             return 0;
@@ -348,10 +347,10 @@ function context_matches_tiles(context: struct terrain_image_context, tiles: num
     }
     return 1;
 }
-function get_image(group: number, tiles: number) {
-    let result: terrain_image;
+function get_image(group: number, tiles: number[]) {
+    let result: terrain_image = new terrain_image();
     result.is_valid = 0;
-    let context: terrain_image_context = context_pointers[group].context;
+    let context: terrain_image_context[] = context_pointers[group].context;
     let size: number = context_pointers[group].size;
     for (let i: number = 0; i < size; i++) {
         if (context_matches_tiles(context[i], tiles)) {
@@ -369,14 +368,14 @@ function get_image(group: number, tiles: number) {
     return result;
 }
 export function map_image_context_get_elevation(grid_offset: number, elevation: number) {
-    let tiles: number[];
+    let tiles: number[] = new Array(MAX_TILES).fill(0);
     for (let i: number = 0; i < MAX_TILES; i++) {
         tiles[i] = map_elevation_at(grid_offset + map_grid_direction_delta(i)) >= elevation ? 1 : 0;
     }
     return get_image(CONTEXT_ELEVATION, tiles);
 }
 export function map_image_context_get_earthquake(grid_offset: number) {
-    let tiles: number[];
+    let tiles: number[] = new Array(MAX_TILES).fill(0);
     for (let i: number = 0; i < MAX_TILES; i++) {
         let offset: number = grid_offset + map_grid_direction_delta(i);
         tiles[i] = (map_terrain_is(offset, TERRAIN_ROCK) &&
@@ -384,23 +383,23 @@ export function map_image_context_get_earthquake(grid_offset: number) {
     }
     return get_image(CONTEXT_EARTHQUAKE, tiles);
 }
-function fill_matches(grid_offset: number, terrain: number, match_value: number, no_match_value: number, tiles: number) {
+function fill_matches(grid_offset: number, terrain: number, match_value: number, no_match_value: number, tiles: number[]) {
     for (let i: number = 0; i < MAX_TILES; i++) {
         tiles[i] = map_terrain_is(grid_offset + map_grid_direction_delta(i), terrain) ? match_value : no_match_value;
     }
 }
 export function map_image_context_get_shore(grid_offset: number) {
-    let tiles: number[];
+    let tiles: number[] = new Array(MAX_TILES).fill(0);
     fill_matches(grid_offset, TERRAIN_WATER, 0, 1, tiles);
     return get_image(CONTEXT_WATER, tiles);
 }
 export function map_image_context_get_wall(grid_offset: number) {
-    let tiles: number[];
+    let tiles: number[] = new Array(MAX_TILES).fill(0);
     fill_matches(grid_offset, TERRAIN_WALL, 0, 1, tiles);
     return get_image(CONTEXT_WALL, tiles);
 }
 export function map_image_context_get_wall_gatehouse(grid_offset: number) {
-    let tiles: number[] = { 0, 0, 0, 0, 0, 0, 0, 0};
+    let tiles: number[] = new Array(MAX_TILES).fill(0);
     for (let i: number = 0; i < MAX_TILES; i += 2) {
         tiles[i] = map_terrain_is(grid_offset + map_grid_direction_delta(i), TERRAIN_WALL_OR_GATEHOUSE) ? 1 : 0;
     }
@@ -430,12 +429,12 @@ function set_tiles_road(grid_offset: number, tiles: number) {
     }
 }
 export function map_image_context_get_dirt_road(grid_offset: number) {
-    let tiles: number[];
+    let tiles: number[] = new Array(MAX_TILES).fill(0);
     set_tiles_road(grid_offset, tiles);
     return get_image(CONTEXT_DIRT_ROAD, tiles);
 }
 export function map_image_context_get_paved_road(grid_offset: number) {
-    let tiles: number[];
+    let tiles: number[] = new Array(MAX_TILES).fill(0);
     set_tiles_road(grid_offset, tiles);
     return get_image(CONTEXT_PAVED_ROAD, tiles);
 }
@@ -469,7 +468,7 @@ function set_terrain_reservoir(grid_offset: number, direction: number, multi_til
     }
 }
 export function map_image_context_get_aqueduct(grid_offset: number, include_construction: number) {
-    let tiles: number[] = { 0, 0, 0, 0, 0, 0, 0, 0};
+    let tiles: number[] = new Array(MAX_TILES).fill(0);
     let has_road: number = map_terrain_is(grid_offset, TERRAIN_ROAD) ? 1 : 0;
     for (let i: number = 0; i < MAX_TILES; i += 2) {
         let offset: number = grid_offset + map_grid_direction_delta(i);

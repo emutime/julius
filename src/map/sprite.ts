@@ -1,5 +1,3 @@
-
-;
 import { buffer } from 'core/buffer';
 import { GRID, grid_u8, map_grid_clear_u8, map_grid_copy_u8, map_grid_load_state_u8, map_grid_save_state_u8 } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;

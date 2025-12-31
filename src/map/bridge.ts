@@ -1,41 +1,24 @@
 
 ;
-import { buffer } from 'core/buffer';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
 import { city_view_orientation } from 'city/view';
 import { direction_type } from 'core/direction';
+import { map_has_figure_at } from 'map/figure';
+import { GRID, map_grid_delta, map_grid_offset } from 'map/grid';
+import { map_property_mark_deleted } from 'map/property';
+import { map_data, map_routing_update_land, map_routing_update_water } from 'map/routing_terrain';
+import { map_sprite_bridge_at, map_sprite_bridge_set, map_sprite_clear_tile } from 'map/sprite';
+import { map_terrain_add, map_terrain_count_diagonally_adjacent_with_type, map_terrain_count_directly_adjacent_with_type, map_terrain_is, map_terrain_remove, terrain } from 'map/terrain';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
 import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
 import DIR_6_LEFT = direction_type.DIR_6_LEFT;
-import { direction_type } from 'core/direction';
-export let map_data: map_data_t = new map_data_t();
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { map_has_figure_at } from 'map/figure';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_offset } from 'map/grid';
-import { map_grid_delta } from 'map/grid';
-import { map_property_mark_deleted } from 'map/property';
-import { map_routing_update_land } from 'map/routing_terrain';
-import { map_routing_update_water } from 'map/routing_terrain';
-import { map_sprite_bridge_at } from 'map/sprite';
-import { map_sprite_bridge_set } from 'map/sprite';
-import { map_sprite_clear_tile } from 'map/sprite';
-import { terrain } from 'map/terrain';
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
 import TERRAIN_BUILDING = terrain.TERRAIN_BUILDING;
 import TERRAIN_ROAD = terrain.TERRAIN_ROAD;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_is } from 'map/terrain';
-import { map_terrain_add } from 'map/terrain';
-import { map_terrain_remove } from 'map/terrain';
-import { map_terrain_count_directly_adjacent_with_type } from 'map/terrain';
-import { map_terrain_count_diagonally_adjacent_with_type } from 'map/terrain';
 export class unnamed13_8 {
     public end_grid_offset: number = 0;
     public length: number = 0;
@@ -55,12 +38,14 @@ export function map_bridge_building_length() {
 export function map_bridge_reset_building_length() {
     bridge.length = 0;
 }
-export function map_bridge_calculate_length_direction(x: number, y: number, length: number, direction: number) {
+export function map_bridge_calculate_length_direction(x: number, y: number, lengthRef: { value: number }, directionRef: { value: number }) {
     let grid_offset: number = map_grid_offset(x, y);
     bridge.end_grid_offset = 0;
     bridge.direction_grid_delta = 0;
-    bridge.length = * length = 0;
-    bridge.direction = * direction = 0;
+    bridge.length = 0;
+    lengthRef.value = 0;
+    bridge.direction = 0;
+    directionRef.value = 0;
     if (!map_terrain_is(grid_offset, TERRAIN_WATER)) {
         return 0;
     }
@@ -85,7 +70,7 @@ export function map_bridge_calculate_length_direction(x: number, y: number, leng
     } else {
         return 0;
     }
-    * direction = bridge.direction;
+    directionRef.value = bridge.direction;
     bridge.length = 1;
     for (let i: number = 0; i < 40; i++) {
         grid_offset += bridge.direction_grid_delta
@@ -99,7 +84,7 @@ export function map_bridge_calculate_length_direction(x: number, y: number, leng
             if (map_terrain_count_directly_adjacent_with_type(grid_offset, TERRAIN_WATER) != 3) {
                 bridge.end_grid_offset = 0;
             }
-            * length = bridge.length;
+            lengthRef.value = bridge.length;
             return bridge.end_grid_offset;
         }
         if (map_terrain_is(next_offset, TERRAIN_ROAD | TERRAIN_BUILDING)) {
@@ -109,7 +94,7 @@ export function map_bridge_calculate_length_direction(x: number, y: number, leng
             break
         }
     }
-    * length = bridge.length;
+    lengthRef.value = bridge.length;
     return 0;
 }
 function get_pillar_distance(length: number) {

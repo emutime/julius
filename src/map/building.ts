@@ -4,11 +4,10 @@ import { building_type } from 'building/type';
 import { buffer } from 'core/buffer';
 import { GRID, grid_u16, grid_u8, map_grid_clear_u16, map_grid_clear_u8, map_grid_delta, map_grid_is_inside, map_grid_is_valid_offset, map_grid_load_state_u16, map_grid_load_state_u8, map_grid_offset, map_grid_save_state_u16, map_grid_save_state_u8 } from 'map/grid';
 import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
-;
 import GRID_SIZE = GRID.GRID_SIZE;
-let buildings_grid: grid_u16;
-let damage_grid: grid_u8;
-let rubble_type_grid: grid_u8;
+let buildings_grid: grid_u16 = new grid_u16();
+let damage_grid: grid_u8 = new grid_u8();
+let rubble_type_grid: grid_u8 = new grid_u8();
 export function map_building_at(grid_offset: number) {
     return map_grid_is_valid_offset(grid_offset) ? buildings_grid.items[grid_offset] : 0;
 }

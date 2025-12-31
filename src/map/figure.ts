@@ -1,17 +1,7 @@
-
-;
 import { buffer } from 'core/buffer';
-import { direction_type } from 'core/direction';
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { GRID } from 'map/grid';
+import { figure, figure_get } from 'figure/figure';
+import { GRID, grid_u16, map_grid_clear_u16, map_grid_is_valid_offset, map_grid_load_state_u16, map_grid_save_state_u16 } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { grid_u16 } from 'map/grid';
-import { map_grid_is_valid_offset } from 'map/grid';
-import { map_grid_clear_u16 } from 'map/grid';
-import { map_grid_save_state_u16 } from 'map/grid';
-import { map_grid_load_state_u16 } from 'map/grid';
 let figures: grid_u16;
 export function map_has_figure_at(grid_offset: number) {
     return map_grid_is_valid_offset(grid_offset) && figures.items[grid_offset] > 0;
@@ -75,7 +65,7 @@ export function map_figure_delete(f: figure) {
     }
     f.next_figure_id_on_same_tile = 0;
 }
-export function map_figure_foreach_until(grid_offset: number, callback: int () {
+export function map_figure_foreach_until(grid_offset: number, callback: (f: figure) => number) {
     if (figures.items[grid_offset] > 0) {
         let figure_id: number = figures.items[grid_offset];
         while (figure_id) {

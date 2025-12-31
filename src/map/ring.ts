@@ -9,9 +9,8 @@ export class ring_tile {
         args.length >= 3 && (this.grid_offset = args[2]);
     }
 }
-export let map_data: map_data_t = new map_data_t();;
-import { GRID, map_grid_delta } from 'map/grid';
-import GRID_SIZE = GRID.GRID_SIZE;
+import { map_grid_delta } from 'map/grid';
+import { map_data } from './data';
 export class unnamed6_8 {
     public tiles: ring_tile[] = new Array(1080).fill(null);
     public index: number[] = new Array(6).fill(0);
@@ -23,8 +22,8 @@ export class unnamed6_8 {
 let data: unnamed6_8 = new unnamed6_8();
 export function map_ring_init() {
     let index: number = 0;
-    let x: number
-    let y: number;
+    let x: number = 0;
+    let y: number = 0;
     for (let size: number = 1; size <= 5; size++) {
         for (let dist: number = 1; dist <= 6; dist++) {
             data.index[size][dist] = index;

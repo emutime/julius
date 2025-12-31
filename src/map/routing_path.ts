@@ -1,5 +1,4 @@
 export const MAX_PATH = 500;
-;
 import { direction_type } from 'core/direction';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_1_TOP_RIGHT = direction_type.DIR_1_TOP_RIGHT;
@@ -9,7 +8,6 @@ import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
 import DIR_5_BOTTOM_LEFT = direction_type.DIR_5_BOTTOM_LEFT;
 import DIR_6_LEFT = direction_type.DIR_6_LEFT;
 import DIR_7_TOP_LEFT = direction_type.DIR_7_TOP_LEFT;
-import { direction_type } from 'core/direction';
 import { calc_general_direction } from 'core/calc';
 import { buffer } from 'core/buffer';
 import { random_byte } from 'core/random';

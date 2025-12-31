@@ -64,8 +64,8 @@ import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 import TERRAIN_CLEARABLE = terrain.TERRAIN_CLEARABLE;
 import { map_terrain_is } from 'map/terrain';
 import { map_terrain_remove } from 'map/terrain';
-let ROUTE_OFFSETS: number[] = new Array().fill({- 162, 1, 162, -1, -161, 163, 161, -163});
-let routing_distance: grid_i16;
+let ROUTE_OFFSETS: number[] = [- map_grid_delta(0, 1), 1, map_grid_delta(0, 1), -1, map_grid_delta(-1, 1), map_grid_delta(1, 1), 1, -map_grid_delta(1, 1)];
+let routing_distance: grid_i16 = new grid_i16();
 export class unnamed21_8 {
     public total_routes_calculated: number = 0;
     public enemy_routes_calculated: number = 0;
@@ -86,7 +86,7 @@ export class unnamed26_8 {
     }
 }
 let queue: unnamed26_8 = new unnamed26_8();
-let water_drag: grid_u8;
+let water_drag: grid_u8 = new grid_u8();
 export class unnamed34_8 {
     public through_building_id: number = 0;
     public constructor(...args: any[]) {
@@ -107,17 +107,17 @@ function enqueue(next_offset: number, dist: number) {
 function valid_offset(grid_offset: number) {
     return map_grid_is_valid_offset(grid_offset) && routing_distance.items[grid_offset] == 0;
 }
-function route_queue(source: number, dest: number, callback: void () {
+function route_queue(source: number, dest: number, callback: (offset: number, dist: number) => void) {
     clear_distances();
     queue.head = queue.tail = 0;
     enqueue(source, 1);
     while (queue.head != queue.tail) {
-            int offset = queue.items[queue.head];
+        let offset: number = queue.items[queue.head];
         if (offset == dest) {
             break;
         }
-            int dist = 1 + routing_distance.items[offset];
-        for (int i = 0; i < 4; i++) {
+        let dist: number = 1 + routing_distance.items[offset];
+        for (let i: number = 0; i < 4; i++) {
             if (valid_offset(offset + ROUTE_OFFSETS[i])) {
                 callback(offset + ROUTE_OFFSETS[i], dist);
             }
@@ -127,14 +127,14 @@ function route_queue(source: number, dest: number, callback: void () {
         }
     }
 }
-function route_queue_until(source: number, callback: int () {
+function route_queue_until(source: number, callback: (offset: number, dist: number) => number) {
     clear_distances();
     queue.head = queue.tail = 0;
     enqueue(source, 1);
     while (queue.head != queue.tail) {
-            int offset = queue.items[queue.head];
-            int dist = 1 + routing_distance.items[offset];
-        for (int i = 0; i < 4; i++) {
+        let offset: number = queue.items[queue.head];
+        let dist: number = 1 + routing_distance.items[offset];
+        for (let i: number = 0; i < 4; i++) {
             if (valid_offset(offset + ROUTE_OFFSETS[i])) {
                 if (callback(offset + ROUTE_OFFSETS[i], dist) == UNTIL_STOP) {
                     break;
@@ -146,17 +146,17 @@ function route_queue_until(source: number, callback: int () {
         }
     }
 }
-function route_queue_max(source: number, dest: number, max_tiles: number, callback: void () {
+function route_queue_max(source: number, dest: number, max_tiles: number, callback: (offset: number, dist: number) => void) {
     clear_distances();
     queue.head = queue.tail = 0;
     enqueue(source, 1);
     let tiles: number = 0;
     while (queue.head != queue.tail) {
-            int offset = queue.items[queue.head];
+        let offset: number = queue.items[queue.head];
         if (offset == dest) break;
         if (++tiles > max_tiles) break;
-            int dist = 1 + routing_distance.items[offset];
-        for (int i = 0; i < 4; i++) {
+        let dist: number = 1 + routing_distance.items[offset];
+        for (let i: number = 0; i < 4; i++) {
             if (valid_offset(offset + ROUTE_OFFSETS[i])) {
                 callback(offset + ROUTE_OFFSETS[i], dist);
             }
@@ -166,26 +166,26 @@ function route_queue_max(source: number, dest: number, max_tiles: number, callba
         }
     }
 }
-function route_queue_boat(source: number, callback: void () {
+function route_queue_boat(source: number, callback: (offset: number, dist: number) => void) {
     clear_distances();
     map_grid_clear_u8(water_drag.items);
     queue.head = queue.tail = 0;
     enqueue(source, 1);
     let tiles: number = 0;
     while (queue.head != queue.tail) {
-            int offset = queue.items[queue.head];
+        let offset: number = queue.items[queue.head];
         if (++tiles > GUARD) {
             break;
         }
-            int drag = terrain_water.items[offset] == WATER_N2_MAP_EDGE ? 4 : 0;
+        let drag: number = terrain_water.items[offset] == WATER_N2_MAP_EDGE ? 4 : 0;
         if (drag && water_drag.items[offset]++ < drag) {
             queue.items[queue.tail++] = offset;
             if (queue.tail >= MAX_QUEUE) {
                 queue.tail = 0;
             }
         } else {
-                int dist = 1 + routing_distance.items[offset];
-            for (int i = 0; i < 4; i++) {
+            let dist: number = 1 + routing_distance.items[offset];
+            for (let i: number = 0; i < 4; i++) {
                 if (valid_offset(offset + ROUTE_OFFSETS[i])) {
                     callback(offset + ROUTE_OFFSETS[i], dist);
                 }
@@ -196,7 +196,7 @@ function route_queue_boat(source: number, callback: void () {
         }
     }
 }
-function route_queue_dir8(source: number, callback: void () {
+function route_queue_dir8(source: number, callback: (offset: number, dist: number) => void) {
     clear_distances();
     queue.head = queue.tail = 0;
     enqueue(source, 1);
@@ -205,9 +205,9 @@ function route_queue_dir8(source: number, callback: void () {
         if (++tiles > GUARD) {
             break;
         }
-            int offset = queue.items[queue.head];
-            int dist = 1 + routing_distance.items[offset];
-        for (int i = 0; i < 8; i++) {
+        let offset: number = queue.items[queue.head];
+        let dist: number = 1 + routing_distance.items[offset];
+        for (let i: number = 0; i < 8; i++) {
             if (valid_offset(offset + ROUTE_OFFSETS[i])) {
                 callback(offset + ROUTE_OFFSETS[i], dist);
             }

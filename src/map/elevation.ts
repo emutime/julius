@@ -1,10 +1,9 @@
 
 ;
 import { buffer } from 'core/buffer';
-import { GRID, grid_u8, map_grid_clear_u8, map_grid_delta, map_grid_load_state_u8, map_grid_save_state_u8 } from 'map/grid';
-export let map_data: map_data_t = new map_data_t();
+import { GRID, grid_u8, map_data, map_grid_clear_u8, map_grid_delta, map_grid_load_state_u8, map_grid_save_state_u8 } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-let elevation: grid_u8;
+let elevation: grid_u8 = new grid_u8();
 export function map_elevation_at(grid_offset: number) {
     return elevation.items[grid_offset];
 }

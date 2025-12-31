@@ -106,9 +106,11 @@ export function map_property_set_multi_tile_size(grid_offset: number, size: numb
     }
 }
 export function map_property_init_alternate_terrain() {
-    let map_width: number
-    let map_height: number;
-    map_grid_size(map_width, map_height);
+    let mapWidthRef: { value: number } = { value: 0 };
+    let mapHeightRef: { value: number } = { value: 0 };
+    map_grid_size(mapWidthRef, mapHeightRef);
+    let map_width: number = mapWidthRef.value;
+    let map_height: number = mapHeightRef.value;
     for (let y: number = 0; y < map_height; y++) {
         for (let x: number = 0; x < map_width; x++) {
             let grid_offset: number = map_grid_offset(x, y);

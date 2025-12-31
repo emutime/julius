@@ -5,7 +5,7 @@ import { model_building, model_get_building } from 'building/model';
 import { building_state, building_type } from 'building/type';
 import { buffer } from 'core/buffer';
 import { calc_bound } from 'core/calc';
-import { GRID, grid_i8, map_grid_clear_i8, map_grid_load_state_i8, map_grid_offset, map_grid_save_state_i8 } from 'map/grid';
+import { GRID, grid_i8, map_data, map_grid_clear_i8, map_grid_load_state_i8, map_grid_offset, map_grid_save_state_i8 } from 'map/grid';
 import { map_property_clear_plaza_or_earthquake, map_property_is_plaza_or_earthquake } from 'map/property';
 import { map_ring_end, map_ring_is_inside_map, map_ring_start, map_ring_tile, ring_tile } from 'map/ring';
 import { map_terrain_get, terrain } from 'map/terrain';
@@ -13,7 +13,6 @@ import BUILDING_HOUSE_VACANT_LOT = building_type.BUILDING_HOUSE_VACANT_LOT;
 import BUILDING_PLAZA = building_type.BUILDING_PLAZA;
 import BUILDING_GARDENS = building_type.BUILDING_GARDENS;
 import BUILDING_STATE_IN_USE = building_state.BUILDING_STATE_IN_USE;
-export let map_data: map_data_t = new map_data_t();
 import GRID_SIZE = GRID.GRID_SIZE;
 import TERRAIN_ROCK = terrain.TERRAIN_ROCK;
 import TERRAIN_GARDEN = terrain.TERRAIN_GARDEN;
@@ -21,7 +20,7 @@ import TERRAIN_ROAD = terrain.TERRAIN_ROAD;
 import TERRAIN_RUBBLE = terrain.TERRAIN_RUBBLE;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-let desirability_grid: grid_i8;
+let desirability_grid: grid_i8 = new grid_i8();
 export function map_desirability_clear() {
     map_grid_clear_i8(desirability_grid.items);
 }

@@ -13,7 +13,6 @@ import { map_routing_citizen_is_road } from 'map/routing_terrain';
 import { map_terrain_is, terrain } from 'map/terrain';
 import BUILDING_GATEHOUSE = building_type.BUILDING_GATEHOUSE;
 import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
-;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
 import DIR_6_LEFT = direction_type.DIR_6_LEFT;
 import GROUP_BUILDING_AQUEDUCT = group_terrain.GROUP_BUILDING_AQUEDUCT;

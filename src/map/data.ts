@@ -11,4 +11,3 @@ export class map_data_t {
         args.length >= 4 && (this.border_size = args[3]);
     }
 }
-export let map_data: map_data_t = new map_data_t();
