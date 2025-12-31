@@ -359,7 +359,7 @@ export function city_message_apply_sound_interval(category: message_category) {
         data.last_sound_time[category] = now;
     }
 }
-export function city_message_post(use_popup: number, message_type: number, param1: number, param2: number) {
+export function city_message_post(use_popup: boolean, message_type: number, param1: number, param2: number) {
     let id: number = new_message_id();
     if (id < 0) {
         return;

@@ -27,7 +27,7 @@ export function city_figures_add_enemy() {
 export function city_figures_add_imperial_soldier() {
     city_data.figure.imperial_soldiers++;
 }
-export function city_figures_add_rioter(is_attacking: number) {
+export function city_figures_add_rioter(is_attacking: boolean) {
     city_data.figure.rioters++;
     if (is_attacking) {
         city_data.figure.security_breach_duration = 10;
