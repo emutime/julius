@@ -1,99 +1,51 @@
-
-;
-import { set_tooltips } from 'game/settings';
-import { set_difficulty } from 'game/settings';
-import { set_sound_type } from 'game/settings';
+import { set_sound, set_sound_type, setting_decrease_sound_volume, setting_increase_sound_volume, setting_reset_sound, setting_sound, setting_sound_is_enabled, setting_toggle_sound_enabled } from 'game/settings';
+import { arrow_button, arrow_buttons_draw, arrow_buttons_handle_mouse } from 'graphics/arrow_button';
+import { button_none } from 'graphics/button';
+import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_in_dialog, graphics_reset_dialog } from 'graphics/graphics';
+import { lang_text_draw, lang_text_draw_centered } from 'graphics/lang_text';
+import { label_draw, outer_panel_draw } from 'graphics/panel';
+import { text_draw_percentage } from 'graphics/text';
+import { window_draw_underlying_window, window_id, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { sound_city_set_volume } from 'sound/city';
+import { sound_effect_set_volume } from 'sound/effect';
+import { sound_music_set_volume, sound_music_stop, sound_music_update } from 'sound/music';
+import { sound_speech_set_volume, sound_speech_stop } from 'sound/speech';
 import SOUND_MUSIC = set_sound_type.SOUND_MUSIC;
 import SOUND_SPEECH = set_sound_type.SOUND_SPEECH;
 import SOUND_EFFECTS = set_sound_type.SOUND_EFFECTS;
 import SOUND_CITY = set_sound_type.SOUND_CITY;
-import { set_sound_type } from 'game/settings';
-import { set_sound } from 'game/settings';
-import { setting_sound } from 'game/settings';
-import { setting_sound_is_enabled } from 'game/settings';
-import { setting_toggle_sound_enabled } from 'game/settings';
-import { setting_increase_sound_volume } from 'game/settings';
-import { setting_decrease_sound_volume } from 'game/settings';
-import { setting_reset_sound } from 'game/settings';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { arrow_button } from 'graphics/arrow_button';
-import { arrow_buttons_draw } from 'graphics/arrow_button';
-import { arrow_buttons_handle_mouse } from 'graphics/arrow_button';
-import { button_none } from 'graphics/button';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { font_t } from 'graphics/font';
 import FONT_NORMAL_PLAIN = font_t.FONT_NORMAL_PLAIN;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
 import FONT_SMALL_PLAIN = font_t.FONT_SMALL_PLAIN;
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { lang_text_draw } from 'graphics/lang_text';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { label_draw } from 'graphics/panel';
-import { text_draw_percentage } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_SOUND_OPTIONS = window_id.WINDOW_SOUND_OPTIONS;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_draw_underlying_window } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-import { building_type } from 'building/type';
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { sound_city_set_volume } from 'sound/city';
-import { sound_effect_set_volume } from 'sound/effect';
-import { sound_music_set_volume } from 'sound/music';
-import { sound_music_update } from 'sound/music';
-import { sound_music_stop } from 'sound/music';
-import { sound_speech_set_volume } from 'sound/speech';
-import { sound_speech_stop } from 'sound/speech';
-let buttons: generic_button[] = new Array().fill({
-    { 64, 162, 224, 20, button_toggle, button_none, SOUND_MUSIC, 0},
-    { 64, 192, 224, 20, button_toggle, button_none, SOUND_SPEECH, 0},
-    { 64, 222, 224, 20, button_toggle, button_none, SOUND_EFFECTS, 0},
-    { 64, 252, 224, 20, button_toggle, button_none, SOUND_CITY, 0},
-    { 144, 296, 192, 20, button_ok, button_none, 1, 0},
-    { 144, 326, 192, 20, button_cancel, button_none, 1, 0},
-});
-let arrow_buttons: arrow_button[] = new Array().fill({
-    { 112, 100, 17, 24, arrow_button_music, 1, 0},
-    { 136, 100, 15, 24, arrow_button_music, 0, 0},
-    { 112, 130, 17, 24, arrow_button_speech, 1, 0},
-    { 136, 130, 15, 24, arrow_button_speech, 0, 0},
-    { 112, 160, 17, 24, arrow_button_effects, 1, 0},
-    { 136, 160, 15, 24, arrow_button_effects, 0, 0},
-    { 112, 190, 17, 24, arrow_button_city, 1, 0},
-    { 136, 190, 15, 24, arrow_button_city, 0, 0},
-});
+
+let buttons: generic_button[] = [
+    new generic_button(64, 162, 224, 20, button_toggle, button_none, SOUND_MUSIC, 0),
+    new generic_button(64, 192, 224, 20, button_toggle, button_none, SOUND_SPEECH, 0),
+    new generic_button(64, 222, 224, 20, button_toggle, button_none, SOUND_EFFECTS, 0),
+    new generic_button(64, 252, 224, 20, button_toggle, button_none, SOUND_CITY, 0),
+    new generic_button(144, 296, 192, 20, button_ok, button_none, 1, 0),
+    new generic_button(144, 326, 192, 20, button_cancel, button_none, 1, 0),
+];
+let arrow_buttons: arrow_button[] = [
+    new arrow_button(112, 100, 17, 24, arrow_button_music, 1, 0),
+    new arrow_button(136, 100, 15, 24, arrow_button_music, 0, 0),
+    new arrow_button(112, 130, 17, 24, arrow_button_speech, 1, 0),
+    new arrow_button(136, 130, 15, 24, arrow_button_speech, 0, 0),
+    new arrow_button(112, 160, 17, 24, arrow_button_effects, 1, 0),
+    new arrow_button(136, 160, 15, 24, arrow_button_effects, 0, 0),
+    new arrow_button(112, 190, 17, 24, arrow_button_city, 1, 0),
+    new arrow_button(136, 190, 15, 24, arrow_button_city, 0, 0),
+];
 export class unnamed46_8 {
     public focus_button_id: number = 0;
-    public close_callback: void ( = null;
+    public close_callback: (() => void) | null = null;
     public original_effects: set_sound = null;
     public original_music: set_sound = null;
     public original_speech: set_sound = null;
@@ -108,13 +60,13 @@ export class unnamed46_8 {
     }
 }
 let data: unnamed46_8 = new unnamed46_8();
-function init(close_callback: void () {
+function init(close_callback: () => void) {
     data.focus_button_id = 0;
     data.close_callback = close_callback;
-    data.original_effects = * setting_sound(SOUND_EFFECTS);
-    data.original_music = * setting_sound(SOUND_MUSIC);
-    data.original_speech = * setting_sound(SOUND_SPEECH);
-    data.original_city = * setting_sound(SOUND_CITY);
+    data.original_effects = setting_sound(SOUND_EFFECTS);
+    data.original_music = setting_sound(SOUND_MUSIC);
+    data.original_speech = setting_sound(SOUND_SPEECH);
+    data.original_city = setting_sound(SOUND_CITY);
 }
 function draw_foreground() {
     graphics_in_dialog();
@@ -147,12 +99,12 @@ function draw_foreground() {
 }
 function handle_input(m: mouse, h: hotkeys) {
     let m_dialog: mouse = mouse_in_dialog(m);
-    if (generic_buttons_handle_mouse(m_dialog, 0, 0, buttons, 6, data.focus_button_id) ||
+    if (generic_buttons_handle_mouse(m_dialog, 0, 0, buttons, 6, data) ||
         arrow_buttons_handle_mouse(m_dialog, 208, 60, arrow_buttons, 8, 0)) {
         return;
     }
     if (input_go_back_requested(m, h)) {
-        data.close_callback();
+        data.close_callback!();
     }
 }
 function button_toggle(type: number, param2: number) {
@@ -170,7 +122,7 @@ function button_toggle(type: number, param2: number) {
     }
 }
 function button_ok(param1: number, param2: number) {
-    data.close_callback();
+    data.close_callback!();
 }
 function button_cancel(param1: number, param2: number) {
     setting_reset_sound(SOUND_EFFECTS, data.original_effects.enabled, data.original_effects.volume);
@@ -188,7 +140,7 @@ function button_cancel(param1: number, param2: number) {
     sound_speech_set_volume(data.original_speech.volume);
     sound_effect_set_volume(data.original_effects.volume);
     sound_city_set_volume(data.original_city.volume);
-    data.close_callback();
+    data.close_callback!();
 }
 function update_volume(type: set_sound_type, is_decrease: number) {
     if (is_decrease) {
@@ -213,13 +165,13 @@ function arrow_button_city(is_down: number, param2: number) {
     update_volume(SOUND_CITY, is_down);
     sound_city_set_volume(setting_sound(SOUND_CITY).volume);
 }
-export function window_sound_options_show(close_callback: void () {
-    let window: window_type = {
+export function window_sound_options_show(close_callback: () => void) {
+    let window: window_type = new window_type(
         WINDOW_SOUND_OPTIONS,
         window_draw_underlying_window,
         draw_foreground,
         handle_input,
-    };
+    );
     init(close_callback);
     window_show(window);
 }

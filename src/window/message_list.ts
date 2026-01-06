@@ -1,120 +1,54 @@
 export const MAX_MESSAGES = 10;
-import { BLOCK_SIZE } from 'graphics/panel';
-;
-import { buffer } from 'core/buffer';
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_sort_and_compact } from 'city/message';
-import { city_message_get_text_id } from 'city/message';
-import { city_message_get_advisor } from 'city/message';
-import { city_message_get } from 'city/message';
-import { city_message_set_current } from 'city/message';
-import { city_message_mark_read } from 'city/message';
-import { city_message_delete } from 'city/message';
-import { city_message_count } from 'city/message';
-import { city_message_scroll_position } from 'city/message';
-import { city_message_set_scroll_position } from 'city/message';
-import { direction_type } from 'core/direction';
+import { city_message, city_message_count, city_message_delete, city_message_get, city_message_get_advisor, city_message_get_text_id, city_message_mark_read, city_message_scroll_position, city_message_set_current, city_message_set_scroll_position, city_message_sort_and_compact } from 'city/message';
+import { image_group } from 'core/image';
 import { group_terrain } from 'core/image_group';
+import { lang_get_message, lang_message, lang_message_type } from 'core/lang';
+import { button_none } from 'graphics/button';
+import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_in_dialog, graphics_reset_dialog } from 'graphics/graphics';
+import { image_draw } from 'graphics/image';
+import { ib, image_button, image_buttons_draw, image_buttons_handle_mouse } from 'graphics/image_button';
+import { lang_text_draw, lang_text_draw_centered, lang_text_draw_multiline, lang_text_draw_year } from 'graphics/lang_text';
+import { BLOCK_SIZE, inner_panel_draw, outer_panel_draw } from 'graphics/panel';
+import { scrollbar_draw, scrollbar_handle_mouse, scrollbar_init, scrollbar_type, scrollbar_update_total_elements } from 'graphics/scrollbar';
+import { text_draw } from 'graphics/text';
+import { tooltip_context, tooltip_type } from 'graphics/tooltip';
+import { window_id, window_invalidate, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { window_city_draw_all, window_city_show } from 'window/city';
+import { message_dialog, window_message_dialog_show, window_message_dialog_show_city_message } from 'window/message_dialog';
+;
 import GROUP_ARROW_MESSAGE_PROBLEMS = group_terrain.GROUP_ARROW_MESSAGE_PROBLEMS;
 import GROUP_CONTEXT_ICONS = group_terrain.GROUP_CONTEXT_ICONS;
-import { lang_type } from 'core/lang';
-import { lang_message_type } from 'core/lang';
 import MESSAGE_TYPE_DISASTER = lang_message_type.MESSAGE_TYPE_DISASTER;
-import { lang_message_type } from 'core/lang';
-import { lang_message } from 'core/lang';
-import { lang_get_message } from 'core/lang';
-import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
 import FONT_NORMAL_RED = font_t.FONT_NORMAL_RED;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
 import FONT_SMALL_PLAIN = font_t.FONT_SMALL_PLAIN;
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { ib } from 'graphics/image_button';
 import IB_NORMAL = ib.IB_NORMAL;
-import { image_button } from 'graphics/image_button';
-import { image_buttons_draw } from 'graphics/image_button';
-import { image_buttons_handle_mouse } from 'graphics/image_button';
-import { lang_text_draw } from 'graphics/lang_text';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { lang_text_draw_year } from 'graphics/lang_text';
-import { lang_text_draw_multiline } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { inner_panel_draw } from 'graphics/panel';
-import { scrollbar_type } from 'graphics/scrollbar';
-import { scrollbar_init } from 'graphics/scrollbar';
-import { scrollbar_update_total_elements } from 'graphics/scrollbar';
-import { scrollbar_draw } from 'graphics/scrollbar';
-import { scrollbar_handle_mouse } from 'graphics/scrollbar';
-import { text_draw } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
 import TOOLTIP_BUTTON = tooltip_type.TOOLTIP_BUTTON;
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_MESSAGE_LIST = window_id.WINDOW_MESSAGE_LIST;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-import { window_city_draw_all } from 'window/city';
-import { window_city_show } from 'window/city';
-import { message_dialog } from 'window/message_dialog';
 import MESSAGE_DIALOG_MESSAGES = message_dialog.MESSAGE_DIALOG_MESSAGES;
-import { window_message_dialog_show } from 'window/message_dialog';
-import { window_message_dialog_show_city_message } from 'window/message_dialog';
-let image_button_help: image_button = {
-    0, 0, 27, 27, IB_NORMAL, GROUP_CONTEXT_ICONS, 0, button_help, button_none, 0, 0, 1
-};
-let image_button_close: image_button = {
-    0, 0, 24, 24, IB_NORMAL, GROUP_CONTEXT_ICONS, 4, button_close, button_none, 0, 0, 1
-};
-let generic_buttons_messages: generic_button[] = new Array().fill({
-    { 0, 0, 412, 18, button_message, button_delete, 0, 0},
-    { 0, 20, 412, 18, button_message, button_delete, 1, 0},
-    { 0, 40, 412, 18, button_message, button_delete, 2, 0},
-    { 0, 60, 412, 18, button_message, button_delete, 3, 0},
-    { 0, 80, 412, 18, button_message, button_delete, 4, 0},
-    { 0, 100, 412, 18, button_message, button_delete, 5, 0},
-    { 0, 120, 412, 18, button_message, button_delete, 6, 0},
-    { 0, 140, 412, 18, button_message, button_delete, 7, 0},
-    { 0, 160, 412, 18, button_message, button_delete, 8, 0},
-    { 0, 180, 412, 18, button_message, button_delete, 9, 0},
-});
-let scrollbar: scrollbar_type = { 432, 112, 208, 416, MAX_MESSAGES, on_scroll, 1};
+let image_button_help: image_button = new image_button(0, 0, 27, 27, IB_NORMAL, GROUP_CONTEXT_ICONS, 0, button_help, button_none, 0, 0, 1);
+let image_button_close: image_button = new image_button(0, 0, 24, 24, IB_NORMAL, GROUP_CONTEXT_ICONS, 4, button_close, button_none, 0, 0, 1);
+let generic_buttons_messages: generic_button[] = [
+    new generic_button(0, 0, 412, 18, button_message, button_delete, 0, 0),
+    new generic_button(0, 20, 412, 18, button_message, button_delete, 1, 0),
+    new generic_button(0, 40, 412, 18, button_message, button_delete, 2, 0),
+    new generic_button(0, 60, 412, 18, button_message, button_delete, 3, 0),
+    new generic_button(0, 80, 412, 18, button_message, button_delete, 4, 0),
+    new generic_button(0, 100, 412, 18, button_message, button_delete, 5, 0),
+    new generic_button(0, 120, 412, 18, button_message, button_delete, 6, 0),
+    new generic_button(0, 140, 412, 18, button_message, button_delete, 7, 0),
+    new generic_button(0, 160, 412, 18, button_message, button_delete, 8, 0),
+    new generic_button(0, 180, 412, 18, button_message, button_delete, 9, 0),
+];
+let scrollbar: scrollbar_type = new scrollbar_type(432, 112, 208, 416, MAX_MESSAGES, on_scroll, 1);
 export class unnamed49_8 {
     public width_blocks: number = 0;
     public height_blocks: number = 0;
@@ -276,13 +210,13 @@ function get_tooltip(c: tooltip_context) {
     c.type = TOOLTIP_BUTTON;
 }
 export function window_message_list_show() {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_MESSAGE_LIST,
         draw_background,
         draw_foreground,
         handle_input,
         get_tooltip
-    };
+    );
     init();
     window_show(window);
 }

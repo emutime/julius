@@ -1,100 +1,77 @@
-import { COLOR_FONT_BLUE } from 'graphics/color';
-import { COLOR_BLACK } from 'graphics/color';
-export const MAX_ITEMS_PER_LIST = 20;
-import { BLOCK_SIZE } from 'graphics/panel';
-;
 import { button_none } from 'graphics/button';
-import { color_t } from 'graphics/color';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
+import { COLOR_BLACK, COLOR_FONT_BLUE, color_t } from 'graphics/color';
 import { font_t } from 'graphics/font';
-import FONT_NORMAL_PLAIN = font_t.FONT_NORMAL_PLAIN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
 import { lang_text_draw_centered_colored } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
+import { BLOCK_SIZE, outer_panel_draw } from 'graphics/panel';
 import { text_draw_centered } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
+import { window_draw_underlying_window, window_go_back, window_id, window_show, window_type } from 'graphics/window';
 import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
-import WINDOW_SELECT_LIST = window_id.WINDOW_SELECT_LIST;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_draw_underlying_window } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { window_go_back } from 'graphics/window';
 import { input_go_back_requested } from 'input/input';
+import { mouse } from 'input/mouse';
+export const MAX_ITEMS_PER_LIST = 20;
+import FONT_NORMAL_PLAIN = font_t.FONT_NORMAL_PLAIN;
+import WINDOW_SELECT_LIST = window_id.WINDOW_SELECT_LIST;
 export const enum mode {
-    MODE_TEXT = undefined,
-    MODE_GROUP = undefined,
+    MODE_TEXT,
+    MODE_GROUP,
 }
-let buttons_list1: generic_button[] = new Array(MAX_ITEMS_PER_LIST).fill({
-    { 5, 8, 190, 18, select_item, button_none, 0, 0},
-    { 5, 28, 190, 18, select_item, button_none, 1, 0},
-    { 5, 48, 190, 18, select_item, button_none, 2, 0},
-    { 5, 68, 190, 18, select_item, button_none, 3, 0},
-    { 5, 88, 190, 18, select_item, button_none, 4, 0},
-    { 5, 108, 190, 18, select_item, button_none, 5, 0},
-    { 5, 128, 190, 18, select_item, button_none, 6, 0},
-    { 5, 148, 190, 18, select_item, button_none, 7, 0},
-    { 5, 168, 190, 18, select_item, button_none, 8, 0},
-    { 5, 188, 190, 18, select_item, button_none, 9, 0},
-    { 5, 208, 190, 18, select_item, button_none, 10, 0},
-    { 5, 228, 190, 18, select_item, button_none, 11, 0},
-    { 5, 248, 190, 18, select_item, button_none, 12, 0},
-    { 5, 268, 190, 18, select_item, button_none, 13, 0},
-    { 5, 288, 190, 18, select_item, button_none, 14, 0},
-    { 5, 308, 190, 18, select_item, button_none, 15, 0},
-    { 5, 328, 190, 18, select_item, button_none, 16, 0},
-    { 5, 348, 190, 18, select_item, button_none, 17, 0},
-    { 5, 368, 190, 18, select_item, button_none, 18, 0},
-    { 5, 388, 190, 18, select_item, button_none, 19, 0},
-});
-let buttons_list2: generic_button[] = new Array(MAX_ITEMS_PER_LIST).fill({
-    { 205, 8, 190, 18, select_item, button_none, 0, 1},
-    { 205, 28, 190, 18, select_item, button_none, 1, 1},
-    { 205, 48, 190, 18, select_item, button_none, 2, 1},
-    { 205, 68, 190, 18, select_item, button_none, 3, 1},
-    { 205, 88, 190, 18, select_item, button_none, 4, 1},
-    { 205, 108, 190, 18, select_item, button_none, 5, 1},
-    { 205, 128, 190, 18, select_item, button_none, 6, 1},
-    { 205, 148, 190, 18, select_item, button_none, 7, 1},
-    { 205, 168, 190, 18, select_item, button_none, 8, 1},
-    { 205, 188, 190, 18, select_item, button_none, 9, 1},
-    { 205, 208, 190, 18, select_item, button_none, 10, 1},
-    { 205, 228, 190, 18, select_item, button_none, 11, 1},
-    { 205, 248, 190, 18, select_item, button_none, 12, 1},
-    { 205, 268, 190, 18, select_item, button_none, 13, 1},
-    { 205, 288, 190, 18, select_item, button_none, 14, 1},
-    { 205, 308, 190, 18, select_item, button_none, 15, 1},
-    { 205, 328, 190, 18, select_item, button_none, 16, 1},
-    { 205, 348, 190, 18, select_item, button_none, 17, 1},
-    { 205, 368, 190, 18, select_item, button_none, 18, 1},
-    { 205, 388, 190, 18, select_item, button_none, 19, 1},
-});
+
+import MODE_TEXT = mode.MODE_TEXT;
+import MODE_GROUP = mode.MODE_GROUP;
+
+let buttons_list1: generic_button[] = [
+    new generic_button(5, 8, 190, 18, select_item, button_none, 0, 0),
+    new generic_button(5, 28, 190, 18, select_item, button_none, 1, 0),
+    new generic_button(5, 48, 190, 18, select_item, button_none, 2, 0),
+    new generic_button(5, 68, 190, 18, select_item, button_none, 3, 0),
+    new generic_button(5, 88, 190, 18, select_item, button_none, 4, 0),
+    new generic_button(5, 108, 190, 18, select_item, button_none, 5, 0),
+    new generic_button(5, 128, 190, 18, select_item, button_none, 6, 0),
+    new generic_button(5, 148, 190, 18, select_item, button_none, 7, 0),
+    new generic_button(5, 168, 190, 18, select_item, button_none, 8, 0),
+    new generic_button(5, 188, 190, 18, select_item, button_none, 9, 0),
+    new generic_button(5, 208, 190, 18, select_item, button_none, 10, 0),
+    new generic_button(5, 228, 190, 18, select_item, button_none, 11, 0),
+    new generic_button(5, 248, 190, 18, select_item, button_none, 12, 0),
+    new generic_button(5, 268, 190, 18, select_item, button_none, 13, 0),
+    new generic_button(5, 288, 190, 18, select_item, button_none, 14, 0),
+    new generic_button(5, 308, 190, 18, select_item, button_none, 15, 0),
+    new generic_button(5, 328, 190, 18, select_item, button_none, 16, 0),
+    new generic_button(5, 348, 190, 18, select_item, button_none, 17, 0),
+    new generic_button(5, 368, 190, 18, select_item, button_none, 18, 0),
+    new generic_button(5, 388, 190, 18, select_item, button_none, 19, 0),
+];
+let buttons_list2: generic_button[] = [
+    new generic_button(205, 8, 190, 18, select_item, button_none, 0, 1),
+    new generic_button(205, 28, 190, 18, select_item, button_none, 1, 1),
+    new generic_button(205, 48, 190, 18, select_item, button_none, 2, 1),
+    new generic_button(205, 68, 190, 18, select_item, button_none, 3, 1),
+    new generic_button(205, 88, 190, 18, select_item, button_none, 4, 1),
+    new generic_button(205, 108, 190, 18, select_item, button_none, 5, 1),
+    new generic_button(205, 128, 190, 18, select_item, button_none, 6, 1),
+    new generic_button(205, 148, 190, 18, select_item, button_none, 7, 1),
+    new generic_button(205, 168, 190, 18, select_item, button_none, 8, 1),
+    new generic_button(205, 188, 190, 18, select_item, button_none, 9, 1),
+    new generic_button(205, 208, 190, 18, select_item, button_none, 10, 1),
+    new generic_button(205, 228, 190, 18, select_item, button_none, 11, 1),
+    new generic_button(205, 248, 190, 18, select_item, button_none, 12, 1),
+    new generic_button(205, 268, 190, 18, select_item, button_none, 13, 1),
+    new generic_button(205, 288, 190, 18, select_item, button_none, 14, 1),
+    new generic_button(205, 308, 190, 18, select_item, button_none, 15, 1),
+    new generic_button(205, 328, 190, 18, select_item, button_none, 16, 1),
+    new generic_button(205, 348, 190, 18, select_item, button_none, 17, 1),
+    new generic_button(205, 368, 190, 18, select_item, button_none, 18, 1),
+    new generic_button(205, 388, 190, 18, select_item, button_none, 19, 1),
+];
 export class unnamed67_8 {
     public x: number = 0;
     public y: number = 0;
     public mode: number = 0;
     public group: number = 0;
-    public items: number = 0;
+    public items: string[] = [];
     public num_items: number = 0;
-    public callback: void ( = null;
+    public callback: ((size: number) => void) | null = null;
     public focus_button_id: number = 0;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.x = args[0]);
@@ -108,7 +85,7 @@ export class unnamed67_8 {
     }
 }
 let data: unnamed67_8 = new unnamed67_8();
-function init_group(x: number, y: number, group: number, num_items: number, callback: void () {
+function init_group(x: number, y: number, group: number, num_items: number, callback: (size: number) => void) {
     data.x = x;
     data.y = y;
     data.mode = MODE_GROUP;
@@ -116,7 +93,7 @@ function init_group(x: number, y: number, group: number, num_items: number, call
     data.num_items = num_items;
     data.callback = callback;
 }
-function init_text(x: number, y: number, items: number, num_items: number, callback: void () {
+function init_text(x: number, y: number, items: number, num_items: number, callback: (size: number) => void) {
     data.x = x;
     data.y = y;
     data.mode = MODE_TEXT;
@@ -127,7 +104,7 @@ function init_text(x: number, y: number, items: number, num_items: number, callb
 function items_in_first_list() {
     return data.num_items / 2 + data.num_items % 2;
 }
-function draw_item(item_id: number, x: number, y: number, selected: number) {
+function draw_item(item_id: number, x: number, y: number, selected: boolean) {
     let color: color_t = selected ? COLOR_FONT_BLUE : COLOR_BLACK;
     if (data.mode == MODE_GROUP) {
         lang_text_draw_centered_colored(data.group, item_id, data.x + x, data.y + y, 190, FONT_NORMAL_PLAIN, color);
@@ -180,23 +157,23 @@ export function select_item(id: number, list_id: number) {
         data.callback(id + items_in_first_list());
     }
 }
-export function window_select_list_show(x: number, y: number, group: number, num_items: number, callback: void () {
-    let window: window_type = {
+export function window_select_list_show(x: number, y: number, group: number, num_items: number, callback: (size: number) => void) {
+    let window: window_type = new window_type(
         WINDOW_SELECT_LIST,
         window_draw_underlying_window,
         draw_foreground,
         handle_input
-    };
+    );
     init_group(x, y, group, num_items, callback);
     window_show(window);
 }
-export function window_select_list_show_text(x: number, y: number, items: number, num_items: number, callback: void () {
-    let window: window_type = {
+export function window_select_list_show_text(x: number, y: number, items: number, num_items: number, callback: (size: number) => void) {
+    let window: window_type = new window_type(
         WINDOW_SELECT_LIST,
         window_draw_underlying_window,
         draw_foreground,
         handle_input
-    };
+    );
     init_text(x, y, items, num_items, callback);
     window_show(window);
 }

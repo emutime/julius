@@ -6,7 +6,7 @@ export const HALF_TILE_HEIGHT_PIXELS = 15;
 export const HALF_TILE_WIDTH_PIXELS = 30;
 import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
 import { TOP_MENU_HEIGHT } from 'graphics/menu';
-;
+
 export class pixel_offset {
     public x: number = 0;
     public y: number = 0;
@@ -28,7 +28,7 @@ import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
 import DIR_6_LEFT = direction_type.DIR_6_LEFT;
 import DIR_8_NONE = direction_type.DIR_8_NONE;
 import GRID_SIZE = GRID.GRID_SIZE;
-type map_callback = (x: number, y: number, grid_offset: number) => void;
+export type map_callback = (x: number, y: number, grid_offset: number) => void;
 let X_DIRECTION_FOR_ORIENTATION: number[] = [1, 1, - 1, -1];
 let Y_DIRECTION_FOR_ORIENTATION: number[] = [1, - 1, -1, 1];
 class camera {

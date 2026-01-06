@@ -1,29 +1,15 @@
-import { VIEW_X_MAX } from 'city/view';
-import { VIEW_Y_MAX } from 'city/view';
-;
-import { buffer } from 'core/buffer';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_foreach_minimap_tile } from 'city/view';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_set_clip_rectangle } from 'graphics/graphics';
-import { graphics_reset_clip_rectangle } from 'graphics/graphics';
-import { graphics_draw_vertical_line } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
-import GROUP_MINIMAP_BUILDING = group_terrain.GROUP_MINIMAP_BUILDING;
-import { image } from 'core/image';
+import { city_view_foreach_minimap_tile, map_callback, VIEW_X_MAX, VIEW_Y_MAX } from 'city/view';
 import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
+import { group_terrain } from 'core/image_group';
+import { color_t } from 'graphics/color';
+import { graphics_draw_vertical_line, graphics_reset_clip_rectangle, graphics_set_clip_rectangle } from 'graphics/graphics';
 import { image_draw } from 'graphics/image';
-import { map_property_is_draw_tile } from 'map/property';
-import { map_property_multi_tile_size } from 'map/property';
+import { map_property_is_draw_tile, map_property_multi_tile_size } from 'map/property';
 import { map_random_get } from 'map/random';
-import { terrain } from 'map/terrain';
+import { map_terrain_get, terrain } from 'map/terrain';
+import { scenario_property_climate } from 'scenario/property';
+;
+import GROUP_MINIMAP_BUILDING = group_terrain.GROUP_MINIMAP_BUILDING;
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_ROCK = terrain.TERRAIN_ROCK;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
@@ -34,9 +20,6 @@ import TERRAIN_ELEVATION = terrain.TERRAIN_ELEVATION;
 import TERRAIN_MEADOW = terrain.TERRAIN_MEADOW;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_get } from 'map/terrain';
-import { scenario_climate } from 'scenario/property';
-import { scenario_property_climate } from 'scenario/property';
 export class tile_color {
     public left: color_t = null;
     public right: color_t = null;
@@ -61,46 +44,45 @@ export class tile_color_set {
         args.length >= 6 && (this.road = args[5]);
     }
 }
-export let MINIMAP_COLOR_SETS: tile_color_set[] = new Array(3).fill({
+export let MINIMAP_COLOR_SETS: tile_color_set[] = [
     // central
-    {
-        .water = {{ 0x394a7b, 0x31427b}, { 0x394a7b, 0x314273}, { 0x313973, 0x314273}, { 0x31427b, 0x394a7b}},
-        .tree = {{ 0x6b8431, 0x102108 }, { 0x103908, 0x737b29 }, { 0x103108, 0x526b21 }, { 0x737b31, 0x084a10 }},
-        .rock = {{ 0x948484, 0x635a4a }, { 0xa59c94, 0xb5ada5 }, { 0xb5ada5, 0x8c8484 }, { 0x635a4a, 0xa59c94 }},
-        .meadow = {{ 0xd6bd63, 0x9c8c39 }, { 0x948c39, 0xd6bd63 }, { 0xd6bd63, 0x9c9439 }, { 0x848431, 0xada54a }},
-        .grass = {
-            { 0x6b8c31, 0x6b7b29 }, { 0x738431, 0x6b7b29 }, { 0x6b7329, 0x7b8c39 }, { 0x527b29, 0x6b7321 },
-{ 0x6b8431, 0x737b31 }, { 0x6b7b31, 0x737b29 }, { 0x636b18, 0x526b21 }, { 0x737b31, 0x737b29 }
-        },
-        .road = { 0x736b63, 0x4a3121}
-    },
-// northern
-{
-        .water = {{ 0x394a7b, 0x31427b }, { 0x394a7b, 0x314273 }, { 0x313973, 0x314273 }, { 0x31427b, 0x394a7b }
-},
-        .tree = {{ 0x527b31, 0x082108 }, { 0x083908, 0x5a7329 }, { 0x082908, 0x316b21 }, { 0x527b29, 0x084a21 }},
-        .rock = {{ 0x8c8484, 0x5a5252 }, { 0x9c9c94, 0xa5a5a5 }, { 0xa5a5a5, 0x848484 }, { 0x5a5252, 0x9c9c94 }},
-        .meadow = {{ 0x427318, 0x8c9442 }, { 0xb5ad4a, 0x738c39 }, { 0x8c8c39, 0x6b7b29 }, { 0x527331, 0x5a8442 }},
-        .grass = {
-            { 0x4a8431, 0x4a7329 }, { 0x527b29, 0x4a7329 }, { 0x526b29, 0x5a8439 }, { 0x397321, 0x4a6b21 },
-{ 0x527b31, 0x5a7331 }, { 0x4a7329, 0x5a7329 }, { 0x4a6b18, 0x316b21 }, { 0x527b29, 0x527329 }
-        },
-        .road = { 0x736b63, 0x4a3121}
-    },
-// desert
-{
-        .water = {{ 0x4a84c6, 0x4a7bc6 }, { 0x4a84c6, 0x4a7bc6 }, { 0x4a84c6, 0x5284c6 }, { 0x4a7bbd, 0x4a7bc6 }
-},
-        .tree = {{ 0xa59c7b, 0x6b7b18 }, { 0x214210, 0xada573 }, { 0x526b21, 0xcec6a5 }, { 0xa59c7b, 0x316321 }},
-        .rock = {{ 0xa59494, 0x736352 }, { 0xa59c94, 0xb5ada5 }, { 0xb5ada5, 0x8c847b }, { 0x736352, 0xbdada5 }},
-        .meadow = {{ 0x739c31, 0x9cbd52 }, { 0x7bb529, 0x63ad21 }, { 0x9cbd52, 0x8c944a }, { 0x7ba539, 0x739c31 }},
-        .grass = {
-            { 0xbdbd9c, 0xb5b594 }, { 0xc6bda5, 0xbdbda5 }, { 0xbdbd9c, 0xc6c6ad }, { 0xd6cead, 0xc6bd9c },
-{ 0xa59c7b, 0xbdb594 }, { 0xcecead, 0xb5ad94 }, { 0xc6c6a5, 0xdedebd }, { 0xcecead, 0xd6d6b5 }
-        },
-        .road = { 0x6b5a52, 0x4a4239}
-    }
-});
+    new tile_color_set(
+        [[0x394a7b, 0x31427b], [0x394a7b, 0x314273], [0x313973, 0x314273], [0x31427b, 0x394a7b]],
+        [[0x6b8431, 0x102108], [0x103908, 0x737b29], [0x103108, 0x526b21], [0x737b31, 0x084a10]],
+        [[0x948484, 0x635a4a], [0xa59c94, 0xb5ada5], [0xb5ada5, 0x8c8484], [0x635a4a, 0xa59c94]],
+        [[0xd6bd63, 0x9c8c39], [0x948c39, 0xd6bd63], [0xd6bd63, 0x9c9439], [0x848431, 0xada54a]],
+        [
+
+            [[0x6b8c31, 0x6b7b29], [0x738431, 0x6b7b29], [0x6b7329, 0x7b8c39], [0x527b29, 0x6b7321]],
+            [[0x6b8431, 0x737b31], [0x6b7b31, 0x737b29], [0x636b18, 0x526b21], [0x737b31, 0x737b29]],
+        ],
+        [[0x736b63, 0x4a3121]]
+    ),
+    // northern
+    new tile_color_set(
+        [[0x394a7b, 0x31427b], [0x394a7b, 0x314273], [0x313973, 0x314273], [0x31427b, 0x394a7b]],
+        [[0x527b31, 0x082108], [0x083908, 0x5a7329], [0x082908, 0x316b21], [0x527b29, 0x084a21]],
+        [[0x8c8484, 0x5a5252], [0x9c9c94, 0xa5a5a5], [0xa5a5a5, 0x848484], [0x5a5252, 0x9c9c94]],
+        [[0x427318, 0x8c9442], [0xb5ad4a, 0x738c39], [0x8c8c39, 0x6b7b29], [0x527331, 0x5a8442]],
+        [
+            [0x4a8431, 0x4a7329], [0x527b29, 0x4a7329], [0x526b29, 0x5a8439], [0x397321, 0x4a6b21],
+            [0x527b31, 0x5a7331], [0x4a7329, 0x5a7329], [0x4a6b18, 0x316b21], [0x527b29, 0x527329]
+        ],
+        [0x736b63, 0x4a3121]
+    ),
+    // desert
+    new tile_color_set(
+        [[0x4a84c6, 0x4a7bc6], [0x4a84c6, 0x4a7bc6], [0x4a84c6, 0x5284c6], [0x4a7bbd, 0x4a7bc6]],
+        [[0xa59c7b, 0x6b7b18], [0x214210, 0xada573], [0x526b21, 0xcec6a5], [0xa59c7b, 0x316321]],
+        [[0xa59494, 0x736352], [0xa59c94, 0xb5ada5], [0xb5ada5, 0x8c847b], [0x736352, 0xbdada5]],
+        [[0x739c31, 0x9cbd52], [0x7bb529, 0x63ad21], [0x9cbd52, 0x8c944a], [0x7ba539, 0x739c31]],
+        [
+            [0xbdbd9c, 0xb5b594], [0xc6bda5, 0xbdbda5], [0xbdbd9c, 0xc6c6ad], [0xd6cead, 0xc6bd9c],
+            [0xa59c7b, 0xbdb594], [0xcecead, 0xb5ad94], [0xc6c6a5, 0xdedebd], [0xcecead, 0xd6d6b5]
+        ],
+        [0x6b5a52, 0x4a4239]
+    )
+];
 export class unnamed67_8 {
     public absolute_x: number = 0;
     public absolute_y: number = 0;

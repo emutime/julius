@@ -39,7 +39,33 @@ import JOYSTICK_HAT_UP = joystick_hat_position.JOYSTICK_HAT_UP;
 import JOYSTICK_HAT_LEFT = joystick_hat_position.JOYSTICK_HAT_LEFT;
 import JOYSTICK_HAT_DOWN = joystick_hat_position.JOYSTICK_HAT_DOWN;
 import JOYSTICK_HAT_RIGHT = joystick_hat_position.JOYSTICK_HAT_RIGHT;
-import { mapping_action } from 'input/joystick';
+
+export const enum mapping_action {
+    MAPPING_ACTION_MOUSE_CURSOR_UP,
+    MAPPING_ACTION_MOUSE_CURSOR_LEFT,
+    MAPPING_ACTION_MOUSE_CURSOR_DOWN,
+    MAPPING_ACTION_MOUSE_CURSOR_RIGHT,
+    MAPPING_ACTION_FASTER_MOUSE_CURSOR_SPEED,
+    MAPPING_ACTION_SLOWER_MOUSE_CURSOR_SPEED,
+    MAPPING_ACTION_LEFT_MOUSE_BUTTON,
+    MAPPING_ACTION_RIGHT_MOUSE_BUTTON,
+    MAPPING_ACTION_SCROLL_WINDOW_UP,
+    MAPPING_ACTION_SCROLL_WINDOW_DOWN,
+    MAPPING_ACTION_SCROLL_MAP_UP,
+    MAPPING_ACTION_SCROLL_MAP_LEFT,
+    MAPPING_ACTION_SCROLL_MAP_DOWN,
+    MAPPING_ACTION_SCROLL_MAP_RIGHT,
+    MAPPING_ACTION_ROTATE_MAP_LEFT,
+    MAPPING_ACTION_ROTATE_MAP_RIGHT,
+    MAPPING_ACTION_INCREASE_GAME_SPEED,
+    MAPPING_ACTION_DECREASE_GAME_SPEED,
+    MAPPING_ACTION_TOGGLE_PAUSE,
+    MAPPING_ACTION_CYCLE_LEGION,
+    MAPPING_ACTION_SHOW_VIRTUAL_KEYBOARD,
+    MAPPING_ACTION_CYCLE_TOUCH_TYPE,
+    MAPPING_ACTION_RESET_MAPPING,
+    MAPPING_ACTION_MAX
+};
 import MAPPING_ACTION_MOUSE_CURSOR_UP = mapping_action.MAPPING_ACTION_MOUSE_CURSOR_UP;
 import MAPPING_ACTION_MOUSE_CURSOR_LEFT = mapping_action.MAPPING_ACTION_MOUSE_CURSOR_LEFT;
 import MAPPING_ACTION_MOUSE_CURSOR_DOWN = mapping_action.MAPPING_ACTION_MOUSE_CURSOR_DOWN;
@@ -139,76 +165,6 @@ import { scroll_arrow_left } from 'input/scroll';
 import { scroll_arrow_right } from 'input/scroll';
 import { scroll_arrow_up } from 'input/scroll';
 import { scroll_arrow_down } from 'input/scroll';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';;;;;;;;;;;;;;;;;;;;;;;;;;;
-import { abs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { abs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { acos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { acos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { asin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { asin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan2 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan2 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cosh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cosh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { exp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { exp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fabs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fabs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fmod } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fmod } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log10 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log10 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { pow } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { pow } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sinh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sinh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sqrt } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sqrt } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tanh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tanh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ceil } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ceil } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _chgsign } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _copysign } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { floor } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { floor } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { frexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { frexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _hypot } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ldexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ldexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { modf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { modf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _hypotf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fabsf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fabsf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sqrtf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sqrtf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';;
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stddef';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
-import { abs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strcmp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-import { strcmp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 export const enum joystick_trackball_x {
     JOYSTICK_TRACKBALL_X_POSITIVE = 0,
     JOYSTICK_TRACKBALL_X_NEGATIVE = 1,
@@ -223,10 +179,10 @@ export const enum direction {
     NUM_DIRECTIONS = 4,
 }
 export const enum input_state {
-    INPUT_STATE_IS_UP = undefined,
-    INPUT_STATE_WENT_DOWN = undefined,
-    INPUT_STATE_IS_DOWN = undefined,
-    INPUT_STATE_WENT_UP = undefined,
+    INPUT_STATE_IS_UP,
+    INPUT_STATE_WENT_DOWN,
+    INPUT_STATE_IS_DOWN,
+    INPUT_STATE_WENT_UP,
 }
 export class joystick_hat {
     public top: joystick_button = null;

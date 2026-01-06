@@ -1,4 +1,3 @@
-export const  = 1;
 export const MAX_SCENARIOS = 15;
 import { FILE_NAME_MAX } from 'core/file';
 import { dir_listing } from 'core/dir';
@@ -180,26 +179,26 @@ import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/Buil
 import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
 import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
 import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-let start_button: image_button = { 600, 440, 27, 27, IB_NORMAL, GROUP_SIDEBAR_BUTTONS, 56, button_start_scenario, button_none, 1, 0, 1};
-let toggle_minimap_button: generic_button = { 570, 87, 39, 28, button_toggle_minimap, button_none, 0, 0};
-let file_buttons: generic_button[] = new Array().fill({
-    { 18, 220, 252, 16, button_select_item, button_none, 0, 0},
-    { 18, 236, 252, 16, button_select_item, button_none, 1, 0},
-    { 18, 252, 252, 16, button_select_item, button_none, 2, 0},
-    { 18, 268, 252, 16, button_select_item, button_none, 3, 0},
-    { 18, 284, 252, 16, button_select_item, button_none, 4, 0},
-    { 18, 300, 252, 16, button_select_item, button_none, 5, 0},
-    { 18, 316, 252, 16, button_select_item, button_none, 6, 0},
-    { 18, 332, 252, 16, button_select_item, button_none, 7, 0},
-    { 18, 348, 252, 16, button_select_item, button_none, 8, 0},
-    { 18, 364, 252, 16, button_select_item, button_none, 9, 0},
-    { 18, 380, 252, 16, button_select_item, button_none, 10, 0},
-    { 18, 396, 252, 16, button_select_item, button_none, 11, 0},
-    { 18, 412, 252, 16, button_select_item, button_none, 12, 0},
-    { 18, 428, 252, 16, button_select_item, button_none, 13, 0},
-    { 18, 444, 252, 16, button_select_item, button_none, 14, 0},
-});
-let scrollbar: scrollbar_type = { 276, 210, 256, 260, MAX_SCENARIOS, on_scroll, 1, 8, 1};
+let start_button: image_button = new image_button(600, 440, 27, 27, IB_NORMAL, GROUP_SIDEBAR_BUTTONS, 56, button_start_scenario, button_none, 1, 0, 1);
+let toggle_minimap_button: generic_button = new generic_button(570, 87, 39, 28, button_toggle_minimap, button_none, 0, 0);
+let file_buttons: generic_button[] = [
+    new generic_button(18, 220, 252, 16, button_select_item, button_none, 0, 0),
+    new generic_button(18, 236, 252, 16, button_select_item, button_none, 1, 0),
+    new generic_button(18, 252, 252, 16, button_select_item, button_none, 2, 0),
+    new generic_button(18, 268, 252, 16, button_select_item, button_none, 3, 0),
+    new generic_button(18, 284, 252, 16, button_select_item, button_none, 4, 0),
+    new generic_button(18, 300, 252, 16, button_select_item, button_none, 5, 0),
+    new generic_button(18, 316, 252, 16, button_select_item, button_none, 6, 0),
+    new generic_button(18, 332, 252, 16, button_select_item, button_none, 7, 0),
+    new generic_button(18, 348, 252, 16, button_select_item, button_none, 8, 0),
+    new generic_button(18, 364, 252, 16, button_select_item, button_none, 9, 0),
+    new generic_button(18, 380, 252, 16, button_select_item, button_none, 10, 0),
+    new generic_button(18, 396, 252, 16, button_select_item, button_none, 11, 0),
+    new generic_button(18, 412, 252, 16, button_select_item, button_none, 12, 0),
+    new generic_button(18, 428, 252, 16, button_select_item, button_none, 13, 0),
+    new generic_button(18, 444, 252, 16, button_select_item, button_none, 14, 0),
+];
+let scrollbar: scrollbar_type = new scrollbar_type(276, 210, 256, 260, MAX_SCENARIOS, on_scroll, 1, 8, 1);
 export class unnamed61_8 {
     public focus_button_id: number = 0;
     public focus_toggle_button: number = 0;
@@ -416,12 +415,12 @@ function on_scroll() {
     window_invalidate();
 }
 export function window_cck_selection_show() {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_CCK_SELECTION,
         draw_background,
         draw_foreground,
         handle_input
-    };
+    );
     init();
     window_show(window);
 }

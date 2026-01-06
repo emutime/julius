@@ -165,25 +165,37 @@ import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.2610
 import { strcmp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 import { strcmp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-let scrollbar: scrollbar_type = {
-    580, ITEM_Y_OFFSET, ITEM_HEIGHT * NUM_VISIBLE_ITEMS, CHECKBOX_WIDTH, NUM_VISIBLE_ITEMS, on_scroll, 0, 4
-};
+let scrollbar: scrollbar_type = new scrollbar_type(580, ITEM_Y_OFFSET, ITEM_HEIGHT * NUM_VISIBLE_ITEMS, CHECKBOX_WIDTH, NUM_VISIBLE_ITEMS, on_scroll, 0, 4);
 export const enum type {
-    TYPE_NONE = undefined,
-    TYPE_SPACE = undefined,
-    TYPE_HEADER = undefined,
-    TYPE_CHECKBOX = undefined,
-    TYPE_SELECT = undefined,
-    TYPE_NUMERICAL_DESC = undefined,
-    TYPE_NUMERICAL_RANGE = undefined,
+    TYPE_NONE,
+    TYPE_SPACE,
+    TYPE_HEADER,
+    TYPE_CHECKBOX,
+    TYPE_SELECT,
+    TYPE_NUMERICAL_DESC,
+    TYPE_NUMERICAL_RANGE,
 }
+import TYPE_NONE = type.TYPE_NONE;
+import TYPE_SPACE = type.TYPE_SPACE;
+import TYPE_HEADER = type.TYPE_HEADER;
+import TYPE_CHECKBOX = type.TYPE_CHECKBOX;
+import TYPE_SELECT = type.TYPE_SELECT;
+import TYPE_NUMERICAL_DESC = type.TYPE_NUMERICAL_DESC;
+import TYPE_NUMERICAL_RANGE = type.TYPE_NUMERICAL_RANGE;
+
 export const enum SELECT {
-    SELECT_LANGUAGE = undefined,
+    SELECT_LANGUAGE,
 }
+import SELECT_LANGUAGE = SELECT.SELECT_LANGUAGE;
+
 export const enum range {
-    RANGE_DISPLAY_SCALE = undefined,
-    RANGE_CURSOR_SCALE = undefined,
+    RANGE_DISPLAY_SCALE,
+    RANGE_CURSOR_SCALE,
 }
+import RANGE_DISPLAY_SCALE = range.RANGE_DISPLAY_SCALE;
+import RANGE_CURSOR_SCALE = range.RANGE_CURSOR_SCALE;
+import { Ref } from '../../ext/crt';
+
 export class numerical_range_widget {
     public width_blocks: number = 0;
     public min: number = 0;
@@ -212,53 +224,53 @@ export class config_widget {
         args.length >= 5 && (this.enabled = args[4]);
     }
 }
-let all_widgets: config_widget[] = new Array(MAX_WIDGETS).fill({
-    { TYPE_SELECT, SELECT_LANGUAGE, TR_CONFIG_LANGUAGE_LABEL, display_text_language },
-    { TYPE_NUMERICAL_DESC, RANGE_DISPLAY_SCALE, TR_CONFIG_DISPLAY_SCALE },
-    { TYPE_NUMERICAL_RANGE, RANGE_DISPLAY_SCALE, 0, display_text_display_scale },
-    { TYPE_NUMERICAL_DESC, RANGE_CURSOR_SCALE, TR_CONFIG_CURSOR_SCALE },
-    { TYPE_NUMERICAL_RANGE, RANGE_CURSOR_SCALE, 0, display_text_cursor_scale },
-    { TYPE_SPACE },
-    { TYPE_HEADER, 0, TR_CONFIG_HEADER_UI_CHANGES },
-    { TYPE_CHECKBOX, CONFIG_UI_SHOW_INTRO_VIDEO, TR_CONFIG_SHOW_INTRO_VIDEO },
-    { TYPE_CHECKBOX, CONFIG_UI_SIDEBAR_INFO, TR_CONFIG_SIDEBAR_INFO },
-    { TYPE_CHECKBOX, CONFIG_UI_SMOOTH_SCROLLING, TR_CONFIG_SMOOTH_SCROLLING },
-    { TYPE_CHECKBOX, CONFIG_UI_DISABLE_MOUSE_EDGE_SCROLLING, TR_CONFIG_DISABLE_MOUSE_EDGE_SCROLLING },
-    { TYPE_CHECKBOX, CONFIG_UI_DISABLE_RIGHT_CLICK_MAP_DRAG, TR_CONFIG_DISABLE_RIGHT_CLICK_MAP_DRAG },
-    { TYPE_CHECKBOX, CONFIG_UI_VISUAL_FEEDBACK_ON_DELETE, TR_CONFIG_VISUAL_FEEDBACK_ON_DELETE },
-    { TYPE_CHECKBOX, CONFIG_UI_ALLOW_CYCLING_TEMPLES, TR_CONFIG_ALLOW_CYCLING_TEMPLES },
-    { TYPE_CHECKBOX, CONFIG_UI_SHOW_WATER_STRUCTURE_RANGE, TR_CONFIG_SHOW_WATER_STRUCTURE_RANGE },
-    { TYPE_CHECKBOX, CONFIG_UI_SHOW_CONSTRUCTION_SIZE, TR_CONFIG_SHOW_CONSTRUCTION_SIZE },
-    { TYPE_CHECKBOX, CONFIG_UI_HIGHLIGHT_LEGIONS, TR_CONFIG_HIGHLIGHT_LEGIONS },
-    { TYPE_CHECKBOX, CONFIG_UI_SHOW_MILITARY_SIDEBAR, TR_CONFIG_SHOW_MILITARY_SIDEBAR },
-    { TYPE_SPACE },
-    { TYPE_HEADER, 0, TR_CONFIG_HEADER_GAMEPLAY_CHANGES },
-    { TYPE_CHECKBOX, CONFIG_GP_FIX_IMMIGRATION_BUG, TR_CONFIG_FIX_IMMIGRATION_BUG },
-    { TYPE_CHECKBOX, CONFIG_GP_FIX_100_YEAR_GHOSTS, TR_CONFIG_FIX_100_YEAR_GHOSTS }
-});
-let select_buttons: generic_button[] = new Array().fill({
-    { 150, 0, 200, 24, button_language_select, button_none },
-});
-let scale_ranges: numerical_range_widget[] = new Array().fill({
-    { 30, 50, 500, 5, 0},
-    { 30, 100, 200, 50, 0}
-});
-let bottom_buttons: generic_button[] = new Array(NUM_BOTTOM_BUTTONS).fill({
-    { 20, 430, 180, 30, button_hotkeys, button_none },
-    { 230, 430, 180, 30, button_reset_defaults, button_none },
-    { 415, 430, 100, 30, button_close, button_none, 0},
-    { 520, 430, 100, 30, button_close, button_none, 1},
-});
-let bottom_button_texts: translation_key[] = new Array().fill({
+let all_widgets: config_widget[] = [
+    new config_widget(TYPE_SELECT, SELECT_LANGUAGE, TR_CONFIG_LANGUAGE_LABEL, display_text_language, 0),
+    new config_widget(TYPE_NUMERICAL_DESC, RANGE_DISPLAY_SCALE, TR_CONFIG_DISPLAY_SCALE, 0, 0),
+    new config_widget(TYPE_NUMERICAL_RANGE, RANGE_DISPLAY_SCALE, 0, display_text_display_scale, 0),
+    new config_widget(TYPE_NUMERICAL_DESC, RANGE_CURSOR_SCALE, TR_CONFIG_CURSOR_SCALE, 0, 0),
+    new config_widget(TYPE_NUMERICAL_RANGE, RANGE_CURSOR_SCALE, 0, display_text_cursor_scale, 0),
+    new config_widget(TYPE_SPACE, 0, 0, 0, 0),
+    new config_widget(TYPE_HEADER, 0, TR_CONFIG_HEADER_UI_CHANGES, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_SHOW_INTRO_VIDEO, TR_CONFIG_SHOW_INTRO_VIDEO, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_SIDEBAR_INFO, TR_CONFIG_SIDEBAR_INFO, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_SMOOTH_SCROLLING, TR_CONFIG_SMOOTH_SCROLLING, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_DISABLE_MOUSE_EDGE_SCROLLING, TR_CONFIG_DISABLE_MOUSE_EDGE_SCROLLING, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_DISABLE_RIGHT_CLICK_MAP_DRAG, TR_CONFIG_DISABLE_RIGHT_CLICK_MAP_DRAG, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_VISUAL_FEEDBACK_ON_DELETE, TR_CONFIG_VISUAL_FEEDBACK_ON_DELETE, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_ALLOW_CYCLING_TEMPLES, TR_CONFIG_ALLOW_CYCLING_TEMPLES, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_SHOW_WATER_STRUCTURE_RANGE, TR_CONFIG_SHOW_WATER_STRUCTURE_RANGE, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_SHOW_CONSTRUCTION_SIZE, TR_CONFIG_SHOW_CONSTRUCTION_SIZE, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_HIGHLIGHT_LEGIONS, TR_CONFIG_HIGHLIGHT_LEGIONS, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_UI_SHOW_MILITARY_SIDEBAR, TR_CONFIG_SHOW_MILITARY_SIDEBAR, 0, 0),
+    new config_widget(TYPE_SPACE, 0, 0, 0, 0),
+    new config_widget(TYPE_HEADER, 0, TR_CONFIG_HEADER_GAMEPLAY_CHANGES, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_GP_FIX_IMMIGRATION_BUG, TR_CONFIG_FIX_IMMIGRATION_BUG, 0, 0),
+    new config_widget(TYPE_CHECKBOX, CONFIG_GP_FIX_100_YEAR_GHOSTS, TR_CONFIG_FIX_100_YEAR_GHOSTS, 0, 0)
+];
+let select_buttons: generic_button[] = [
+    new generic_button(150, 0, 200, 24, button_language_select, button_none)
+];
+let scale_ranges: numerical_range_widget[] = [
+    new numerical_range_widget(30, 50, 500, 5, 0),
+    new numerical_range_widget(30, 100, 200, 50, 0)
+];
+let bottom_buttons: generic_button[] = [
+    new generic_button(20, 430, 180, 30, button_hotkeys, button_none, 0, 0),
+    new generic_button(230, 430, 180, 30, button_reset_defaults, button_none, 0, 0),
+    new generic_button(415, 430, 100, 30, button_close, button_none, 0, 0),
+    new generic_button(520, 430, 100, 30, button_close, button_none, 1, 0),
+];
+let bottom_button_texts: translation_key[] = [
     TR_BUTTON_CONFIGURE_HOTKEYS,
     TR_BUTTON_RESET_DEFAULTS,
     TR_BUTTON_CANCEL,
     TR_BUTTON_OK
-});
+];
 class unnamed152_5 {
     public original_value: number = 0;
     public new_value: number = 0;
-    public change_action: int ( = null;
+    public change_action: (key: config_key) => number = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.original_value = args[0]);
         args.length >= 2 && (this.new_value = args[1]);
@@ -266,9 +278,9 @@ class unnamed152_5 {
     }
 }
 class unnamed157_5 {
-    public original_value: char[] = new Array(CONFIG_STRING_VALUE_MAX).fill(null);
-    public new_value: char[] = new Array(CONFIG_STRING_VALUE_MAX).fill(null);
-    public change_action: int ( = null;
+    public original_value: number[] = new Array(CONFIG_STRING_VALUE_MAX).fill(null);
+    public new_value: number[] = new Array(CONFIG_STRING_VALUE_MAX).fill(null);
+    public change_action: (key: config_key) => number = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.original_value = args[0]);
         args.length >= 2 && (this.new_value = args[1]);
@@ -422,8 +434,8 @@ function update_scale() {
     if (system_can_scale_display(min_scale, max_scale)) {
         scale_ranges[RANGE_DISPLAY_SCALE].min = min_scale;
         scale_ranges[RANGE_DISPLAY_SCALE].max = max_scale;
-        if (* scale_ranges[RANGE_DISPLAY_SCALE].value > max_scale) {
-            * scale_ranges[RANGE_DISPLAY_SCALE].value = max_scale;
+        if (scale_ranges[RANGE_DISPLAY_SCALE].value > max_scale) {
+            scale_ranges[RANGE_DISPLAY_SCALE].value = max_scale;
         }
     }
 }
@@ -487,11 +499,11 @@ function is_checkbox(m: mouse, x: number, y: number) {
     }
     return 0;
 }
-function checkbox_handle_mouse(m: mouse, x: number, y: number, value_key: number, focus: number) {
+function checkbox_handle_mouse(m: mouse, x: number, y: number, value_key: number, focus: Ref<number>) {
     if (!is_checkbox(m, x, y)) {
         return 0;
     }
-    * focus = 1;
+    focus.v = 1;
     if (m.left.went_up) {
         toggle_switch(value_key);
         return 1;
@@ -682,12 +694,12 @@ function button_close(save: number, param2: number) {
     }
 }
 export function window_config_show() {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_CONFIG,
         draw_background,
         draw_foreground,
         handle_input
-    };
+    );
     init();
     window_show(window);
 }

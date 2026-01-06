@@ -31,7 +31,7 @@ export class lang_message_image {
     }
 }
 export class lang_message_string {
-    public text: number = 0;
+    public text: Uint8Array;
     public x: number = 0;
     public y: number = 0;
     public constructor(...args: any[]) {

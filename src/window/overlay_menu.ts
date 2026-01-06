@@ -4,14 +4,22 @@ export const MENU_X_OFFSET = 170;
 export const MENU_Y_OFFSET = 72;
 export const MENU_ITEM_HEIGHT = 24;
 export const MAX_BUTTONS = 8;
-;
-import { buffer } from 'core/buffer';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
 import { city_view_get_viewport } from 'city/view';
-import { time_millis } from 'core/time';
-import { time_get_millis } from 'core/time';
-import { overlay } from 'game/state';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { time_get_millis, time_millis } from 'core/time';
+import { game_state_set_overlay, overlay } from 'game/state';
+import { button_none } from 'graphics/button';
+import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { image_draw } from 'graphics/image';
+import { lang_text_draw_centered } from 'graphics/lang_text';
+import { label_draw } from 'graphics/panel';
+import { window_id, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse } from 'input/mouse';
+import { window_city_draw, window_city_draw_panels, window_city_show } from 'window/city';
 import OVERLAY_NONE = overlay.OVERLAY_NONE;
 import OVERLAY_WATER = overlay.OVERLAY_WATER;
 import OVERLAY_RELIGION = overlay.OVERLAY_RELIGION;
@@ -36,81 +44,43 @@ import OVERLAY_FOOD_STOCKS = overlay.OVERLAY_FOOD_STOCKS;
 import OVERLAY_DESIRABILITY = overlay.OVERLAY_DESIRABILITY;
 import OVERLAY_NATIVE = overlay.OVERLAY_NATIVE;
 import OVERLAY_PROBLEMS = overlay.OVERLAY_PROBLEMS;
-import { game_state_set_overlay } from 'game/state';
-import { button_none } from 'graphics/button';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_BULLET = group_terrain.GROUP_BULLET;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { label_draw } from 'graphics/panel';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_OVERLAY_MENU = window_id.WINDOW_OVERLAY_MENU;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-import { window_city_draw_panels } from 'window/city';
-import { window_city_draw } from 'window/city';
-import { window_city_show } from 'window/city';
-let menu_buttons: generic_button[] = new Array().fill({
-    { 0, 0, 160, 24, button_menu_item, button_none, 0, 0},
-    { 0, 24, 160, 24, button_menu_item, button_none, 1, 0},
-    { 0, 48, 160, 24, button_menu_item, button_none, 2, 0},
-    { 0, 72, 160, 24, button_menu_item, button_none, 3, 0},
-    { 0, 96, 160, 24, button_menu_item, button_none, 4, 0},
-    { 0, 120, 160, 24, button_menu_item, button_none, 5, 0},
-    { 0, 144, 160, 24, button_menu_item, button_none, 6, 0},
-    { 0, 168, 160, 24, button_menu_item, button_none, 7, 0},
-    { 0, 192, 160, 24, button_menu_item, button_none, 8, 0},
-    { 0, 216, 160, 24, button_menu_item, button_none, 9, 0},
-});
-let submenu_buttons: generic_button[] = new Array().fill({
-    { 0, 0, 160, 24, button_submenu_item, button_none, 0, 0},
-    { 0, 24, 160, 24, button_submenu_item, button_none, 1, 0},
-    { 0, 48, 160, 24, button_submenu_item, button_none, 2, 0},
-    { 0, 72, 160, 24, button_submenu_item, button_none, 3, 0},
-    { 0, 96, 160, 24, button_submenu_item, button_none, 4, 0},
-    { 0, 120, 160, 24, button_submenu_item, button_none, 5, 0},
-    { 0, 144, 160, 24, button_submenu_item, button_none, 6, 0},
-    { 0, 168, 160, 24, button_submenu_item, button_none, 7, 0},
-    { 0, 192, 160, 24, button_submenu_item, button_none, 8, 0},
-    { 0, 216, 160, 24, button_submenu_item, button_none, 9, 0},
-});
-let MENU_ID_TO_OVERLAY: number[] = new Array(MAX_BUTTONS).fill({ OVERLAY_NONE, OVERLAY_WATER, 1, 3, 5, 6, 7, OVERLAY_RELIGION });
-let MENU_ID_TO_SUBMENU_ID: number[] = new Array(MAX_BUTTONS).fill({ 0, 0, 1, 2, 3, 4, 5, 0});
-let SUBMENU_ID_TO_OVERLAY: number[] = new Array(6).fill({
-    { 0},
-    { OVERLAY_FIRE, OVERLAY_DAMAGE, OVERLAY_CRIME, OVERLAY_NATIVE, OVERLAY_PROBLEMS, 0},
-    { OVERLAY_ENTERTAINMENT, OVERLAY_THEATER, OVERLAY_AMPHITHEATER, OVERLAY_COLOSSEUM, OVERLAY_HIPPODROME, 0},
-    { OVERLAY_EDUCATION, OVERLAY_SCHOOL, OVERLAY_LIBRARY, OVERLAY_ACADEMY, 0},
-    { OVERLAY_BARBER, OVERLAY_BATHHOUSE, OVERLAY_CLINIC, OVERLAY_HOSPITAL, 0},
-    { OVERLAY_TAX_INCOME, OVERLAY_FOOD_STOCKS, OVERLAY_DESIRABILITY, 0},
-});
+let menu_buttons: generic_button[] = [
+    new generic_button(0, 0, 160, 24, button_menu_item, button_none, 0, 0),
+    new generic_button(0, 24, 160, 24, button_menu_item, button_none, 1, 0),
+    new generic_button(0, 48, 160, 24, button_menu_item, button_none, 2, 0),
+    new generic_button(0, 72, 160, 24, button_menu_item, button_none, 3, 0),
+    new generic_button(0, 96, 160, 24, button_menu_item, button_none, 4, 0),
+    new generic_button(0, 120, 160, 24, button_menu_item, button_none, 5, 0),
+    new generic_button(0, 144, 160, 24, button_menu_item, button_none, 6, 0),
+    new generic_button(0, 168, 160, 24, button_menu_item, button_none, 7, 0),
+    new generic_button(0, 192, 160, 24, button_menu_item, button_none, 8, 0),
+    new generic_button(0, 216, 160, 24, button_menu_item, button_none, 9, 0),
+];
+let submenu_buttons: generic_button[] = [
+    new generic_button(0, 0, 160, 24, button_submenu_item, button_none, 0, 0),
+    new generic_button(0, 24, 160, 24, button_submenu_item, button_none, 1, 0),
+    new generic_button(0, 48, 160, 24, button_submenu_item, button_none, 2, 0),
+    new generic_button(0, 72, 160, 24, button_submenu_item, button_none, 3, 0),
+    new generic_button(0, 96, 160, 24, button_submenu_item, button_none, 4, 0),
+    new generic_button(0, 120, 160, 24, button_submenu_item, button_none, 5, 0),
+    new generic_button(0, 144, 160, 24, button_submenu_item, button_none, 6, 0),
+    new generic_button(0, 168, 160, 24, button_submenu_item, button_none, 7, 0),
+    new generic_button(0, 192, 160, 24, button_submenu_item, button_none, 8, 0),
+    new generic_button(0, 216, 160, 24, button_submenu_item, button_none, 9, 0),
+];
+let MENU_ID_TO_OVERLAY: number[] = [OVERLAY_NONE, OVERLAY_WATER, 1, 3, 5, 6, 7, OVERLAY_RELIGION];
+let MENU_ID_TO_SUBMENU_ID: number[] = [0, 0, 1, 2, 3, 4, 5,];
+let SUBMENU_ID_TO_OVERLAY: number[][] = [
+    [0],
+    [OVERLAY_FIRE, OVERLAY_DAMAGE, OVERLAY_CRIME, OVERLAY_NATIVE, OVERLAY_PROBLEMS, 0],
+    [OVERLAY_ENTERTAINMENT, OVERLAY_THEATER, OVERLAY_AMPHITHEATER, OVERLAY_COLOSSEUM, OVERLAY_HIPPODROME, 0],
+    [OVERLAY_EDUCATION, OVERLAY_SCHOOL, OVERLAY_LIBRARY, OVERLAY_ACADEMY, 0],
+    [OVERLAY_BARBER, OVERLAY_BATHHOUSE, OVERLAY_CLINIC, OVERLAY_HOSPITAL, 0],
+    [OVERLAY_TAX_INCOME, OVERLAY_FOOD_STOCKS, OVERLAY_DESIRABILITY, 0],
+];
 export class unnamed62_8 {
     public selected_menu: number = 0;
     public selected_submenu: number = 0;
@@ -200,14 +170,14 @@ function click_outside_menu(m: mouse, x_offset: number) {
 }
 function handle_input(m: mouse, h: hotkeys) {
     let x_offset: number = get_sidebar_x_offset();
-    let handled: number = 0;
-    handled |= generic_buttons_handle_mouse(m, x_offset - MENU_X_OFFSET, MENU_Y_OFFSET,
+    let handled: boolean = false;
+    handled = handled || generic_buttons_handle_mouse(m, x_offset - MENU_X_OFFSET, MENU_Y_OFFSET,
         menu_buttons, MAX_BUTTONS, data.menu_focus_button_id)
     if (!data.keep_submenu_open) {
         handle_submenu_focus();
     }
     if (data.selected_submenu) {
-        handled |= generic_buttons_handle_mouse(
+        handled = handled || generic_buttons_handle_mouse(
             m, x_offset - SUBMENU_X_OFFSET, MENU_Y_OFFSET + MENU_ITEM_HEIGHT * data.selected_menu,
             submenu_buttons, data.num_submenu_items, data.submenu_focus_button_id)
     }
@@ -246,12 +216,12 @@ function button_submenu_item(index: number, param2: number) {
     window_city_show();
 }
 export function window_overlay_menu_show() {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_OVERLAY_MENU,
         draw_background,
         draw_foreground,
         handle_input
-    };
+    );
     init();
     window_show(window);
 }

@@ -234,7 +234,7 @@ function load_campaign_mission(mission_id: number) {
     city_data_init_campaign_mission();
     return 1;
 }
-function start_scenario(scenario_name: number, scenario_file: string) {
+function start_scenario(scenario_name: number[], scenario_file: string) {
     let mission: number = scenario_campaign_mission();
     let rank: number = scenario_campaign_rank();
     map_bookmarks_clear();
@@ -268,7 +268,7 @@ function get_scenario_filename(scenario_name: number, decomposed: number) {
     }
     return filename;
 }
-export function game_file_start_scenario_by_name(scenario_name: number) {
+export function game_file_start_scenario_by_name(scenario_name: number[]) {
     if (start_scenario(scenario_name, get_scenario_filename(scenario_name, 0))) {
         return 1;
     } else {

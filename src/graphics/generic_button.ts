@@ -1,19 +1,14 @@
 
 import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
 import { mouse } from 'input/mouse';
+import { Ref } from '../../ext/crt';
 export class generic_button {
     public x: number = 0;
     public y: number = 0;
     public width: number = 0;
     public height: number = 0;
-    public left_click_handler: void ( = null;
-    public right_click_handler: void ( = null;
+    public left_click_handler: (parameter1: number, parameter2: number) => void = null;
+    public right_click_handler: (parameter1: number, parameter2: number) => void = null;
     public parameter1: number = 0;
     public parameter2: number = 0;
     public constructor(...args: any[]) {
@@ -27,7 +22,7 @@ export class generic_button {
         args.length >= 8 && (this.parameter2 = args[7]);
     }
 }
-function get_button(m: mouse, x: number, y: number, buttons: generic_button, num_buttons: number) {
+function get_button(m: mouse, x: number, y: number, buttons: generic_button[], num_buttons: number) {
     for (let i: number = 0; i < num_buttons; i++) {
         if (x + buttons[i].x <= m.x &&
             x + buttons[i].x + buttons[i].width > m.x &&
@@ -38,13 +33,13 @@ function get_button(m: mouse, x: number, y: number, buttons: generic_button, num
     }
     return 0;
 }
-export function generic_buttons_handle_mouse(m: mouse, x: number, y: number, buttons: generic_button, num_buttons: number, focus_button_id: number) {
+export function generic_buttons_handle_mouse(m: mouse, x: number, y: number, buttons: generic_button[], num_buttons: number, focus_button_id: Ref<number>) {
     let button_id: number = get_button(m, x, y, buttons, num_buttons);
     if (focus_button_id) {
-        * focus_button_id = button_id;
+        focus_button_id.v = button_id;
     }
     if (!button_id) {
-        return 0;
+        return false;
     }
     let button: generic_button = buttons[button_id - 1];
     if (m.left.went_up) {
@@ -54,6 +49,6 @@ export function generic_buttons_handle_mouse(m: mouse, x: number, y: number, but
         button.right_click_handler(button.parameter1, button.parameter2);
         return button.right_click_handler != button_none;
     } else {
-        return 0;
+        return false;
     }
 }

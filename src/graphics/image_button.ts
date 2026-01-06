@@ -1,17 +1,18 @@
 export const PRESSED_EFFECT_MILLIS = 100;
 export const PRESSED_REPEAT_MILLIS = 50;
 export const PRESSED_REPEAT_INITIAL_MILLIS = 300;
+import { image_group } from 'core/image';
+import { time_get_millis, time_millis } from 'core/time';
 import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { time_get_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_get } from 'input/mouse';
-import { ib } from 'graphics/image_button';
+import { image_draw } from 'graphics/image';
+import { mouse, mouse_get } from 'input/mouse';
+import { sound_effect, sound_effect_play } from 'sound/effect';
+import { Ref } from '../../ext/crt';
+export const enum ib {
+    IB_NORMAL = 4,
+    IB_SCROLL = 6,
+    IB_BUILD = 2
+};
 import IB_NORMAL = ib.IB_NORMAL;
 import IB_SCROLL = ib.IB_SCROLL;
 import IB_BUILD = ib.IB_BUILD;
@@ -23,13 +24,13 @@ export class image_button {
     public button_type: number = 0;
     public image_collection: number = 0;
     public image_offset: number = 0;
-    public left_click_handler: void ( = null;
-    public right_click_handler: void ( = null;
+    public left_click_handler: (parameter1: number, parameter2: number) => void = null;
+    public right_click_handler: (parameter1: number, parameter2: number) => void = null;
     public parameter1: number = 0;
     public parameter2: number = 0;
-    public enabled: char = null;
-    public pressed: char = null;
-    public focused: char = null;
+    public enabled: number = null;
+    public pressed: number = null;
+    public focused: number = null;
     public pressed_since: time_millis = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.x_offset = args[0]);
@@ -49,18 +50,9 @@ export class image_button {
         args.length >= 15 && (this.pressed_since = args[14]);
     }
 }
-import { language_type } from 'core/locale';;
-import { encoding_type } from 'core/encoding';
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { sound_effect } from 'sound/effect';
+;
 import SOUND_EFFECT_ICON = sound_effect.SOUND_EFFECT_ICON;
-import { sound_effect_play } from 'sound/effect';
-function fade_pressed_effect(buttons: image_button, num_buttons: number) {
+function fade_pressed_effect(buttons: image_button[], num_buttons: number) {
     let current_time: time_millis = time_get_millis();
     for (let i: number = 0; i < num_buttons; i++) {
         let btn: image_button = buttons[i];
@@ -75,7 +67,7 @@ function fade_pressed_effect(buttons: image_button, num_buttons: number) {
         }
     }
 }
-function fade_pressed_effect_build(buttons: image_button, num_buttons: number) {
+function fade_pressed_effect_build(buttons: image_button[], num_buttons: number) {
     for (let i: number = 0; i < num_buttons; i++) {
         let btn: image_button = buttons[i];
         if (btn.pressed && btn.button_type == IB_BUILD) {
@@ -83,7 +75,7 @@ function fade_pressed_effect_build(buttons: image_button, num_buttons: number) {
         }
     }
 }
-export function image_buttons_draw(x: number, y: number, buttons: image_button, num_buttons: number) {
+export function image_buttons_draw(x: number, y: number, buttons: image_button[], num_buttons: number) {
     fade_pressed_effect(buttons, num_buttons);
     for (let i: number = 0; i < num_buttons; i++) {
         let btn: image_button = buttons[i];
@@ -109,12 +101,12 @@ function should_be_pressed(btn: image_button, m: mouse) {
     }
     return 0;
 }
-export function image_buttons_handle_mouse(m: mouse, x: number, y: number, buttons: image_button, num_buttons: number, focus_button_id: number) {
+export function image_buttons_handle_mouse(m: mouse, x: number, y: number, buttons: image_button[], num_buttons: number, focus_button_id: Ref<number>) {
     fade_pressed_effect(buttons, num_buttons);
     fade_pressed_effect_build(buttons, num_buttons);
     let hit_button: image_button = null;
     if (focus_button_id) {
-        * focus_button_id = 0;
+        focus_button_id.v = 0;
     }
     for (let i: number = 0; i < num_buttons; i++) {
         let btn: image_button = buttons[i];
@@ -126,7 +118,7 @@ export function image_buttons_handle_mouse(m: mouse, x: number, y: number, butto
             y + btn.y_offset <= m.y &&
             y + btn.y_offset + btn.height > m.y) {
             if (focus_button_id) {
-                * focus_button_id = i + 1;
+                focus_button_id.v = i + 1;
             }
             if (btn.enabled) {
                 btn.focused = 2;

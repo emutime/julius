@@ -9,12 +9,13 @@ import { group_terrain } from 'core/image_group';
 import { group_editor } from 'core/image_group_editor';
 import { map_building_at, map_building_set } from 'map/building';
 import { map_building_tiles_remove } from 'map/building_tiles';
-import { GRID, map_grid_delta, map_grid_get_area, map_grid_offset } from 'map/grid';
+import { map_grid_delta, map_grid_get_area, map_grid_offset } from 'map/grid';
 import { map_image_at, map_image_set } from 'map/image';
 import { map_property_clear_all_native_land, map_property_mark_native_land } from 'map/property';
 import { map_random_get } from 'map/random';
 import { map_terrain_is, terrain } from 'map/terrain';
 import { scenario_building_image_native_crops, scenario_building_image_native_hut, scenario_building_image_native_meeting } from 'scenario/building';
+import { Ref } from '../../ext/crt';
 import { map_data_t } from './data';
 import BUILDING_MISSION_POST = building_type.BUILDING_MISSION_POST;
 import BUILDING_NATIVE_HUT = building_type.BUILDING_NATIVE_HUT;
@@ -26,20 +27,17 @@ import GROUP_BUILDING_NATIVE = group_terrain.GROUP_BUILDING_NATIVE;
 import GROUP_EDITOR_BUILDING_CROPS = group_editor.GROUP_EDITOR_BUILDING_CROPS;
 import GROUP_EDITOR_BUILDING_NATIVE = group_editor.GROUP_EDITOR_BUILDING_NATIVE;
 export let map_data: map_data_t = new map_data_t();
-import GRID_SIZE = GRID.GRID_SIZE;
 import TERRAIN_BUILDING = terrain.TERRAIN_BUILDING;
-import TERRAIN_WALL = terrain.TERRAIN_WALL;
-import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 function mark_native_land(x: number, y: number, size: number, radius: number) {
-    let xMinRef: { value: number } = { value: 0 };
-    let yMinRef: { value: number } = { value: 0 };
-    let xMaxRef: { value: number } = { value: 0 };
-    let yMaxRef: { value: number } = { value: 0 };
+    let xMinRef: Ref<number> = new Ref(0);
+    let yMinRef: Ref<number> = new Ref(0);
+    let xMaxRef: Ref<number> = new Ref(0);
+    let yMaxRef: Ref<number> = new Ref(0);
     map_grid_get_area(x, y, size, radius, xMinRef, yMinRef, xMaxRef, yMaxRef);
-    let x_min: number = xMinRef.value;
-    let y_min: number = yMinRef.value;
-    let x_max: number = xMaxRef.value;
-    let y_max: number = yMaxRef.value;
+    let x_min: number = xMinRef.v;
+    let y_min: number = yMinRef.v;
+    let x_max: number = xMaxRef.v;
+    let y_max: number = yMaxRef.v;
     for (let yy: number = y_min; yy <= y_max; yy++) {
         for (let xx: number = x_min; xx <= x_max; xx++) {
             map_property_mark_native_land(map_grid_offset(xx, yy));
@@ -47,15 +45,15 @@ function mark_native_land(x: number, y: number, size: number, radius: number) {
     }
 }
 function has_building_on_native_land(x: number, y: number, size: number, radius: number) {
-    let xMinRef: { value: number } = { value: 0 };
-    let yMinRef: { value: number } = { value: 0 };
-    let xMaxRef: { value: number } = { value: 0 };
-    let yMaxRef: { value: number } = { value: 0 };
+    let xMinRef: Ref<number> = new Ref(0);
+    let yMinRef: Ref<number> = new Ref(0);
+    let xMaxRef: Ref<number> = new Ref(0);
+    let yMaxRef: Ref<number> = new Ref(0);
     map_grid_get_area(x, y, size, radius, xMinRef, yMinRef, xMaxRef, yMaxRef);
-    let x_min: number = xMinRef.value;
-    let y_min: number = yMinRef.value;
-    let x_max: number = xMaxRef.value;
-    let y_max: number = yMaxRef.value;
+    let x_min: number = xMinRef.v;
+    let y_min: number = yMinRef.v;
+    let x_max: number = xMaxRef.v;
+    let y_max: number = yMaxRef.v;
     for (let yy: number = y_min; yy <= y_max; yy++) {
         for (let xx: number = x_min; xx <= x_max; xx++) {
             let building_id: number = map_building_at(map_grid_offset(xx, yy));
@@ -84,7 +82,7 @@ function determine_meeting_center() {
     if (total_meetings <= 0) {
         return;
     }
-    let meetings: number = building_list_small_items();
+    let meetings: number[] = building_list_small_items();
     for (let i: number = 1; i < MAX_BUILDINGS; i++) {
         let b: building = building_get(i);
         if (b.state == BUILDING_STATE_IN_USE && b.type == BUILDING_NATIVE_HUT) {

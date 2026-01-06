@@ -6,7 +6,7 @@ import { BLOCK_SIZE } from 'graphics/panel';
 import GROUP_BORDERED_BUTTON = group_terrain.GROUP_BORDERED_BUTTON;
 export function button_none(param1: number, param2: number) {
 }
-export function button_border_draw(x: number, y: number, width_pixels: number, height_pixels: number, has_focus: number) {
+export function button_border_draw(x: number, y: number, width_pixels: number, height_pixels: number, has_focus: boolean) {
     let width_blocks: number = width_pixels / BLOCK_SIZE;
     if (width_pixels % BLOCK_SIZE) {
         width_blocks++;

@@ -114,7 +114,7 @@ export function city_warning_get(id: number) {
     if (warnings[id].in_use) {
         return warnings[id].text;
     }
-    return 0;
+    return null;
 }
 export function city_warning_clear_all() {
     for (let i: number = 0; i < MAX_WARNINGS; i++) {

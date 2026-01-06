@@ -189,7 +189,7 @@ export function building_destroy_last_placed() {
         }
     }
     if (last_building) {
-        city_message_post(1, MESSAGE_ROAD_TO_ROME_BLOCKED, 0, last_building.grid_offset);
+        city_message_post(true, MESSAGE_ROAD_TO_ROME_BLOCKED, 0, last_building.grid_offset);
         game_undo_disable();
         building_destroy_by_collapse(last_building);
         map_routing_update_land();

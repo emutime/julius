@@ -1,63 +1,28 @@
 export const MAX_RANK = 10;
-import { victory_state } from 'city/victory';
-import VICTORY_STATE_WON = victory_state.VICTORY_STATE_WON;
-import { city_victory_reset } from 'city/victory';
-import { city_victory_state } from 'city/victory';
-import { city_victory_continue_governing } from 'city/victory';
+import { city_victory_continue_governing, city_victory_reset, city_victory_state, victory_state } from 'city/victory';
 import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';;
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
 import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_in_dialog, graphics_reset_dialog } from 'graphics/graphics';
+import { lang_text_draw_centered, lang_text_draw_multiline } from 'graphics/lang_text';
+import { large_label_draw, outer_panel_draw } from 'graphics/panel';
+import { text_draw_centered } from 'graphics/text';
+import { window_id, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { scenario_campaign_rank, scenario_is_custom, scenario_player_name, scenario_property_player_rank } from 'scenario/property';
+import { sound_music_update } from 'sound/music';
+import { window_city_show } from 'window/city';
+import VICTORY_STATE_WON = victory_state.VICTORY_STATE_WON;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { lang_text_draw_multiline } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { large_label_draw } from 'graphics/panel';
-import { text_draw_centered } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_VICTORY_DIALOG = window_id.WINDOW_VICTORY_DIALOG;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { scenario_climate } from 'scenario/property';
-import { scenario_is_custom } from 'scenario/property';
-import { scenario_campaign_rank } from 'scenario/property';
-import { scenario_player_name } from 'scenario/property';
-import { scenario_property_player_rank } from 'scenario/property';
-import { sound_music_update } from 'sound/music';
-import { window_city_show } from 'window/city';
-let victory_buttons: generic_button[] = new Array().fill({
-    { 32, 112, 480, 20, button_accept, button_none, 0, 0},
-    { 32, 144, 480, 20, button_continue_governing, button_none, 24, 0},
-    { 32, 176, 480, 20, button_continue_governing, button_none, 60, 0},
-});
+let victory_buttons: generic_button[] = [
+    new generic_button(32, 112, 480, 20, button_accept, button_none, 0, 0),
+    new generic_button(32, 144, 480, 20, button_continue_governing, button_none, 24, 0),
+    new generic_button(32, 176, 480, 20, button_continue_governing, button_none, 60, 0),
+];
 let focus_button_id: number = 0;
 function get_next_rank() {
     let current_rank: number = 0;
@@ -125,11 +90,11 @@ function button_continue_governing(months: number, param2: number) {
     sound_music_update(1);
 }
 export function window_victory_dialog_show() {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_VICTORY_DIALOG,
         draw_background,
         draw_foreground,
         handle_input
-    };
+    );
     window_show(window);
 }

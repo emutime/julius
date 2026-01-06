@@ -17,7 +17,7 @@ import { lang_text_draw, lang_text_draw_centered } from 'graphics/lang_text';
 import { label_draw, large_label_draw, outer_panel_draw } from 'graphics/panel';
 import { screen_height } from 'graphics/screen';
 import { text_draw_number } from 'graphics/text';
-import { tooltip_context, tooltip_type } from 'graphics/tooltip';
+import { tooltip_context } from 'graphics/tooltip';
 import { window_id, window_invalidate, window_is, window_request_refresh, window_show, window_type } from 'graphics/window';
 import { hotkeys } from 'input/hotkey';
 import { mouse, mouse_get } from 'input/mouse';
@@ -27,24 +27,37 @@ import { scenario_building_allowed } from 'scenario/building';
 import { scenario_criteria_max_year, scenario_criteria_survival_enabled, scenario_criteria_time_limit_enabled } from 'scenario/criteria';
 import { widget_city_current_grid_offset, widget_city_draw, widget_city_draw_construction_cost_and_size, widget_city_draw_touch_buttons, widget_city_get_tooltip, widget_city_handle_input, widget_city_handle_input_military } from 'widget/city';
 import { city_with_overlay_update } from 'widget/city_with_overlay';
-import { widget_sidebar_city_draw_background, widget_sidebar_city_draw_foreground, widget_sidebar_city_get_tooltip_text, widget_sidebar_city_handle_mouse } from 'widget/sidebar/city';
-import { widget_sidebar_military_draw_background, widget_sidebar_military_draw_foreground, widget_sidebar_military_enter, widget_sidebar_military_exit, widget_sidebar_military_get_tooltip_text, widget_sidebar_military_handle_input } from 'widget/sidebar/military';
 import { widget_top_menu_draw, widget_top_menu_get_tooltip_text, widget_top_menu_handle_input } from 'widget/top_menu';
 import { window_advisors_show_advisor } from 'window/advisors';
 import { file_dialog_type, file_type, window_file_dialog_show } from 'window/file_dialog';
+import { Ref } from '../../ext/crt';
+const TOOLTIP_BUTTON = 1;
+// TODO: These widget modules need to be translated from C to TypeScript
+// import { widget_sidebar_city_draw_background, widget_sidebar_city_draw_foreground, widget_sidebar_city_get_tooltip_text, widget_sidebar_city_handle_mouse } from 'widget/sidebar/city';
+// import { widget_sidebar_military_draw_background, widget_sidebar_military_draw_foreground, widget_sidebar_military_enter, widget_sidebar_military_exit, widget_sidebar_military_get_tooltip_text, widget_sidebar_military_handle_input } from 'widget/sidebar/military';
+declare function widget_sidebar_city_draw_background(): void;
+declare function widget_sidebar_city_draw_foreground(): void;
+declare function widget_sidebar_city_get_tooltip_text(): number;
+declare function widget_sidebar_city_handle_mouse(m: mouse): number;
+declare function widget_sidebar_military_draw_background(): void;
+declare function widget_sidebar_military_draw_foreground(): void;
+declare function widget_sidebar_military_enter(formation_id: number): number;
+declare function widget_sidebar_military_exit(): number;
+declare function widget_sidebar_military_get_tooltip_text(c: tooltip_context): number;
+declare function widget_sidebar_military_handle_input(m: mouse): number;
 ;
 import CONFIG_UI_SHOW_MILITARY_SIDEBAR = config_key.CONFIG_UI_SHOW_MILITARY_SIDEBAR;
 import CONFIG_UI_SHOW_SPEEDRUN_INFO = config_key.CONFIG_UI_SHOW_SPEEDRUN_INFO;
 import OVERLAY_NONE = overlay.OVERLAY_NONE;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
-import TOOLTIP_BUTTON = tooltip_type.TOOLTIP_BUTTON;
 import WINDOW_CITY = window_id.WINDOW_CITY;
 import WINDOW_CITY_MILITARY = window_id.WINDOW_CITY_MILITARY;
 import GRID_SIZE = GRID.GRID_SIZE;
 import FILE_DIALOG_SAVE = file_dialog_type.FILE_DIALOG_SAVE;
 import FILE_DIALOG_LOAD = file_dialog_type.FILE_DIALOG_LOAD;
 import FILE_TYPE_SAVED_GAME = file_type.FILE_TYPE_SAVED_GAME;
+import FILE_TYPE_SCENARIO = file_type.FILE_TYPE_SCENARIO;
 function draw_background() {
     widget_sidebar_city_draw_background();
     widget_top_menu_draw(1);
@@ -58,13 +71,13 @@ function draw_background_military() {
     widget_top_menu_draw(1);
 }
 function center_in_city(element_width_pixels: number) {
-    let x: number
-    let y: number
-    let width: number
-    let height: number;
+    let x: Ref<number> = new Ref(0);
+    let y: Ref<number> = new Ref(0);
+    let width: Ref<number> = new Ref(0);
+    let height: Ref<number> = new Ref(0);
     city_view_get_viewport(x, y, width, height);
-    let margin: number = (width - element_width_pixels) / 2;
-    return x + margin;
+    let margin: number = (width.v - element_width_pixels) / 2;
+    return x.v + margin;
 }
 function draw_paused_banner() {
     if (game_state_is_paused()) {
@@ -289,12 +302,12 @@ export function window_city_military_is_cursor_in_menu() {
         return 0;
     }
     let m: mouse = mouse_get();
-    let x: number
-    let y: number
-    let width: number
-    let height: number;
+    let x: Ref<number> = new Ref(0);
+    let y: Ref<number> = new Ref(0);
+    let width: Ref<number> = new Ref(0);
+    let height: Ref<number> = new Ref(0);
     city_view_get_viewport(x, y, width, height);
-    return m.x < x || m.x >= width || m.y < y || m.y >= height;
+    return m.x < x.v || m.x >= width.v || m.y < y.v || m.y >= height.v;
 }
 export function window_city_draw_all() {
     if (formation_get_selected() && config_get(CONFIG_UI_SHOW_MILITARY_SIDEBAR)) {
@@ -322,13 +335,13 @@ export function window_city_show() {
             return;
         }
     }
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_CITY,
         draw_background,
         draw_foreground,
         handle_input,
         get_tooltip
-    };
+    );
     window_show(window);
 }
 export function window_city_military_show(legion_formation_id: number) {
@@ -340,13 +353,13 @@ export function window_city_military_show(legion_formation_id: number) {
     if (config_get(CONFIG_UI_SHOW_MILITARY_SIDEBAR) && widget_sidebar_military_enter(legion_formation_id)) {
         return;
     }
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_CITY_MILITARY,
         draw_background_military,
         draw_foreground_military,
         handle_input_military,
         get_tooltip
-    };
+    );
     window_show(window);
 }
 export function window_city_return() {

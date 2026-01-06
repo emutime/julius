@@ -1,13 +1,63 @@
 export const MAX_HISTORY = 200;
-import { BLOCK_SIZE } from 'graphics/panel';
-import { COLOR_BLACK } from 'graphics/color';
-import { COLOR_WHITE } from 'graphics/color';
-import { message_dialog } from 'window/message_dialog';
+import { advisor_type } from 'city/constants';
+import { message_advisor } from 'city/message';
+import { city_sentiment_low_mood_cause } from 'city/sentiment';
+import { city_view_go_to_grid_offset } from 'city/view';
+import { image, image_get, image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { lang_get_message, lang_message, lang_message_type, lang_type } from 'core/lang';
+import { empire_city_get } from 'empire/city';
+import { formation_grid_offset_for_invasion } from 'figure/formation';
+import { resource_image_offset, resource_image_type, resource_type } from 'game/resource';
+import { button_none } from 'graphics/button';
+import { COLOR_BLACK, COLOR_WHITE } from 'graphics/color';
+import { font_t } from 'graphics/font';
+import { graphics_draw_rect, graphics_in_dialog, graphics_reset_clip_rectangle, graphics_reset_dialog, graphics_set_clip_rectangle } from 'graphics/graphics';
+import { image_draw } from 'graphics/image';
+import { ib, image_button, image_buttons_draw, image_buttons_handle_mouse } from 'graphics/image_button';
+import { lang_text_draw, lang_text_draw_amount, lang_text_draw_multiline, lang_text_draw_year } from 'graphics/lang_text';
+import { BLOCK_SIZE, inner_panel_draw, outer_panel_draw } from 'graphics/panel';
+import { rich_text_clear_links, rich_text_draw, rich_text_draw_colored, rich_text_draw_scrollbar, rich_text_get_clicked_link, rich_text_handle_mouse, rich_text_init, rich_text_reset, rich_text_scroll_position, rich_text_set_fonts } from 'graphics/rich_text';
+import { text_draw, text_draw_centered, text_draw_money, text_draw_multiline, text_draw_number } from 'graphics/text';
+import { tooltip_context, tooltip_type } from 'graphics/tooltip';
+import { video_draw, video_init, video_start, video_stop } from 'graphics/video';
+import { window_draw_underlying_window, window_go_back, window_id, window_invalidate, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { scroll_drag_end } from 'input/scroll';
+import { scenario_player_name } from 'scenario/property';
+import { scenario_request, scenario_request_get, scenario_request_state } from 'scenario/request';
+import { window_advisors_show_advisor } from 'window/advisors';
+import { window_city_draw_all, window_city_show } from 'window/city';
+export const enum message_dialog {
+    MESSAGE_DIALOG_ABOUT = 0,
+    MESSAGE_DIALOG_HELP = 10,
+    MESSAGE_DIALOG_TOP_FUNDS = 15,
+    MESSAGE_DIALOG_TOP_POPULATION = 16,
+    MESSAGE_DIALOG_TOP_DATE = 17,
+    MESSAGE_DIALOG_OVERLAYS = 18,
+    MESSAGE_DIALOG_ADVISOR_LABOR = 20,
+    MESSAGE_DIALOG_ADVISOR_MILITARY = 21,
+    MESSAGE_DIALOG_ADVISOR_IMPERIAL = 22,
+    MESSAGE_DIALOG_ADVISOR_RATINGS = 23,
+    MESSAGE_DIALOG_ADVISOR_TRADE = 24,
+    MESSAGE_DIALOG_ADVISOR_POPULATION = 25,
+    MESSAGE_DIALOG_ADVISOR_HEALTH = 26,
+    MESSAGE_DIALOG_ADVISOR_EDUCATION = 27,
+    MESSAGE_DIALOG_ADVISOR_ENTERTAINMENT = 28,
+    MESSAGE_DIALOG_ADVISOR_RELIGION = 29,
+    MESSAGE_DIALOG_ADVISOR_FINANCIAL = 30,
+    MESSAGE_DIALOG_ADVISOR_CHIEF = 31,
+    MESSAGE_DIALOG_EMPIRE_MAP = 32,
+    MESSAGE_DIALOG_MESSAGES = 34,
+    MESSAGE_DIALOG_INDUSTRY = 46,
+    MESSAGE_DIALOG_THEFT = 251,
+    MESSAGE_DIALOG_EDITOR_ABOUT = 331,
+    MESSAGE_DIALOG_EDITOR_HELP = 332,
+};
 import MESSAGE_DIALOG_HELP = message_dialog.MESSAGE_DIALOG_HELP;
 import MESSAGE_DIALOG_THEFT = message_dialog.MESSAGE_DIALOG_THEFT;;
-import { buffer } from 'core/buffer';
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
 import MESSAGE_ADVISOR_LABOR = message_advisor.MESSAGE_ADVISOR_LABOR;
 import MESSAGE_ADVISOR_TRADE = message_advisor.MESSAGE_ADVISOR_TRADE;
 import MESSAGE_ADVISOR_POPULATION = message_advisor.MESSAGE_ADVISOR_POPULATION;
@@ -15,15 +65,6 @@ import MESSAGE_ADVISOR_IMPERIAL = message_advisor.MESSAGE_ADVISOR_IMPERIAL;
 import MESSAGE_ADVISOR_MILITARY = message_advisor.MESSAGE_ADVISOR_MILITARY;
 import MESSAGE_ADVISOR_HEALTH = message_advisor.MESSAGE_ADVISOR_HEALTH;
 import MESSAGE_ADVISOR_RELIGION = message_advisor.MESSAGE_ADVISOR_RELIGION;
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_sentiment_low_mood_cause } from 'city/sentiment';
-import { view_tile } from 'city/view';
-import { pixel_offset } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_go_to_grid_offset } from 'city/view';
-import { group_terrain } from 'core/image_group';
 import GROUP_ARROW_MESSAGE_PROBLEMS = group_terrain.GROUP_ARROW_MESSAGE_PROBLEMS;
 import GROUP_SIDEBAR_BUTTONS = group_terrain.GROUP_SIDEBAR_BUTTONS;
 import GROUP_RESOURCE_ICONS = group_terrain.GROUP_RESOURCE_ICONS;
@@ -31,11 +72,8 @@ import GROUP_CONTEXT_ICONS = group_terrain.GROUP_CONTEXT_ICONS;
 import GROUP_MESSAGE_IMAGES = group_terrain.GROUP_MESSAGE_IMAGES;
 import GROUP_BIG_PEOPLE = group_terrain.GROUP_BIG_PEOPLE;
 import GROUP_MESSAGE_ADVISOR_BUTTONS = group_terrain.GROUP_MESSAGE_ADVISOR_BUTTONS;
-import { lang_type } from 'core/lang';
 import TYPE_MANUAL = lang_type.TYPE_MANUAL;
 import TYPE_MESSAGE = lang_type.TYPE_MESSAGE;
-import { lang_type } from 'core/lang';
-import { lang_message_type } from 'core/lang';
 import MESSAGE_TYPE_DISASTER = lang_message_type.MESSAGE_TYPE_DISASTER;
 import MESSAGE_TYPE_IMPERIAL = lang_message_type.MESSAGE_TYPE_IMPERIAL;
 import MESSAGE_TYPE_EMIGRATION = lang_message_type.MESSAGE_TYPE_EMIGRATION;
@@ -43,114 +81,18 @@ import MESSAGE_TYPE_TUTORIAL = lang_message_type.MESSAGE_TYPE_TUTORIAL;
 import MESSAGE_TYPE_TRADE_CHANGE = lang_message_type.MESSAGE_TYPE_TRADE_CHANGE;
 import MESSAGE_TYPE_PRICE_CHANGE = lang_message_type.MESSAGE_TYPE_PRICE_CHANGE;
 import MESSAGE_TYPE_INVASION = lang_message_type.MESSAGE_TYPE_INVASION;
-import { lang_message_type } from 'core/lang';
-import { lang_message } from 'core/lang';
-import { lang_get_message } from 'core/lang';
-import { resource_type } from 'game/resource';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
 import RESOURCE_IMAGE_ICON = resource_image_type.RESOURCE_IMAGE_ICON;
-import { resource_image_type } from 'game/resource';
-import { resource_image_offset } from 'game/resource';
-import { empire_city } from 'empire/city';
-import { empire_city_get } from 'empire/city';
-import { figure_type } from 'figure/type';
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_grid_offset_for_invasion } from 'figure/formation';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { graphics_set_clip_rectangle } from 'graphics/graphics';
-import { graphics_reset_clip_rectangle } from 'graphics/graphics';
-import { graphics_draw_rect } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { image_get } from 'core/image';
-import { font_t } from 'graphics/font';
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
 import FONT_NORMAL_RED = font_t.FONT_NORMAL_RED;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
 import FONT_SMALL_PLAIN = font_t.FONT_SMALL_PLAIN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { ib } from 'graphics/image_button';
 import IB_NORMAL = ib.IB_NORMAL;
-import { image_button } from 'graphics/image_button';
-import { image_buttons_draw } from 'graphics/image_button';
-import { image_buttons_handle_mouse } from 'graphics/image_button';
-import { lang_text_draw } from 'graphics/lang_text';
-import { lang_text_draw_amount } from 'graphics/lang_text';
-import { lang_text_draw_year } from 'graphics/lang_text';
-import { lang_text_draw_multiline } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { inner_panel_draw } from 'graphics/panel';
-import { rich_text_init } from 'graphics/rich_text';
-import { rich_text_set_fonts } from 'graphics/rich_text';
-import { rich_text_reset } from 'graphics/rich_text';
-import { rich_text_clear_links } from 'graphics/rich_text';
-import { rich_text_get_clicked_link } from 'graphics/rich_text';
-import { rich_text_draw } from 'graphics/rich_text';
-import { rich_text_draw_colored } from 'graphics/rich_text';
-import { rich_text_draw_scrollbar } from 'graphics/rich_text';
-import { rich_text_handle_mouse } from 'graphics/rich_text';
-import { rich_text_scroll_position } from 'graphics/rich_text';
-import { text_draw } from 'graphics/text';
-import { text_draw_centered } from 'graphics/text';
-import { text_draw_number } from 'graphics/text';
-import { text_draw_money } from 'graphics/text';
-import { text_draw_multiline } from 'graphics/text';
-import { video_start } from 'graphics/video';
-import { video_init } from 'graphics/video';
-import { video_stop } from 'graphics/video';
-import { video_draw } from 'graphics/video';
-import { tooltip_type } from 'graphics/tooltip';
 import TOOLTIP_BUTTON = tooltip_type.TOOLTIP_BUTTON;
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_MESSAGE_DIALOG = window_id.WINDOW_MESSAGE_DIALOG;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-import { window_draw_underlying_window } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { window_go_back } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-import { scroll_type } from 'input/scroll';
-import { scroll_drag_end } from 'input/scroll';
-import { scenario_climate } from 'scenario/property';
-import { scenario_player_name } from 'scenario/property';
-import { scenario_request_state } from 'scenario/request';
 import REQUEST_STATE_NORMAL = scenario_request_state.REQUEST_STATE_NORMAL;
 import REQUEST_STATE_OVERDUE = scenario_request_state.REQUEST_STATE_OVERDUE;
-import { scenario_request_state } from 'scenario/request';
-import { scenario_request } from 'scenario/request';
-import { scenario_request_get } from 'scenario/request';
-import { advisor_type } from 'city/constants';
 import ADVISOR_LABOR = advisor_type.ADVISOR_LABOR;
 import ADVISOR_MILITARY = advisor_type.ADVISOR_MILITARY;
 import ADVISOR_IMPERIAL = advisor_type.ADVISOR_IMPERIAL;
@@ -158,43 +100,39 @@ import ADVISOR_TRADE = advisor_type.ADVISOR_TRADE;
 import ADVISOR_POPULATION = advisor_type.ADVISOR_POPULATION;
 import ADVISOR_HEALTH = advisor_type.ADVISOR_HEALTH;
 import ADVISOR_RELIGION = advisor_type.ADVISOR_RELIGION;
-import { advisor_type } from 'city/constants';
-import { window_advisors_show_advisor } from 'window/advisors';
-import { window_city_draw_all } from 'window/city';
-import { window_city_show } from 'window/city';
-let image_button_back: image_button = {
+let image_button_back: image_button = new image_button(
     0, 0, 31, 20, IB_NORMAL, GROUP_ARROW_MESSAGE_PROBLEMS, 8, button_back, button_none, 0, 0, 1
-};
-let image_button_close: image_button = {
+);
+let image_button_close: image_button = new image_button(
     0, 0, 24, 24, IB_NORMAL, GROUP_CONTEXT_ICONS, 4, button_close, button_none, 0, 0, 1
-};
-let image_button_go_to_problem: image_button = {
+);
+let image_button_go_to_problem: image_button = new image_button(
     0, 0, 27, 27, IB_NORMAL, GROUP_SIDEBAR_BUTTONS, 52, button_go_to_problem, button_none, 1, 0, 1
-};
-let image_button_help: image_button = {
+);
+let image_button_help: image_button = new image_button(
     0, 0, 18, 27, IB_NORMAL, GROUP_CONTEXT_ICONS, 0, button_help, button_none, 1, 0, 1
-};
-let image_button_labor: image_button = {
+);
+let image_button_labor: image_button = new image_button(
     0, 0, 27, 27, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 0, button_advisor, button_none, ADVISOR_LABOR, 0, 1
-};
-let image_button_trade: image_button = {
+);
+let image_button_trade: image_button = new image_button(
     0, 0, 27, 27, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 12, button_advisor, button_none, ADVISOR_TRADE, 0, 1
-};
-let image_button_population: image_button = {
+);
+let image_button_population: image_button = new image_button(
     0, 0, 27, 27, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 15, button_advisor, button_none, ADVISOR_POPULATION, 0, 1
-};
-let image_button_imperial: image_button = {
+);
+let image_button_imperial: image_button = new image_button(
     0, 0, 27, 27, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 6, button_advisor, button_none, ADVISOR_IMPERIAL, 0, 1
-};
-let image_button_military: image_button = {
+);
+let image_button_military: image_button = new image_button(
     0, 0, 27, 27, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 3, button_advisor, button_none, ADVISOR_MILITARY, 0, 1
-};
-let image_button_health: image_button = {
+);
+let image_button_health: image_button = new image_button(
     0, 0, 27, 27, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 18, button_advisor, button_none, ADVISOR_HEALTH, 0, 1
-};
-let image_button_religion: image_button = {
+);
+let image_button_religion: image_button = new image_button(
     0, 0, 27, 27, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 27, button_advisor, button_none, ADVISOR_RELIGION, 0, 1
-};
+);
 class unnamed71_5 {
     public text_id: number = 0;
     public scroll_position: number = 0;
@@ -207,7 +145,7 @@ export class unnamed70_8 {
     public history: history = new Array(200).fill(null);
     public num_history: number = 0;
     public text_id: number = 0;
-    public background_callback: void ( = null;
+    public background_callback: () => void = null;
     public show_video: number = 0;
     public x: number = 0;
     public y: number = 0;
@@ -257,7 +195,7 @@ function set_city_message(year: number, month: number, param1: number, param2: n
     player_message.message_advisor = message_advisor;
     player_message.use_popup = use_popup;
 }
-function init(text_id: number, background_callback: void () {
+function init(text_id: number, background_callback: () => void) {
     scroll_drag_end();
     for (let i: number = 0; i < MAX_HISTORY; i++) {
         data.history[i].text_id = 0;
@@ -270,7 +208,7 @@ function init(text_id: number, background_callback: void () {
     let msg: lang_message = lang_get_message(text_id);
     if (player_message.use_popup != 1) {
         data.show_video = 0;
-    } else if (msg.video.text && video_start((char *)msg.video.text)) {
+    } else if (msg.video.text && video_start(msg.video.text)) {
         data.show_video = 1;
     } else {
         data.show_video = 0;
@@ -345,19 +283,19 @@ function draw_city_message_text(msg: lang_message) {
                 data.text_height_blocks - 1, 0);
             break
         default: {
-                    int lines = rich_text_draw(msg.content.text,
-            data.x_text + 8, data.y_text + 56, BLOCK_SIZE * (data.text_width_blocks - 1),
-            data.text_height_blocks - 1, 0);
+            let lines: number = rich_text_draw(msg.content.text,
+                data.x_text + 8, data.y_text + 56, BLOCK_SIZE * (data.text_width_blocks - 1),
+                data.text_height_blocks - 1, 0);
             if (msg.message_type == MESSAGE_TYPE_IMPERIAL) {
-                const scenario_request * request = scenario_request_get(player_message.param1);
-                        int y_offset = data.y_text + 86 + lines * 16;
+                const request = scenario_request_get(player_message.param1);
+                let y_offset: number = data.y_text + 86 + lines * 16;
                 text_draw_number(request.amount, '@', " ", data.x_text + 8, y_offset, FONT_NORMAL_WHITE);
                 image_draw(resource_image(request.resource), data.x_text + 70, y_offset - 5);
                 lang_text_draw(23, request.resource,
                     data.x_text + 100, y_offset, FONT_NORMAL_WHITE);
                 if (request.state == REQUEST_STATE_NORMAL || request.state == REQUEST_STATE_OVERDUE) {
-                            int width = lang_text_draw_amount(8, 4, request.months_to_comply,
-                    data.x_text + 200, y_offset, FONT_NORMAL_WHITE);
+                    let width: number = lang_text_draw_amount(8, 4, request.months_to_comply,
+                        data.x_text + 200, y_offset, FONT_NORMAL_WHITE);
                     lang_text_draw(12, 2, data.x_text + 200 + width, y_offset, FONT_NORMAL_WHITE);
                 }
             }
@@ -700,14 +638,14 @@ function get_tooltip(c: tooltip_context) {
         c.text_id = 1;
     }
 }
-export function window_message_dialog_show(text_id: number, background_callback: void () {
-    let window: window_type = {
+export function window_message_dialog_show(text_id: number, background_callback: () => void) {
+    let window: window_type = new window_type(
         WINDOW_MESSAGE_DIALOG,
         draw_background,
         draw_foreground,
         handle_input,
         get_tooltip
-    };
+    );
     init(text_id, background_callback);
     window_show(window);
 }

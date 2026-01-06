@@ -1,68 +1,31 @@
 
 ;
-import { buffer } from 'core/buffer';
-import { resource_type } from 'game/resource';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { trade_price_buy, trade_price_sell } from 'empire/trade_prices';
+import { resource_image_offset, resource_image_type, resource_type } from 'game/resource';
+import { font_t } from 'graphics/font';
+import { graphics_in_dialog, graphics_reset_dialog, graphics_shade_rect } from 'graphics/graphics';
+import { image_draw } from 'graphics/image';
+import { lang_text_draw, lang_text_draw_centered } from 'graphics/lang_text';
+import { outer_panel_draw } from 'graphics/panel';
+import { screen_dialog_offset_x, screen_dialog_offset_y } from 'graphics/screen';
+import { text_draw_number_centered } from 'graphics/text';
+import { tooltip_context, tooltip_type } from 'graphics/tooltip';
+import { window_draw_underlying_window, window_id, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse } from 'input/mouse';
+import { window_advisors_show } from 'window/advisors';
 import RESOURCE_MIN = resource_type.RESOURCE_MIN;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
 import RESOURCE_IMAGE_ICON = resource_image_type.RESOURCE_IMAGE_ICON;
-import { resource_image_type } from 'game/resource';
-import { resource_image_offset } from 'game/resource';
-import { trade_price_buy } from 'empire/trade_prices';
-import { trade_price_sell } from 'empire/trade_prices';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { graphics_shade_rect } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_RESOURCE_ICONS = group_terrain.GROUP_RESOURCE_ICONS;
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
 import FONT_SMALL_PLAIN = font_t.FONT_SMALL_PLAIN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { lang_text_draw } from 'graphics/lang_text';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { screen_dialog_offset_x } from 'graphics/screen';
-import { screen_dialog_offset_y } from 'graphics/screen';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { text_draw_number_centered } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
 import TOOLTIP_BUTTON = tooltip_type.TOOLTIP_BUTTON;
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_TRADE_PRICES = window_id.WINDOW_TRADE_PRICES;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_draw_underlying_window } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-import { advisor_type } from 'city/constants';
-import { window_advisors_show } from 'window/advisors';
 function draw_background() {
     window_draw_underlying_window();
     graphics_in_dialog();
@@ -107,12 +70,12 @@ function get_tooltip(c: tooltip_context) {
     c.text_id = 131 + resource;
 }
 export function window_trade_prices_show() {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_TRADE_PRICES,
         draw_background,
         0,
         handle_input,
         get_tooltip
-    };
+    );
     window_show(window);
 }

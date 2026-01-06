@@ -28,20 +28,7 @@ import ENCODING_TRADITIONAL_CHINESE = encoding_type.ENCODING_TRADITIONAL_CHINESE
 import ENCODING_SIMPLIFIED_CHINESE = encoding_type.ENCODING_SIMPLIFIED_CHINESE;
 import ENCODING_JAPANESE = encoding_type.ENCODING_JAPANESE;
 import ENCODING_KOREAN = encoding_type.ENCODING_KOREAN;
-import { encoding_japanese_init } from 'core/encoding_japanese';
-import { encoding_japanese_to_utf8 } from 'core/encoding_japanese';
-import { encoding_japanese_from_utf8 } from 'core/encoding_japanese';
-import { encoding_korean_init } from 'core/encoding_korean';
-import { encoding_korean_to_utf8 } from 'core/encoding_korean';
-import { encoding_korean_from_utf8 } from 'core/encoding_korean';
-import { encoding_simp_chinese_init } from 'core/encoding_simp_chinese';
-import { encoding_simp_chinese_to_utf8 } from 'core/encoding_simp_chinese';
-import { encoding_simp_chinese_from_utf8 } from 'core/encoding_simp_chinese';
-import { encoding_trad_chinese_init } from 'core/encoding_trad_chinese';
-import { encoding_trad_chinese_to_utf8 } from 'core/encoding_trad_chinese';
-import { encoding_trad_chinese_from_utf8 } from 'core/encoding_trad_chinese';
-import { bsearch } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_search';
-import { qsort } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_search';
+
 export class letter_code {
     public internal_value: number = 0;
     public bytes: number = 0;
@@ -747,63 +734,10 @@ function calculate_utf8_value(bytes: number, length: number) {
     }
     return value;
 }
-function compare_utf8_lookup(a: void, b: void) {
-    let va: number = ((const from_utf8_lookup*) a).utf8;
-    let vb: number = ((const from_utf8_lookup*) b).utf8;
+function compare_utf8_lookup(a: from_utf8_lookup, b: from_utf8_lookup) {
+    let va: number = a.utf8;
+    let vb: number = b.utf8;
     return va == vb ? 0 : (va < vb ? -1 : 1);
-}
-function build_reverse_lookup_table() {
-    if (!data.to_utf8_table) {
-        data.utf8_table_size = 0;
-        return;
-    }
-    for (let i: number = 0; i < HIGH_CHAR_COUNT; i++) {
-        let code: letter_code = data.to_utf8_table[i];
-        data.from_utf8_table[i].code = code;
-        data.from_utf8_table[i].utf8 = calculate_utf8_value(code.utf8_value, code.bytes);
-    }
-    data.utf8_table_size = HIGH_CHAR_COUNT;
-    qsort(data.from_utf8_table, data.utf8_table_size, sizeof(from_utf8_lookup), compare_utf8_lookup);
-}
-function build_decomposed_lookup_table() {
-    if (!data.to_utf8_table) {
-        data.decomposed_table_size = 0;
-        return;
-    }
-    let index: number = 0;
-    for (let i: number = 0; i < HIGH_CHAR_COUNT; i++) {
-        let code: letter_code = data.to_utf8_table[i];
-        if (code.bytes_decomposed > 0) {
-            data.from_utf8_decomposed_table[index].code = code;
-            data.from_utf8_decomposed_table[index].utf8 =
-                calculate_utf8_value(code.utf8_decomposed, code.bytes_decomposed);
-            index++;
-        }
-    }
-    data.decomposed_table_size = index;
-    qsort(data.from_utf8_decomposed_table, data.decomposed_table_size, sizeof(from_utf8_lookup), compare_utf8_lookup);
-}
-function get_letter_code_for_internal(c: number) {
-    if (c < 0x80 || !data.to_utf8_table) {
-        return NULL;
-    }
-    return data.to_utf8_table[c - 0x80];
-}
-function get_utf8_code(c: char, num_bytes: number) {
-    let uc: number = (const uint8_t *) c;
-    if (uc[0] < 0x80) {
-        * num_bytes = 1;
-        return uc[0];
-    } else if ((uc[0] & 0xe0) == 0xc0 && (uc[1] & 0xc0) == 0x80) {
-        * num_bytes = 2;
-        return uc[0] | uc[1] << 8;
-    } else if ((uc[0] & 0xf0) == 0xe0 && (uc[1] & 0xc0) == 0x80 && (uc[2] & 0xc0) == 0x80) {
-        * num_bytes = 3;
-        return uc[0] | uc[1] << 8 | uc[2] << 16;
-    } else {
-        * num_bytes = 1;
-        return 0;
-    }
 }
 function is_combining_char(b1: number, b2: number) {
     if (b1 == 0xcc && b2 >= 0x80) {
@@ -813,102 +747,52 @@ function is_combining_char(b1: number, b2: number) {
     }
     return 0;
 }
-function search_utf8_table(key: from_utf8_lookup, table: from_utf8_lookup, size: number) {
-    let result: from_utf8_lookup = bsearch(key, table, size, sizeof(from_utf8_lookup), compare_utf8_lookup);
-    return result ? result.code : NULL;
-}
-function get_letter_code_for_utf8(c: char, num_bytes: number, is_accent: number) {
-    let single_char: letter_code = { 0, 1};
-    let key: from_utf8_lookup = { 0, NULL };
-    if (is_accent) {
-        * is_accent = 0;
-    }
-    let uc: number = (const uint8_t *) c;
-    if (uc[0] < 0x80) {
-        if (num_bytes) {
-            * num_bytes = 1;
-        }
-        single_char.internal_value = uc[0];
-        single_char.utf8_value[0] = uc[0];
-        return single_char;
-    } else if ((uc[0] & 0xe0) == 0xc0 && (uc[1] & 0xc0) == 0x80) {
-        if (num_bytes) {
-            * num_bytes = 2;
-        }
-        key.utf8 = uc[0] | uc[1] << 8;
-        if (is_combining_char(uc[0], uc[1])) {
-            if (is_accent) {
-                * is_accent = 1;
-            }
-            return NULL;
-        }
-    } else if ((uc[0] & 0xf0) == 0xe0 && (uc[1] & 0xc0) == 0x80 && (uc[2] & 0xc0) == 0x80) {
-        if (num_bytes) {
-            * num_bytes = 3;
-        }
-        key.utf8 = uc[0] | uc[1] << 8 | uc[2] << 16;
-    } else {
-        if (num_bytes) {
-            * num_bytes = 1;
-        }
-    }
-    if (key.utf8 == 0) {
-        return NULL;
-    }
-    return search_utf8_table(key, data.from_utf8_table, data.utf8_table_size);
-}
-function get_letter_code_for_combining_utf8(prev_char: char, combining_char: char) {
-    let prev_bytes: number
-    let comb_bytes: number;
-    let prev_code: number = get_utf8_code(prev_char, prev_bytes);
-    let code: number = get_utf8_code(combining_char, comb_bytes);
-    switch (prev_bytes) {
-        default: return NULL
-        case 2:
-            code <<= 8
-        case 1:
-            code <<= 8
-            break
-    }
-    code |= prev_code
-    let key: from_utf8_lookup = { code };
-    return search_utf8_table(key, data.from_utf8_decomposed_table, data.decomposed_table_size);
-}
+// function search_utf8_table(key: from_utf8_lookup, table: from_utf8_lookup[], size: number) {
+//     let result: from_utf8_lookup = bsearch(key, table, size, sizeof(from_utf8_lookup), compare_utf8_lookup);
+//     return result ? result.code : NULL;
+// }
+// function get_letter_code_for_utf8(c: Uint8Array, num_bytes: Ref<number>, is_accent: Ref<number>) {
+//     let single_char: letter_code = new letter_code(0, 1);
+//     let key: from_utf8_lookup = new from_utf8_lookup(0, null);
+//     if (is_accent) {
+//         is_accent.v = 0;
+//     }
+//     let uc: Uint8Array = c;
+//     if (uc[0] < 0x80) {
+//         if (num_bytes) {
+//             num_bytes.v = 1;
+//         }
+//         single_char.internal_value = uc[0];
+//         single_char.utf8_value[0] = uc[0];
+//         return single_char;
+//     } else if ((uc[0] & 0xe0) == 0xc0 && (uc[1] & 0xc0) == 0x80) {
+//         if (num_bytes) {
+//             num_bytes.v = 2;
+//         }
+//         key.utf8 = uc[0] | uc[1] << 8;
+//         if (is_combining_char(uc[0], uc[1])) {
+//             if (is_accent) {
+//                 is_accent.v = 1;
+//             }
+//             return null;
+//         }
+//     } else if ((uc[0] & 0xf0) == 0xe0 && (uc[1] & 0xc0) == 0x80 && (uc[2] & 0xc0) == 0x80) {
+//         if (num_bytes) {
+//             num_bytes.v = 3;
+//         }
+//         key.utf8 = uc[0] | uc[1] << 8 | uc[2] << 16;
+//     } else {
+//         if (num_bytes) {
+//             num_bytes.v = 1;
+//         }
+//     }
+//     if (key.utf8 == 0) {
+//         return null;
+//     }
+//     return search_utf8_table(key, data.from_utf8_table, data.utf8_table_size);
+// }
+
 export function encoding_determine(language: language_type) {
-    if (language == LANGUAGE_POLISH) {
-        data.to_utf8_table = HIGH_TO_UTF8_EASTERN;
-        data.encoding = ENCODING_EASTERN_EUROPE;
-    } else if (language == LANGUAGE_CZECH) {
-        data.to_utf8_table = HIGH_TO_UTF8_CZECH;
-        data.encoding = ENCODING_CZECH;
-    } else if (language == LANGUAGE_RUSSIAN) {
-        data.to_utf8_table = HIGH_TO_UTF8_CYRILLIC;
-        data.encoding = ENCODING_CYRILLIC;
-    } else if (language == LANGUAGE_GREEK) {
-        data.to_utf8_table = HIGH_TO_UTF8_GREEK;
-        data.encoding = ENCODING_GREEK;
-    } else if (language == LANGUAGE_TRADITIONAL_CHINESE) {
-        encoding_trad_chinese_init();
-        data.to_utf8_table = NULL;
-        data.encoding = ENCODING_TRADITIONAL_CHINESE;
-    } else if (language == LANGUAGE_SIMPLIFIED_CHINESE) {
-        encoding_simp_chinese_init();
-        data.to_utf8_table = NULL;
-        data.encoding = ENCODING_SIMPLIFIED_CHINESE;
-    } else if (language == LANGUAGE_KOREAN) {
-        encoding_korean_init();
-        data.to_utf8_table = NULL;
-        data.encoding = ENCODING_KOREAN;
-    } else if (language == LANGUAGE_JAPANESE) {
-        encoding_japanese_init();
-        data.to_utf8_table = NULL;
-        data.encoding = ENCODING_JAPANESE;
-    } else {
-        data.to_utf8_table = HIGH_TO_UTF8_DEFAULT;
-        data.encoding = ENCODING_WESTERN_EUROPE;
-    }
-    build_reverse_lookup_table();
-    build_decomposed_lookup_table();
     return data.encoding;
 }
 export function encoding_get() {
@@ -920,154 +804,22 @@ export function encoding_is_multibyte() {
 export function encoding_system_uses_decomposed() {
     return 0;
 }
-function is_ascii(utf8_char: char) {
-    return ((uint8_t) * utf8_char & 0x80) == 0;
+function is_ascii(utf8_char: number) {
+    return (utf8_char & 0x80) == 0;
 }
-export function encoding_can_display(utf8_char: char) {
-    return is_ascii(utf8_char) || get_letter_code_for_utf8(utf8_char, NULL, NULL) != NULL;
+export function encoding_can_display(utf8_char: number) {
+    return true //is_ascii(utf8_char) || get_letter_code_for_utf8(utf8_char, NULL, NULL) != NULL;
 }
-export function encoding_to_utf8(input: number, output: char, output_length: number, decomposed: number) {
-    if (!data.to_utf8_table) {
-        if (data.encoding == ENCODING_KOREAN) {
-            encoding_korean_to_utf8(input, output, output_length);
-        } else if (data.encoding == ENCODING_TRADITIONAL_CHINESE) {
-            encoding_trad_chinese_to_utf8(input, output, output_length);
-        } else if (data.encoding == ENCODING_SIMPLIFIED_CHINESE) {
-            encoding_simp_chinese_to_utf8(input, output, output_length);
-        } else if (data.encoding == ENCODING_JAPANESE) {
-            encoding_japanese_to_utf8(input, output, output_length);
-        } else {
-            * output = 0;
-        }
-        return;
-    }
-    let max_output: char = output[output_length - 1];
-    while (* input && output < max_output) {
-            uint8_t c = * input;
-        if (c < 0x80) {
-                * output = c;
-            ++output;
-        } else {
-            // multi-byte char
-            const letter_code * code = get_letter_code_for_internal(c);
-                int num_bytes;
-            const uint8_t * bytes;
-            if (decomposed && code.bytes_decomposed) {
-                num_bytes = code.bytes_decomposed;
-                bytes = code.utf8_decomposed;
-            } else {
-                num_bytes = code.bytes;
-                bytes = code.utf8_value;
-            }
-            if (num_bytes) {
-                if (output + num_bytes >= max_output) {
-                    break;
-                }
-                for (int i = 0; i < num_bytes; i++) {
-                        * output = bytes[i];
-                    ++output;
-                }
-            }
-        }
-        ++input;
-    }
-    * output = 0;
+export function encoding_to_utf8(input: Uint8Array): string {
+    // todo
+    return "";
 }
-export function encoding_from_utf8(input: char, output: number, output_length: number) {
-    if (!data.to_utf8_table) {
-        if (data.encoding == ENCODING_KOREAN) {
-            encoding_korean_from_utf8(input, output, output_length);
-            return;
-        } else if (data.encoding == ENCODING_TRADITIONAL_CHINESE) {
-            encoding_trad_chinese_from_utf8(input, output, output_length);
-            return;
-        } else if (data.encoding == ENCODING_SIMPLIFIED_CHINESE) {
-            encoding_simp_chinese_from_utf8(input, output, output_length);
-            return;
-        } else if (data.encoding == ENCODING_JAPANESE) {
-            encoding_japanese_from_utf8(input, output, output_length);
-            return;
-        }
-    }
-    let max_output: number = output[output_length - 1];
-    let prev_input: char = input;
-    while (* input && output < max_output) {
-        if (is_ascii(input)) {
-                * output = * input;
-            prev_input = input;
-            ++output;
-            ++input;
-        } else {
-                // multi-byte char
-                int bytes;
-                int is_accent;
-            const letter_code * code = get_letter_code_for_utf8(input, bytes, is_accent);
-            if (code) {
-                    * output = code.internal_value;
-            } else if (is_accent) {
-                code = get_letter_code_for_combining_utf8(prev_input, input);
-                if (code) {
-                    --output;
-                        * output = code.internal_value;
-                } else {
-                        * output = '?';
-                }
-            } else {
-                    * output = '?';
-            }
-            ++output;
-            prev_input = input;
-            input += bytes;
-        }
-    }
-    * output = 0;
+export function encoding_from_utf8(input: string): Uint8Array {
+    return new Uint8Array(input.length);
 }
-export function encoding_get_utf8_character_bytes(input: char) {
-    if ((input & 0x80) == 0) {
-        return 1;
-    } else if ((input & 0xe0) == 0xc0) {
-        return 2;
-    } else if ((input & 0xf0) == 0xe0) {
-        return 3;
-    } else if ((input & 0xf8) == 0xf0) {
-        return 4;
-    } else {
-        return 1;
-    }
+export function encoding_japanese_sjis_to_image_id(first: number, second: number): number {
+    return 0;
 }
-export function encoding_utf16_to_utf8(input: number, output: char) {
-    for (let i: number = 0; input[i]; i++) {
-        if ((input[i] & 0xff80) == 0) {
-            * (output++) = input[i] & 0xff;
-        } else if ((input[i] & 0xf800) == 0) {
-            * (output++) = ((input[i] >> 6) & 0xff) | 0xc0;
-            * (output++) = (input[i] & 0x3f) | 0x80;
-        } else if ((input[i] & 0xfc00) == 0xd800 && (input[i + 1] & 0xfc00) == 0xdc00) {
-            * (output++) = (((input[i] + 64) >> 8) & 0x3) | 0xf0;
-            * (output++) = (((input[i] >> 2) + 16) & 0x3f) | 0x80;
-            * (output++) = ((input[i] >> 4) & 0x30) | 0x80 | ((input[i + 1] << 2) & 0xf);
-            * (output++) = (input[i + 1] & 0x3f) | 0x80;
-            i += 1
-        } else {
-            * (output++) = ((input[i] >> 12) & 0xf) | 0xe0;
-            * (output++) = ((input[i] >> 6) & 0x3f) | 0x80;
-            * (output++) = (input[i] & 0x3f) | 0x80;
-        }
-    }
-    * output = '\0';
-}
-export function encoding_utf8_to_utf16(input: char, output: number) {
-    for (let i: number = 0; input[i]) {
-        if ((input[i] & 0xe0) == 0xe0) {
-            * (output++) = ((input[i] & 0x0f) << 12) | ((input[i + 1] & 0x3f) << 6) | (input[i + 2] & 0x3f);
-            i += 3
-        } else if ((input[i] & 0xc0) == 0xc0) {
-            * (output++) = ((input[i] & 0x1f) << 6) | (input[i + 1] & 0x3f);
-            i += 2
-        } else {
-            * (output++) = input[i];
-            i += 1
-        }
-    }
-    * output = '\0';
+export function encoding_trad_chinese_big5_to_image_id(big5: number): number {
+    return 0;
 }

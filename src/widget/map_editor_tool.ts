@@ -1,18 +1,22 @@
-import { COLOR_MASK_GREEN } from 'graphics/color';
-import { ALPHA_MASK_SEMI_TRANSPARENT } from 'graphics/color';
-import { COLOR_MASK_RED } from 'graphics/color';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
+import { building_properties, building_properties_for_type } from 'building/properties';
 import { building_type } from 'building/type';
+import { city_view_get_selected_tile_pixels, view_tile } from 'city/view';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { group_editor } from 'core/image_group_editor';
+import { editor_tool_foreach_brush_tile, editor_tool_is_active, editor_tool_is_in_use, editor_tool_type, tool_type } from 'editor/tool';
+import { editor_tool_can_place_access_ramp, editor_tool_can_place_building, editor_tool_can_place_flag } from 'editor/tool_restriction';
+import { ALPHA_MASK_SEMI_TRANSPARENT, COLOR_MASK_GREEN, COLOR_MASK_RED, color_t } from 'graphics/color';
+import { image_draw_blend, image_draw_blend_alpha, image_draw_isometric_footprint, image_draw_isometric_top } from 'graphics/image';
+import { scroll_in_progress } from 'input/scroll';
+import { map_tile } from 'map/point';
+import { map_terrain_has_adjacent_x_with_type, map_terrain_has_adjacent_y_with_type, map_terrain_is, terrain } from 'map/terrain';
+import { scenario_climate, scenario_property_climate } from 'scenario/property';
+import { Ref } from '../../ext/crt';
 import BUILDING_NATIVE_HUT = building_type.BUILDING_NATIVE_HUT;
 import BUILDING_NATIVE_MEETING = building_type.BUILDING_NATIVE_MEETING;
 import BUILDING_NATIVE_CROPS = building_type.BUILDING_NATIVE_CROPS;
-import { building_type } from 'building/type';
-import { building_properties } from 'building/properties';
-import { building_properties_for_type } from 'building/properties';
-import { group_editor } from 'core/image_group_editor';
 import GROUP_EDITOR_BUILDING_CROPS = group_editor.GROUP_EDITOR_BUILDING_CROPS;
-import { tool_type } from 'editor/tool';
 import TOOL_GRASS = tool_type.TOOL_GRASS;
 import TOOL_TREES = tool_type.TOOL_TREES;
 import TOOL_WATER = tool_type.TOOL_WATER;
@@ -34,61 +38,20 @@ import TOOL_NATIVE_CENTER = tool_type.TOOL_NATIVE_CENTER;
 import TOOL_NATIVE_FIELD = tool_type.TOOL_NATIVE_FIELD;
 import TOOL_FISHING_POINT = tool_type.TOOL_FISHING_POINT;
 import TOOL_HERD_POINT = tool_type.TOOL_HERD_POINT;
-import { tool_type } from 'editor/tool';
-import { editor_tool_type } from 'editor/tool';
-import { editor_tool_is_active } from 'editor/tool';
-import { editor_tool_foreach_brush_tile } from 'editor/tool';
-import { editor_tool_is_in_use } from 'editor/tool';
-import { editor_tool_can_place_flag } from 'editor/tool_restriction';
-import { editor_tool_can_place_access_ramp } from 'editor/tool_restriction';
-import { editor_tool_can_place_building } from 'editor/tool_restriction';
-import { language_type } from 'core/locale';;
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_TERRAIN_OVERLAY = group_terrain.GROUP_TERRAIN_OVERLAY;
 import GROUP_TERRAIN_FLAT_TILE = group_terrain.GROUP_TERRAIN_FLAT_TILE;
 import GROUP_TERRAIN_ROAD = group_terrain.GROUP_TERRAIN_ROAD;
 import GROUP_TERRAIN_ACCESS_RAMP = group_terrain.GROUP_TERRAIN_ACCESS_RAMP;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw_blend } from 'graphics/image';
-import { image_draw_blend_alpha } from 'graphics/image';
-import { image_draw_isometric_footprint } from 'graphics/image';
-import { image_draw_isometric_top } from 'graphics/image';
-import { buffer } from 'core/buffer';
-import { view_tile } from 'city/view';
-import { pixel_offset } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_get_selected_tile_pixels } from 'city/view';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { scroll_type } from 'input/scroll';
-import { scroll_in_progress } from 'input/scroll';
-import { terrain } from 'map/terrain';
 import TERRAIN_ROAD = terrain.TERRAIN_ROAD;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 import TERRAIN_NOT_CLEAR = terrain.TERRAIN_NOT_CLEAR;
-import { map_terrain_is } from 'map/terrain';
-import { map_terrain_has_adjacent_x_with_type } from 'map/terrain';
-import { map_terrain_has_adjacent_y_with_type } from 'map/terrain';
-import { scenario_climate } from 'scenario/property';
 import CLIMATE_DESERT = scenario_climate.CLIMATE_DESERT;
-import { scenario_climate } from 'scenario/property';
-import { scenario_property_climate } from 'scenario/property';
-let X_VIEW_OFFSETS: number[] = new Array(MAX_TILES).fill({ 0, - 30, 30, 0});
-let Y_VIEW_OFFSETS: number[] = new Array(MAX_TILES).fill({ 0, 15, 15, 30});
-function offset_to_view_offset(dx: number, dy: number, view_dx: number, view_dy: number) {
-    * view_dx = (dx - dy) * 30;
-    * view_dy = (dx + dy) * 15;
+let X_VIEW_OFFSETS: number[] = [0, - 30, 30, 0];
+let Y_VIEW_OFFSETS: number[] = [0, 15, 15, 30];
+function offset_to_view_offset(dx: number, dy: number, view_dx: Ref<number>, view_dy: Ref<number>) {
+    view_dx.v = (dx - dy) * 30;
+    view_dy.v = (dx + dy) * 15;
 }
 function draw_flat_tile(x: number, y: number, color_mask: color_t) {
     if (color_mask == COLOR_MASK_GREEN && scenario_property_climate() != CLIMATE_DESERT) {
@@ -97,7 +60,7 @@ function draw_flat_tile(x: number, y: number, color_mask: color_t) {
         image_draw_blend(image_group(GROUP_TERRAIN_FLAT_TILE), x, y, color_mask);
     }
 }
-function draw_partially_blocked(x: number, y: number, num_tiles: number, blocked_tiles: number) {
+function draw_partially_blocked(x: number, y: number, num_tiles: number, blocked_tiles: boolean[]) {
     for (let i: number = 0; i < num_tiles; i++) {
         let x_offset: number = x + X_VIEW_OFFSETS[i];
         let y_offset: number = y + Y_VIEW_OFFSETS[i];
@@ -155,10 +118,10 @@ function draw_road(tile: map_tile, x: number, y: number) {
         draw_building_image(image_id, x, y);
     }
 }
-function draw_brush_tile(data: void, dx: number, dy: number) {
-    let view: view_tile = (view_tile *) data;
-    let view_dx: number
-    let view_dy: number;
+function draw_brush_tile(data: view_tile, dx: number, dy: number) {
+    let view: view_tile = data;
+    let view_dx: Ref<number> = new Ref<number>(0);
+    let view_dy: Ref<number> = new Ref<number>(0);
     offset_to_view_offset(dx, dy, view_dx, view_dy);
     draw_flat_tile(view.x + view_dx, view.y + view_dy, COLOR_MASK_GREEN);
 }
@@ -172,7 +135,7 @@ function draw_access_ramp(tile: map_tile, x: number, y: number) {
         let image_id: number = image_group(GROUP_TERRAIN_ACCESS_RAMP) + orientation;
         draw_building_image(image_id, x, y);
     } else {
-        let blocked: number[] = { 1, 1, 1, 1};
+        let blocked: boolean[] = [true, true, true, true];
         draw_partially_blocked(x, y, 4, blocked);
     }
 }
@@ -205,7 +168,7 @@ export function map_editor_tool_draw(tile: map_tile) {
         case TOOL_INVASION_POINT:
         case TOOL_FISHING_POINT:
         case TOOL_HERD_POINT:
-            draw_map_flag(x, y, editor_tool_can_place_flag(type, tile, 0));
+            draw_map_flag(x, y, editor_tool_can_place_flag(type, tile, null));
             break
         case TOOL_ACCESS_RAMP:
             draw_access_ramp(tile, x, y);

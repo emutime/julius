@@ -1,15 +1,15 @@
 import { city_message_post, city_message_type } from 'city/message';
 import { city_military_has_distant_battle, city_military_init_distant_battle, city_military_process_distant_battle } from 'city/military';
-import { empire_object, empire_object_init_distant_battle_travel_months } from 'empire/object';
+import { empire_object_init_distant_battle_travel_months } from 'empire/object';
+import { empire_object_type } from 'empire/type';
 import { resource_type } from 'game/resource';
 import { game_time_month, game_time_year } from 'game/time';
-import { MAX_INVASIONS } from 'scenario/data';
+import { MAX_INVASIONS, scenario_t } from 'scenario/data';
 import { invasion_type } from 'scenario/types';
-;
 import MESSAGE_CAESAR_REQUESTS_ARMY = city_message_type.MESSAGE_CAESAR_REQUESTS_ARMY;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import EMPIRE_OBJECT_ROMAN_ARMY = empire_object.EMPIRE_OBJECT_ROMAN_ARMY;
-import EMPIRE_OBJECT_ENEMY_ARMY = empire_object.EMPIRE_OBJECT_ENEMY_ARMY;
+import EMPIRE_OBJECT_ROMAN_ARMY = empire_object_type.EMPIRE_OBJECT_ROMAN_ARMY;
+import EMPIRE_OBJECT_ENEMY_ARMY = empire_object_type.EMPIRE_OBJECT_ENEMY_ARMY;
 import INVASION_TYPE_DISTANT_BATTLE = invasion_type.INVASION_TYPE_DISTANT_BATTLE;
 export let scenario: scenario_t = new scenario_t();
 export function scenario_distant_battle_roman_travel_months() {
@@ -34,7 +34,7 @@ export function scenario_distant_battle_process() {
             scenario.empire.distant_battle_enemy_travel_months > 4 &&
             scenario.empire.distant_battle_roman_travel_months > 4 &&
             !city_military_has_distant_battle()) {
-            city_message_post(1, MESSAGE_CAESAR_REQUESTS_ARMY, 0, 0);
+            city_message_post(true, MESSAGE_CAESAR_REQUESTS_ARMY, 0, 0);
             city_military_init_distant_battle(scenario.invasions[i].amount);
             return;
         }

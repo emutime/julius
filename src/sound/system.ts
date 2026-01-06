@@ -1,43 +1,19 @@
-import { CHANNEL_FILENAME_MAX } from 'sound/device';
-import { localized } from 'core/dir';
+import { dir_get_file, localized } from 'core/dir';
+import { set_sound_type, setting_sound } from 'game/settings';
+import { sound_channel } from 'sound/channel';
+import { sound_city_set_volume } from 'sound/city';
+import { CHANNEL_FILENAME_MAX, sound_device_close, sound_device_init_channels, sound_device_open } from 'sound/device';
+import { sound_effect_set_volume } from 'sound/effect';
+import { sound_music_set_volume } from 'sound/music';
+import { sound_speech_set_volume } from 'sound/speech';
 import MAY_BE_LOCALIZED = localized.MAY_BE_LOCALIZED;
-import { dir_listing } from 'core/dir';
-import { dir_get_file } from 'core/dir';;
-import { set_tooltips } from 'game/settings';
-import { set_difficulty } from 'game/settings';
-import { set_sound_type } from 'game/settings';
 import SOUND_MUSIC = set_sound_type.SOUND_MUSIC;
 import SOUND_SPEECH = set_sound_type.SOUND_SPEECH;
 import SOUND_EFFECTS = set_sound_type.SOUND_EFFECTS;
 import SOUND_CITY = set_sound_type.SOUND_CITY;
-import { set_sound_type } from 'game/settings';
-import { set_sound } from 'game/settings';
-import { setting_sound } from 'game/settings';
-import { sound_channel } from 'sound/channel';
 import SOUND_CHANNEL_CITY_MAX = sound_channel.SOUND_CHANNEL_CITY_MAX;
 import SOUND_CHANNEL_MAX = sound_channel.SOUND_CHANNEL_MAX;
-import { building_type } from 'building/type';
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { sound_city_set_volume } from 'sound/city';
-import { sound_device_open } from 'sound/device';
-import { sound_device_close } from 'sound/device';
-import { sound_device_init_channels } from 'sound/device';
-import { sound_effect_set_volume } from 'sound/effect';
-import { sound_music_set_volume } from 'sound/music';
-import { sound_speech_set_volume } from 'sound/speech';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-let channel_filenames: char[] = new Array(SOUND_CHANNEL_MAX).fill({
+let channel_filenames: string[] = [
     "", // speech channel
     "wavs/panel1.wav",
     "wavs/panel3.wav",
@@ -188,7 +164,7 @@ let channel_filenames: char[] = new Array(SOUND_CHANNEL_MAX).fill({
     "",
     "wavs/river.wav",
     "wavs/mission.wav",
-});
+];
 function correct_channel_filenames() {
     for (let i: number = 1; i < SOUND_CHANNEL_MAX; i++) {
         if (!channel_filenames[i][0]) {

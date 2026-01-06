@@ -41,13 +41,13 @@ function cause_disease(total_people: number) {
     city_health_change(10);
     let people_to_kill: number = sick_people - city_data.health.num_hospital_workers;
     if (people_to_kill <= 0) {
-        city_message_post(1, MESSAGE_HEALTH_ILLNESS, 0, 0);
+        city_message_post(true, MESSAGE_HEALTH_ILLNESS, 0, 0);
         return;
     }
     if (city_data.health.num_hospital_workers > 0) {
-        city_message_post(1, MESSAGE_HEALTH_DISEASE, 0, 0);
+        city_message_post(true, MESSAGE_HEALTH_DISEASE, 0, 0);
     } else {
-        city_message_post(1, MESSAGE_HEALTH_PESTILENCE, 0, 0);
+        city_message_post(true, MESSAGE_HEALTH_PESTILENCE, 0, 0);
     }
     tutorial_on_disease();
     for (let i: number = 1; i < MAX_BUILDINGS; i++) {

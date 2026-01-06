@@ -49,13 +49,13 @@ import { window_type } from 'graphics/window';
 import { window_draw_underlying_window } from 'graphics/window';
 import { window_show } from 'graphics/window';
 import { input_go_back_requested } from 'input/input';
-let arrow_buttons: arrow_button[] = new Array().fill({
-    { 0, 54, 15, 24, arrow_button_difficulty, 0, 0},
-    { 24, 54, 17, 24, arrow_button_difficulty, 1, 0},
-    { 24, 102, 21, 24, arrow_button_gods, 2, 0}
-});
+let arrow_buttons: arrow_button[] = [
+    new arrow_button(0, 54, 15, 24, arrow_button_difficulty, 0, 0),
+    new arrow_button(24, 54, 17, 24, arrow_button_difficulty, 1, 0),
+    new arrow_button(24, 102, 21, 24, arrow_button_gods, 2, 0)
+];
 export class unnamed20_8 {
-    public close_callback: void ( = null;
+    public close_callback: (() => void) | null = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.close_callback = args[0]);
     }
@@ -89,13 +89,13 @@ function arrow_button_difficulty(is_down: number, param2: number) {
 function arrow_button_gods(param1: number, param2: number) {
     setting_toggle_gods_enabled();
 }
-export function window_difficulty_options_show(close_callback: void () {
-    let window: window_type = {
+export function window_difficulty_options_show(close_callback: () => void) {
+    let window: window_type = new window_type(
         WINDOW_DIFFICULTY_OPTIONS,
         window_draw_underlying_window,
         draw_foreground,
         handle_input
-    };
+    );
     data.close_callback = close_callback;
     window_show(window);
 }

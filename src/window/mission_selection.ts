@@ -1,67 +1,30 @@
-
+import { image_group } from 'core/image';
 import { group_terrain } from 'core/image_group';
+import { game_mission_has_choice, game_mission_military, game_mission_peaceful } from 'game/mission';
+import { button_none } from 'graphics/button';
+import { font_t } from 'graphics/font';
+import { graphics_in_dialog, graphics_reset_dialog } from 'graphics/graphics';
+import { image_draw, image_draw_fullscreen_background } from 'graphics/image';
+import { ib, image_button, image_buttons_draw, image_buttons_handle_mouse } from 'graphics/image_button';
+import { lang_text_draw, lang_text_draw_multiline } from 'graphics/lang_text';
+import { window_id, window_invalidate, window_show, window_type } from 'graphics/window';
+import { hotkey_handle_escape, hotkeys } from 'input/hotkey';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { scenario_campaign_rank, scenario_set_campaign_mission } from 'scenario/property';
+import { sound_speech_play_file } from 'sound/speech';
+import { window_mission_briefing_show } from 'window/mission_briefing';
 import GROUP_SIDEBAR_BUTTONS = group_terrain.GROUP_SIDEBAR_BUTTONS;
 import GROUP_SELECT_MISSION_BACKGROUND = group_terrain.GROUP_SELECT_MISSION_BACKGROUND;
 import GROUP_SELECT_MISSION = group_terrain.GROUP_SELECT_MISSION;
 import GROUP_SELECT_MISSION_BUTTON = group_terrain.GROUP_SELECT_MISSION_BUTTON;
-import { game_mission_peaceful } from 'game/mission';
-import { game_mission_military } from 'game/mission';
-import { game_mission_has_choice } from 'game/mission';;
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
+;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { image_draw_fullscreen_background } from 'graphics/image';
-import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { ib } from 'graphics/image_button';
 import IB_NORMAL = ib.IB_NORMAL;
-import { image_button } from 'graphics/image_button';
-import { image_buttons_draw } from 'graphics/image_button';
-import { image_buttons_handle_mouse } from 'graphics/image_button';
-import { lang_text_draw } from 'graphics/lang_text';
-import { lang_text_draw_multiline } from 'graphics/lang_text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { hotkey_handle_escape } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_MISSION_SELECTION = window_id.WINDOW_MISSION_SELECTION;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { scenario_climate } from 'scenario/property';
-import { scenario_campaign_rank } from 'scenario/property';
-import { scenario_set_campaign_mission } from 'scenario/property';
-import { sound_speech_play_file } from 'sound/speech';
-import { window_mission_briefing_show } from 'window/mission_briefing';
-let BACKGROUND_IMAGE_OFFSET: number[] = new Array().fill({
+let BACKGROUND_IMAGE_OFFSET: number[] = [
     0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 0
-});
+];
 export class unnamed20_14 {
     public x_peaceful: number = 0;
     public y_peaceful: number = 0;
@@ -74,23 +37,23 @@ export class unnamed20_14 {
         args.length >= 4 && (this.y_military = args[3]);
     }
 }
-let CAMPAIGN_SELECTION: struct (unnamed struct at./ src / window / mission_selection.c: 20: 14)[] = new Array(12).fill({
-    { 0, 0, 0, 0},
-    { 0, 0, 0, 0},
-    { 292, 182, 353, 232},
-    { 118, 202, 324, 286},
-    { 549, 285, 224, 121},
-    { 173, 109, 240, 292},
-    { 576, 283, 19, 316},
-    { 97, 240, 156, 59},
-    { 127, 300, 579, 327},
-    { 103, 35, 410, 109},
-    { 191, 153, 86, 8},
-    { 200, 300, 400, 300},
-});
-let image_button_start_mission: image_button = {
+let CAMPAIGN_SELECTION: unnamed20_14[] = [
+    new unnamed20_14(0, 0, 0, 0),
+    new unnamed20_14(0, 0, 0, 0),
+    new unnamed20_14(292, 182, 353, 232),
+    new unnamed20_14(118, 202, 324, 286),
+    new unnamed20_14(549, 285, 224, 121),
+    new unnamed20_14(173, 109, 240, 292),
+    new unnamed20_14(576, 283, 19, 316),
+    new unnamed20_14(97, 240, 156, 59),
+    new unnamed20_14(127, 300, 579, 327),
+    new unnamed20_14(103, 35, 410, 109),
+    new unnamed20_14(191, 153, 86, 8),
+    new unnamed20_14(200, 300, 400, 300),
+];
+let image_button_start_mission: image_button = new image_button(
     0, 0, 27, 27, IB_NORMAL, GROUP_SIDEBAR_BUTTONS, 56, button_start, button_none, 1, 0, 1
-};
+);
 export class unnamed44_8 {
     public choice: number = 0;
     public focus_button: number = 0;
@@ -195,12 +158,12 @@ export function window_mission_selection_show() {
         window_mission_briefing_show();
         return;
     }
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_MISSION_SELECTION,
         draw_background,
         draw_foreground,
         handle_input
-    };
+    );
     data.choice = 0;
     data.focus_button = 0;
     window_show(window);

@@ -1,74 +1,41 @@
-import { COLOR_FONT_BLUE } from 'graphics/color';
-import { COLOR_BLACK } from 'graphics/color';
-import { COLOR_FONT_RED } from 'graphics/color';
-;
-import { color_t } from 'graphics/color';
 import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_draw_rect } from 'graphics/graphics';
-import { graphics_fill_rect } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
+import { COLOR_BLACK, COLOR_FONT_BLUE, COLOR_FONT_RED, color_t } from 'graphics/color';
 import { font_t } from 'graphics/font';
-import FONT_NORMAL_PLAIN = font_t.FONT_NORMAL_PLAIN;
-import FONT_LARGE_PLAIN = font_t.FONT_LARGE_PLAIN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_draw_rect, graphics_fill_rect } from 'graphics/graphics';
 import { lang_text_draw_centered_colored } from 'graphics/lang_text';
 import { outer_panel_draw } from 'graphics/panel';
-import { text_draw_centered } from 'graphics/text';
-import { text_draw_number_centered_colored } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
+import { text_draw_centered, text_draw_number_centered_colored } from 'graphics/text';
+import { window_draw_underlying_window, window_go_back, window_id, window_show, window_type } from 'graphics/window';
 import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
-import WINDOW_NUMERIC_INPUT = window_id.WINDOW_NUMERIC_INPUT;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_draw_underlying_window } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { window_go_back } from 'graphics/window';
 import { input_go_back_requested } from 'input/input';
-import { keyboard_start_capture_numeric } from 'input/keyboard';
-import { keyboard_stop_capture_numeric } from 'input/keyboard';
-import { sound_effect } from 'sound/effect';
+import { keyboard_start_capture_numeric, keyboard_stop_capture_numeric } from 'input/keyboard';
+import { mouse } from 'input/mouse';
+import { sound_effect, sound_effect_play } from 'sound/effect';
+import FONT_NORMAL_PLAIN = font_t.FONT_NORMAL_PLAIN;
+import FONT_LARGE_PLAIN = font_t.FONT_LARGE_PLAIN;
+import WINDOW_NUMERIC_INPUT = window_id.WINDOW_NUMERIC_INPUT;
 import SOUND_EFFECT_BUILD = sound_effect.SOUND_EFFECT_BUILD;
-import { sound_effect_play } from 'sound/effect';
-let buttons: generic_button[] = new Array().fill({
-    { 21, 51, 25, 25, button_number, button_none, 1, 0},
-    { 51, 51, 25, 25, button_number, button_none, 2, 0},
-    { 81, 51, 25, 25, button_number, button_none, 3, 0},
-    { 21, 81, 25, 25, button_number, button_none, 4, 0},
-    { 51, 81, 25, 25, button_number, button_none, 5, 0},
-    { 81, 81, 25, 25, button_number, button_none, 6, 0},
-    { 21, 111, 25, 25, button_number, button_none, 7, 0},
-    { 51, 111, 25, 25, button_number, button_none, 8, 0},
-    { 81, 111, 25, 25, button_number, button_none, 9, 0},
-    { 21, 141, 25, 25, button_number, button_none, 0, 0},
-    { 51, 141, 55, 25, button_accept, button_none, 1, 0},
-    { 21, 171, 85, 25, button_cancel, button_none, 1, 0}
-});
+let buttons: generic_button[] = [
+    new generic_button(21, 51, 25, 25, button_number, button_none, 1, 0),
+    new generic_button(51, 51, 25, 25, button_number, button_none, 2, 0),
+    new generic_button(81, 51, 25, 25, button_number, button_none, 3, 0),
+    new generic_button(21, 81, 25, 25, button_number, button_none, 4, 0),
+    new generic_button(51, 81, 25, 25, button_number, button_none, 5, 0),
+    new generic_button(81, 81, 25, 25, button_number, button_none, 6, 0),
+    new generic_button(21, 111, 25, 25, button_number, button_none, 7, 0),
+    new generic_button(51, 111, 25, 25, button_number, button_none, 8, 0),
+    new generic_button(81, 111, 25, 25, button_number, button_none, 9, 0),
+    new generic_button(21, 141, 25, 25, button_number, button_none, 0, 0),
+    new generic_button(51, 141, 55, 25, button_accept, button_none, 1, 0),
+    new generic_button(21, 171, 85, 25, button_cancel, button_none, 1, 0)
+];
 export class unnamed36_8 {
     public x: number = 0;
     public y: number = 0;
     public max_digits: number = 0;
     public max_value: number = 0;
-    public callback: void ( = null;
+    public callback: (() => void) | null = null;
     public num_digits: number = 0;
     public value: number = 0;
     public focus_button_id: number = 0;
@@ -84,7 +51,7 @@ export class unnamed36_8 {
     }
 }
 let data: unnamed36_8 = new unnamed36_8();
-function init(x: number, y: number, max_digits: number, max_value: number, callback: void () {
+function init(x: number, y: number, max_digits: number, max_value: number, callback: () => void) {
     data.x = x;
     data.y = y;
     data.max_digits = max_digits;
@@ -164,13 +131,13 @@ function input_accept() {
     }
     data.callback(data.value);
 }
-export function window_numeric_input_show(x: number, y: number, max_digits: number, max_value: number, callback: void () {
-    let window: window_type = {
+export function window_numeric_input_show(x: number, y: number, max_digits: number, max_value: number, callback: () => void) {
+    let window: window_type = new window_type(
         WINDOW_NUMERIC_INPUT,
         window_draw_underlying_window,
         draw_foreground,
         handle_input,
-    };
+    );
     init(x, y, max_digits, max_value, callback);
     window_show(window);
 }

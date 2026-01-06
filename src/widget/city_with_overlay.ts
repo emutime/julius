@@ -309,74 +309,73 @@ function draw_flattened_building_footprint(b: building, x: number, y: number, im
     if (b.size == 1) {
         image_draw_isometric_footprint_from_draw_tile(image_base, x, y, color_mask);
     } else if (b.size == 2) {
-        let x_tile_offset: number[] = { 30, 0, 60, 30};
-        let y_tile_offset: number[] = {- 15, 0, 0, 15
-    };
-    for (let i: number = 0; i < 4; i++) {
-        image_draw_isometric_footprint_from_draw_tile(image_base + i,
-            x + x_tile_offset[i], y + y_tile_offset[i], color_mask);
-    }
-} else if (b.size == 3) {
-    let image_tile_offset: number[] = { 0, 1, 2, 1, 3, 2, 3, 3, 3};
-    let x_tile_offset: number[] = { 60, 30, 90, 0, 60, 120, 30, 90, 60};
-    let y_tile_offset: number[] = {- 30, -15, -15, 0, 0, 0, 15, 15, 30
-};
-for (let i: number = 0; i < 9; i++) {
-    image_draw_isometric_footprint_from_draw_tile(image_base + image_tile_offset[i],
-        x + x_tile_offset[i], y + y_tile_offset[i], color_mask);
-}
+        let x_tile_offset: number[] = [30, 0, 60, 30];
+        let y_tile_offset: number[] = [-15, 0, 0, 15];
+        for (let i: number = 0; i < 4; i++) {
+            image_draw_isometric_footprint_from_draw_tile(image_base + i,
+                x + x_tile_offset[i], y + y_tile_offset[i], color_mask);
+        }
+    } else if (b.size == 3) {
+        let image_tile_offset: number[] = [0, 1, 2, 1, 3, 2, 3, 3, 3];
+        let x_tile_offset: number[] = [60, 30, 90, 0, 60, 120, 30, 90, 60];
+        let y_tile_offset: number[] = [- 30, -15, -15, 0, 0, 0, 15, 15, 30
+        ];
+        for (let i: number = 0; i < 9; i++) {
+            image_draw_isometric_footprint_from_draw_tile(image_base + image_tile_offset[i],
+                x + x_tile_offset[i], y + y_tile_offset[i], color_mask);
+        }
     } else if (b.size == 4) {
-    let image_tile_offset: number[] = { 0, 1, 2, 1, 3, 2, 1, 3, 3, 2, 3, 3, 3, 3, 3, 3};
-    let x_tile_offset: number[] = {
-        90,
-        60, 120,
-        30, 90, 150,
-        0, 60, 120, 180,
-        30, 90, 150,
-        60, 120,
-        90
-        };
-    let y_tile_offset: number[] = {
+        let image_tile_offset: number[] = [0, 1, 2, 1, 3, 2, 1, 3, 3, 2, 3, 3, 3, 3, 3, 3];
+        let x_tile_offset: number[] = [
+            90,
+            60, 120,
+            30, 90, 150,
+            0, 60, 120, 180,
+            30, 90, 150,
+            60, 120,
+            90
+        ];
+        let y_tile_offset: number[] = [
             - 45,
-    -30, -30,
-        -15, -15, -15,
-        0, 0, 0, 0,
-        15, 15, 15,
-        30, 30,
-        45
-};
-for (let i: number = 0; i < 16; i++) {
-    image_draw_isometric_footprint_from_draw_tile(image_base + image_tile_offset[i],
-        x + x_tile_offset[i], y + y_tile_offset[i], color_mask);
-}
+            -30, -30,
+            -15, -15, -15,
+            0, 0, 0, 0,
+            15, 15, 15,
+            30, 30,
+            45
+        ];
+        for (let i: number = 0; i < 16; i++) {
+            image_draw_isometric_footprint_from_draw_tile(image_base + image_tile_offset[i],
+                x + x_tile_offset[i], y + y_tile_offset[i], color_mask);
+        }
     } else if (b.size == 5) {
-    let image_tile_offset: number[] = { 0, 1, 2, 1, 3, 2, 1, 3, 3, 2, 1, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3};
-    let x_tile_offset: number[] = {
-        120,
-        90, 150,
-        60, 120, 180,
-        30, 90, 150, 210,
-        0, 60, 120, 180, 240,
-        30, 90, 150, 210,
-        60, 120, 180,
-        90, 150,
-        120
-        };
-    let y_tile_offset: number[] = {
+        let image_tile_offset: number[] = [0, 1, 2, 1, 3, 2, 1, 3, 3, 2, 1, 3, 3, 3, 2, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3];
+        let x_tile_offset: number[] = [
+            120,
+            90, 150,
+            60, 120, 180,
+            30, 90, 150, 210,
+            0, 60, 120, 180, 240,
+            30, 90, 150, 210,
+            60, 120, 180,
+            90, 150,
+            120
+        ];
+        let y_tile_offset: number[] = [
             - 60,
-    -45, -45,
-        -30, -30, -30,
-        -15, -15, -15, -15,
-        0, 0, 0, 0, 0,
-        15, 15, 15, 15,
-        30, 30, 30,
-        45, 45,
-        60
-};
-for (let i: number = 0; i < 25; i++) {
-    image_draw_isometric_footprint_from_draw_tile(image_base + image_tile_offset[i],
-        x + x_tile_offset[i], y + y_tile_offset[i], color_mask);
-}
+            -45, -45,
+            -30, -30, -30,
+            -15, -15, -15, -15,
+            0, 0, 0, 0, 0,
+            15, 15, 15, 15,
+            30, 30, 30,
+            45, 45,
+            60
+        ];
+        for (let i: number = 0; i < 25; i++) {
+            image_draw_isometric_footprint_from_draw_tile(image_base + image_tile_offset[i],
+                x + x_tile_offset[i], y + y_tile_offset[i], color_mask);
+        }
     }
 }
 export function city_with_overlay_draw_building_footprint(x: number, y: number, grid_offset: number, image_offset: number) {

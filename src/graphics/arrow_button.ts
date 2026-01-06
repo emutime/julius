@@ -1,18 +1,13 @@
 
-import { time_millis } from 'core/time';
-import { time_get_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
+import { time_get_millis, time_millis } from 'core/time';
+import { image_draw } from 'graphics/image';
 import { mouse } from 'input/mouse';
 export class arrow_button {
     public x_offset: number = 0;
     public y_offset: number = 0;
     public image_id: number = 0;
     public size: number = 0;
-    public left_click_handler: void ( = null;
+    public left_click_handler: (param1: number, param2: number) => void = null;
     public parameter1: number = 0;
     public parameter2: number = 0;
     public pressed: number = 0;
@@ -29,21 +24,15 @@ export class arrow_button {
         args.length >= 9 && (this.repeats = args[8]);
     }
 }
-import { language_type } from 'core/locale';;
-import { encoding_type } from 'core/encoding';
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-let REPEATS: number[] = new Array().fill({
+;
+let REPEATS: number[] = [
     0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0,
     0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0,
     1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0
-});
+];
 let REPEAT_MILLIS: time_millis = 30;
 let BUTTON_PRESSED_FRAMES: number = 3;
-export function arrow_buttons_draw(x: number, y: number, buttons: arrow_button, num_buttons: number) {
+export function arrow_buttons_draw(x: number, y: number, buttons: arrow_button[], num_buttons: number): void {
     for (let i: number = 0; i < num_buttons; i++) {
         let image_id: number = buttons[i].image_id;
         if (buttons[i].pressed) {
@@ -52,7 +41,7 @@ export function arrow_buttons_draw(x: number, y: number, buttons: arrow_button, 
         image_draw(image_id, x + buttons[i].x_offset, y + buttons[i].y_offset);
     }
 }
-function get_button(m: mouse, x: number, y: number, buttons: arrow_button, num_buttons: number) {
+function get_button(m: mouse, x: number, y: number, buttons: arrow_button[], num_buttons: number): number {
     for (let i: number = 0; i < num_buttons; i++) {
         if (x + buttons[i].x_offset <= m.x &&
             x + buttons[i].x_offset + buttons[i].size > m.x &&
@@ -63,7 +52,7 @@ function get_button(m: mouse, x: number, y: number, buttons: arrow_button, num_b
     }
     return 0;
 }
-export function arrow_buttons_handle_mouse(m: mouse, x: number, y: number, buttons: arrow_button, num_buttons: number, focus_button_id: number) {
+export function arrow_buttons_handle_mouse(m: mouse, x: number, y: number, buttons: arrow_button[], num_buttons: number, focus_button_id?: number): number {
     let last_time: time_millis = 0;
     let curr_time: time_millis = time_get_millis();
     let should_repeat: number = 0;
@@ -83,9 +72,7 @@ export function arrow_buttons_handle_mouse(m: mouse, x: number, y: number, butto
         }
     }
     let button_id: number = get_button(m, x, y, buttons, num_buttons);
-    if (focus_button_id) {
-        * focus_button_id = button_id;
-    }
+    return button_id;
     if (!button_id) {
         return 0;
     }

@@ -1,34 +1,22 @@
 
-import { building_type } from 'building/type';;
-import { buffer } from 'core/buffer';
 import { building } from 'building/building';
-import { direction_type } from 'core/direction';
-import { figure_type } from 'figure/type';
 import { figure } from 'figure/figure';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
 import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
+;
 export const enum column_type {
-    COLUMN_TYPE_RISK = undefined,
-    COLUMN_TYPE_ACCESS = undefined,
+    COLUMN_TYPE_RISK,
+    COLUMN_TYPE_ACCESS,
 }
 export class city_overlay {
     public type: number = 0;
     public column_type: number = 0;
-    public show_building: int ( = null;
-    public show_figure: int ( = null;
-    public get_column_height: int ( = null;
-    public get_tooltip_for_grid_offset: int ( = null;
-    public get_tooltip_for_building: int ( = null;
-    public draw_custom_footprint: void ( = null;
-    public draw_custom_top: void ( = null;
+    public show_building: (b: building) => void = null;
+    public show_figure: (f: figure) => void = null;
+    public get_column_height: () => number = null;
+    public get_tooltip_for_grid_offset: (offset: number) => tooltip_type = null;
+    public get_tooltip_for_building: (b: building) => tooltip_type = null;
+    public draw_custom_footprint: (x: number, y: number, grid_offset: number) => void = null;
+    public draw_custom_top: () => void = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.type = args[0]);
         args.length >= 2 && (this.column_type = args[1]);

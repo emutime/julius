@@ -23,7 +23,11 @@ import { touch_get_earliest } from 'input/touch';
 import { mouse_button } from 'input/mouse';
 import { scroll_state } from 'input/mouse';
 import { mouse } from 'input/mouse';
-import { scroll_type } from 'input/scroll';
+export const enum scroll_type {
+    SCROLL_TYPE_CITY = 0,
+    SCROLL_TYPE_EMPIRE = 1,
+    SCROLL_TYPE_MAX = 2
+};
 import SCROLL_TYPE_CITY = scroll_type.SCROLL_TYPE_CITY;
 import SCROLL_TYPE_MAX = scroll_type.SCROLL_TYPE_MAX;
 import { direction_type } from 'core/direction';

@@ -11,7 +11,10 @@ import { IMAGE_FONT_MULTIBYTE_OFFSET } from 'core/image';
 import { language_type } from 'core/locale';;
 import { encoding_type } from 'core/encoding';
 import { color_t } from 'graphics/color';
-import { image_type } from 'core/image';
+export const enum image_type {
+    IMAGE_TYPE_WITH_TRANSPARENCY = 0,
+    IMAGE_TYPE_ISOMETRIC = 30
+};
 import IMAGE_TYPE_WITH_TRANSPARENCY = image_type.IMAGE_TYPE_WITH_TRANSPARENCY;
 import IMAGE_TYPE_ISOMETRIC = image_type.IMAGE_TYPE_ISOMETRIC;
 import { image } from 'core/image';
@@ -27,7 +30,6 @@ import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
 import FONT_NORMAL_RED = font_t.FONT_NORMAL_RED;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
-import { font_t } from 'graphics/font';
 import { font_definition } from 'graphics/font';
 import { log_error } from 'core/log';
 import { clip_code } from 'graphics/graphics';
@@ -35,39 +37,29 @@ import CLIP_NONE = clip_code.CLIP_NONE;
 import CLIP_LEFT = clip_code.CLIP_LEFT;
 import CLIP_RIGHT = clip_code.CLIP_RIGHT;
 import CLIP_BOTH = clip_code.CLIP_BOTH;
-import { clip_code } from 'graphics/graphics';
 import { clip_info } from 'graphics/graphics';
 import { graphics_get_clip_info } from 'graphics/graphics';
 import { graphics_get_pixel } from 'graphics/graphics';
 import { graphics_clear_screen } from 'graphics/graphics';
 import { screen_width } from 'graphics/screen';
 import { screen_height } from 'graphics/screen';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
+import { memcpy } from '../../ext/crt';
+
 export const enum draw_type {
-    DRAW_TYPE_SET = undefined,
-    DRAW_TYPE_AND = undefined,
-    DRAW_TYPE_NONE = undefined,
-    DRAW_TYPE_BLEND = undefined,
-    DRAW_TYPE_BLEND_ALPHA = undefined,
+    DRAW_TYPE_SET,
+    DRAW_TYPE_AND,
+    DRAW_TYPE_NONE,
+    DRAW_TYPE_BLEND,
+    DRAW_TYPE_BLEND_ALPHA
 }
-let FOOTPRINT_X_START_PER_HEIGHT: number[] = new Array().fill({
+let FOOTPRINT_X_START_PER_HEIGHT: number[] = [
     28, 26, 24, 22, 20, 18, 16, 14, 12, 10, 8, 6, 4, 2, 0,
     0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28
-});
-let FOOTPRINT_OFFSET_PER_HEIGHT: number[] = new Array().fill({
+];
+let FOOTPRINT_OFFSET_PER_HEIGHT: number[] = [
     0, 2, 8, 18, 32, 50, 72, 98, 128, 162, 200, 242, 288, 338, 392, 450,
     508, 562, 612, 658, 700, 738, 772, 802, 828, 850, 868, 882, 892, 898
-});
+];
 function draw_uncompressed(img: image, data: color_t, x_offset: number, y_offset: number, color: color_t, type: draw_type) {
     let clip: clip_info = graphics_get_clip_info(x_offset, y_offset, img.width, img.height);
     if (!clip.is_visible) {
@@ -88,7 +80,7 @@ function draw_uncompressed(img: image, data: color_t, x_offset: number, y_offset
                 }
             } else {
                 let num_pixels: number = x_max - clip.clipped_pixels_left;
-                memcpy(dst, data, num_pixels * sizeof(color_t));
+                memcpy(dst, data, num_pixels);
                 data += num_pixels
             }
         } else if (type == DRAW_TYPE_SET) {
@@ -155,7 +147,7 @@ function draw_compressed(img: image, data: color_t, x_offset: number, y_offset: 
                 let dst: color_t = graphics_get_pixel(x_offset + x, y_offset + y);
                 if (unclipped) {
                     x += b;
-                    memcpy(dst, pixels, b * sizeof(color_t));
+                    memcpy(dst, pixels, b);
                 } else {
                     while (b) {
                         if (x >= clip.clipped_pixels_left && x < img.width - clip.clipped_pixels_right) {
@@ -361,36 +353,36 @@ function draw_compressed_blend_alpha(img: image, data: color_t, x_offset: number
     }
 }
 function draw_footprint_simple(src: color_t, x: number, y: number) {
-    memcpy(graphics_get_pixel(x + 28, y + 0), src[0], 2 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 26, y + 1), src[2], 6 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 24, y + 2), src[8], 10 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 22, y + 3), src[18], 14 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 20, y + 4), src[32], 18 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 18, y + 5), src[50], 22 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 16, y + 6), src[72], 26 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 14, y + 7), src[98], 30 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 12, y + 8), src[128], 34 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 10, y + 9), src[162], 38 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 8, y + 10), src[200], 42 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 6, y + 11), src[242], 46 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 4, y + 12), src[288], 50 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 2, y + 13), src[338], 54 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 0, y + 14), src[392], 58 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 0, y + 15), src[450], 58 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 2, y + 16), src[508], 54 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 4, y + 17), src[562], 50 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 6, y + 18), src[612], 46 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 8, y + 19), src[658], 42 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 10, y + 20), src[700], 38 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 12, y + 21), src[738], 34 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 14, y + 22), src[772], 30 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 16, y + 23), src[802], 26 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 18, y + 24), src[828], 22 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 20, y + 25), src[850], 18 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 22, y + 26), src[868], 14 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 24, y + 27), src[882], 10 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 26, y + 28), src[892], 6 * sizeof(color_t));
-    memcpy(graphics_get_pixel(x + 28, y + 29), src[898], 2 * sizeof(color_t));
+    memcpy(graphics_get_pixel(x + 28, y + 0), src[0], 2);
+    memcpy(graphics_get_pixel(x + 26, y + 1), src[2], 6);
+    memcpy(graphics_get_pixel(x + 24, y + 2), src[8], 10);
+    memcpy(graphics_get_pixel(x + 22, y + 3), src[18], 14);
+    memcpy(graphics_get_pixel(x + 20, y + 4), src[32], 18);
+    memcpy(graphics_get_pixel(x + 18, y + 5), src[50], 22);
+    memcpy(graphics_get_pixel(x + 16, y + 6), src[72], 26);
+    memcpy(graphics_get_pixel(x + 14, y + 7), src[98], 30);
+    memcpy(graphics_get_pixel(x + 12, y + 8), src[128], 34);
+    memcpy(graphics_get_pixel(x + 10, y + 9), src[162], 38);
+    memcpy(graphics_get_pixel(x + 8, y + 10), src[200], 42);
+    memcpy(graphics_get_pixel(x + 6, y + 11), src[242], 46);
+    memcpy(graphics_get_pixel(x + 4, y + 12), src[288], 50);
+    memcpy(graphics_get_pixel(x + 2, y + 13), src[338], 54);
+    memcpy(graphics_get_pixel(x + 0, y + 14), src[392], 58);
+    memcpy(graphics_get_pixel(x + 0, y + 15), src[450], 58);
+    memcpy(graphics_get_pixel(x + 2, y + 16), src[508], 54);
+    memcpy(graphics_get_pixel(x + 4, y + 17), src[562], 50);
+    memcpy(graphics_get_pixel(x + 6, y + 18), src[612], 46);
+    memcpy(graphics_get_pixel(x + 8, y + 19), src[658], 42);
+    memcpy(graphics_get_pixel(x + 10, y + 20), src[700], 38);
+    memcpy(graphics_get_pixel(x + 12, y + 21), src[738], 34);
+    memcpy(graphics_get_pixel(x + 14, y + 22), src[772], 30);
+    memcpy(graphics_get_pixel(x + 16, y + 23), src[802], 26);
+    memcpy(graphics_get_pixel(x + 18, y + 24), src[828], 22);
+    memcpy(graphics_get_pixel(x + 20, y + 25), src[850], 18);
+    memcpy(graphics_get_pixel(x + 22, y + 26), src[868], 14);
+    memcpy(graphics_get_pixel(x + 24, y + 27), src[882], 10);
+    memcpy(graphics_get_pixel(x + 26, y + 28), src[892], 6);
+    memcpy(graphics_get_pixel(x + 28, y + 29), src[898], 2);
 }
 function draw_footprint_tile(data: color_t, x_offset: number, y_offset: number, color_mask: color_t) {
     if (!color_mask) {
@@ -441,7 +433,7 @@ function draw_footprint_tile(data: color_t, x_offset: number, y_offset: number, 
         }
         let buffer: color_t = graphics_get_pixel(x_offset + x_start, y_offset + y);
         if (color_mask == COLOR_MASK_NONE) {
-            memcpy(buffer, src, x_max * sizeof(color_t));
+            memcpy(buffer, src, x_max);
             src += x_max + x_pixel_advance
         } else {
             for (let x: number = 0; x < x_max; x++, buffer++, src++) {

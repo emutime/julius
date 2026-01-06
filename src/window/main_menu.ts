@@ -1,100 +1,50 @@
-import { COLOR_BLACK } from 'graphics/color';
-import { COLOR_WHITE } from 'graphics/color';
-import { COLOR_FONT_LIGHT_GRAY } from 'graphics/color';
-export const MAX_BUTTONS = 6;
-import { BLOCK_SIZE } from 'graphics/panel';
-;
-import { string_copy } from 'core/string';
-import { string_length } from 'core/string';
-import { string_from_ascii } from 'core/string';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { string_copy, string_from_ascii, string_length } from 'core/string';
 import { editor_is_present } from 'editor/editor';
 import { game_init_editor } from 'game/game';
-import { color_t } from 'graphics/color';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { system_version } from 'game/system';
-import { system_exit } from 'game/system';
+import { system_exit, system_version } from 'game/system';
 import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { graphics_clear_screen } from 'graphics/graphics';
-import { graphics_draw_rect } from 'graphics/graphics';
-import { graphics_fill_rect } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
-import GROUP_MAIN_MENU_BACKGROUND = group_terrain.GROUP_MAIN_MENU_BACKGROUND;
-import { image } from 'core/image';
-import { image_group } from 'core/image';
+import { COLOR_BLACK, COLOR_FONT_LIGHT_GRAY, COLOR_WHITE } from 'graphics/color';
 import { font_t } from 'graphics/font';
-import FONT_SMALL_PLAIN = font_t.FONT_SMALL_PLAIN;
-import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_clear_screen, graphics_draw_rect, graphics_fill_rect, graphics_in_dialog, graphics_reset_dialog } from 'graphics/graphics';
 import { image_draw } from 'graphics/image';
-import { image_button } from 'graphics/image_button';
 import { lang_text_draw_centered } from 'graphics/lang_text';
-import { large_label_draw } from 'graphics/panel';
-import { text_get_width } from 'graphics/text';
-import { text_draw } from 'graphics/text';
-import { screen_width } from 'graphics/screen';
-import { screen_height } from 'graphics/screen';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { hotkey_handle_escape } from 'input/hotkey';
-import { window_id } from 'graphics/window';
-import WINDOW_MAIN_MENU = window_id.WINDOW_MAIN_MENU;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_is } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { sound_music_play_intro } from 'sound/music';
-import { sound_music_play_editor } from 'sound/music';
+import { BLOCK_SIZE, large_label_draw } from 'graphics/panel';
+import { screen_height, screen_width } from 'graphics/screen';
+import { text_draw, text_get_width } from 'graphics/text';
+import { window_id, window_is, window_show, window_type } from 'graphics/window';
+import { hotkey_handle_escape, hotkeys } from 'input/hotkey';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { sound_music_play_editor, sound_music_play_intro } from 'sound/music';
+import { translation_key } from 'translation/translation';
 import { window_cck_selection_show } from 'window/cck_selection';
 import { window_config_show } from 'window/config';
-import { file_dialog_type } from 'window/file_dialog';
-import FILE_DIALOG_LOAD = file_dialog_type.FILE_DIALOG_LOAD;
-import { file_dialog_type } from 'window/file_dialog';
-import { file_type } from 'window/file_dialog';
-import FILE_TYPE_SAVED_GAME = file_type.FILE_TYPE_SAVED_GAME;
-import { file_type } from 'window/file_dialog';
-import { window_file_dialog_show } from 'window/file_dialog';
+import { file_dialog_type, file_type, window_file_dialog_show } from 'window/file_dialog';
 import { window_new_career_show } from 'window/new_career';
-import { translation_key } from 'translation/translation';
+import { window_plain_message_dialog_show } from 'window/plain_message_dialog';
+import { popup_dialog_type, window_popup_dialog_show } from 'window/popup_dialog';
+export const MAX_BUTTONS = 6;
+;
+import GROUP_MAIN_MENU_BACKGROUND = group_terrain.GROUP_MAIN_MENU_BACKGROUND;
+import FONT_SMALL_PLAIN = font_t.FONT_SMALL_PLAIN;
+import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
+import WINDOW_MAIN_MENU = window_id.WINDOW_MAIN_MENU;
+import FILE_DIALOG_LOAD = file_dialog_type.FILE_DIALOG_LOAD;
+import FILE_TYPE_SAVED_GAME = file_type.FILE_TYPE_SAVED_GAME;
 import TR_NO_EDITOR_TITLE = translation_key.TR_NO_EDITOR_TITLE;
 import TR_NO_EDITOR_MESSAGE = translation_key.TR_NO_EDITOR_MESSAGE;
-import { translation_key } from 'translation/translation';
-import { translation_string } from 'translation/translation';
-import { window_plain_message_dialog_show } from 'window/plain_message_dialog';
-import { popup_dialog_type } from 'window/popup_dialog';
 import POPUP_DIALOG_QUIT = popup_dialog_type.POPUP_DIALOG_QUIT;
-import { popup_dialog_type } from 'window/popup_dialog';
-import { window_popup_dialog_show } from 'window/popup_dialog';
 let focus_button_id: number;
-let buttons: generic_button[] = new Array().fill({
-    { 192, 100, 256, 25, button_click, button_none, 1, 0},
-    { 192, 140, 256, 25, button_click, button_none, 2, 0},
-    { 192, 180, 256, 25, button_click, button_none, 3, 0},
-    { 192, 220, 256, 25, button_click, button_none, 4, 0},
-    { 192, 260, 256, 25, button_click, button_none, 5, 0},
-    { 192, 300, 256, 25, button_click, button_none, 6, 0},
-});
+let buttons: generic_button[] = [
+    new generic_button(192, 100, 256, 25, button_click, button_none, 1, 0),
+    new generic_button(192, 140, 256, 25, button_click, button_none, 2, 0),
+    new generic_button(192, 180, 256, 25, button_click, button_none, 3, 0),
+    new generic_button(192, 220, 256, 25, button_click, button_none, 4, 0),
+    new generic_button(192, 260, 256, 25, button_click, button_none, 5, 0),
+    new generic_button(192, 300, 256, 25, button_click, button_none, 6, 0),
+];
 function draw_version_string() {
     let version_string: number[] = "Julius v";
     let version_prefix_length: number = string_length(version_string);
@@ -172,11 +122,11 @@ export function window_main_menu_show(restart_music: number) {
     if (restart_music) {
         sound_music_play_intro();
     }
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_MAIN_MENU,
         draw_background,
         draw_foreground,
         handle_input
-    };
+    );
     window_show(window);
 }

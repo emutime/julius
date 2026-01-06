@@ -1,4 +1,3 @@
-export const OFFSET = 0;
 import { BLOCK_SIZE } from 'graphics/panel';
 import { building_type } from 'building/type';
 import BUILDING_NONE = building_type.BUILDING_NONE;
@@ -187,7 +186,7 @@ import { map_aqueduct_at } from 'map/aqueduct';
 import { map_building_at } from 'map/building';
 import { map_rubble_building_type } from 'map/building';
 import { map_figure_at } from 'map/figure';
-import { GRID } from 'map/grid';
+import { map_grid_delta, GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
 import { map_image_at } from 'map/image';
 import { map_property_is_plaza_or_earthquake } from 'map/property';
@@ -328,13 +327,13 @@ import { window_building_draw_mission_post } from 'window/building/utility';
 import { window_building_draw_native_hut } from 'window/building/utility';
 import { window_building_draw_native_meeting } from 'window/building/utility';
 import { window_building_draw_native_crops } from 'window/building/utility';
-let image_buttons_help_close: image_button[] = new Array().fill({
-    { 14, 0, 27, 27, IB_NORMAL, GROUP_CONTEXT_ICONS, 0, button_help, button_none, 0, 0, 1},
-    { 424, 3, 24, 24, IB_NORMAL, GROUP_CONTEXT_ICONS, 4, button_close, button_none, 0, 0, 1}
-});
-let image_buttons_advisor: image_button[] = new Array().fill({
-    { 350, - 38, 28, 28, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 9, button_advisor, button_none, ADVISOR_RATINGS, 0, 1}
-});
+let image_buttons_help_close: image_button[] = [
+    new image_button(14, 0, 27, 27, IB_NORMAL, GROUP_CONTEXT_ICONS, 0, button_help, button_none, 0, 0, 1),
+    new image_button(424, 3, 24, 24, IB_NORMAL, GROUP_CONTEXT_ICONS, 4, button_close, button_none, 0, 0, 1)
+];
+let image_buttons_advisor: image_button[] = [
+    new image_button(350, -38, 28, 28, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 9, button_advisor, button_none, ADVISOR_RATINGS, 0, 1)
+];
 let context: building_info_context;
 let focus_image_button_id: number;
 function get_height_id() {
@@ -542,10 +541,10 @@ function init(grid_offset: number) {
     for (let i: number = 0; i < 7; i++) {
         context.figure.figure_ids[i] = 0;
     }
-    let FIGURE_OFFSETS: number[] = {
-        OFFSET(0,0), OFFSET(0,- 1), OFFSET(0, 1), OFFSET(1, 0), OFFSET(-1, 0),
-            OFFSET(-1, -1), OFFSET(1, -1), OFFSET(-1, 1), OFFSET(1, 1)
-};
+    let FIGURE_OFFSETS: number[] = [
+        map_grid_delta(0, 0), map_grid_delta(0, -1), map_grid_delta(0, 1), map_grid_delta(1, 0), map_grid_delta(-1, 0),
+        map_grid_delta(-1, -1), map_grid_delta(1, -1), map_grid_delta(-1, 1), map_grid_delta(1, 1)
+    ];
 for (let i: number = 0; i < 9 && context.figure.count < 7; i++) {
     let figure_id: number = map_figure_at(grid_offset + FIGURE_OFFSETS[i]);
     while (figure_id > 0 && context.figure.count < 7) {
@@ -904,13 +903,13 @@ function button_advisor(advisor: number, param2: number) {
     window_advisors_show_advisor(advisor);
 }
 export function window_building_info_show(grid_offset: number) {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_BUILDING_INFO,
         draw_background,
         draw_foreground,
         handle_input,
         get_tooltip
-    };
+    );
     init(grid_offset);
     window_show(window);
 }

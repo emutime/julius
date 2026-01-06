@@ -1,67 +1,31 @@
 export const NUM_BOTTOM_BUTTONS = 2;
-;
-import { key_type } from 'input/keys';
+import { hotkey_action } from 'core/hotkey_config';
+import { button_border_draw, button_none } from 'graphics/button';
+import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_in_dialog, graphics_reset_dialog } from 'graphics/graphics';
+import { inner_panel_draw, outer_panel_draw } from 'graphics/panel';
+import { text_draw_centered } from 'graphics/text';
+import { window_draw_underlying_window, window_go_back, window_id, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { key_combination_display_name, key_modifier_type, key_type } from 'input/keys';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { translation_for, translation_key } from 'translation/translation';
 import KEY_TYPE_NONE = key_type.KEY_TYPE_NONE;
 import KEY_TYPE_ENTER = key_type.KEY_TYPE_ENTER;
 import KEY_TYPE_ESCAPE = key_type.KEY_TYPE_ESCAPE;
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
 import KEY_MOD_NONE = key_modifier_type.KEY_MOD_NONE;
-import { key_modifier_type } from 'input/keys';
-import { key_combination_display_name } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { button_none } from 'graphics/button';
-import { button_border_draw } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { image } from 'core/image';
-import { font_t } from 'graphics/font';
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { outer_panel_draw } from 'graphics/panel';
-import { inner_panel_draw } from 'graphics/panel';
-import { text_draw_centered } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_HOTKEY_EDITOR = window_id.WINDOW_HOTKEY_EDITOR;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_draw_underlying_window } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { window_go_back } from 'graphics/window';
-import { translation_key } from 'translation/translation';
 import TR_BUTTON_OK = translation_key.TR_BUTTON_OK;
 import TR_BUTTON_CANCEL = translation_key.TR_BUTTON_CANCEL;
 import TR_HOTKEY_EDIT_TITLE = translation_key.TR_HOTKEY_EDIT_TITLE;
-import { translation_key } from 'translation/translation';
-import { translation_string } from 'translation/translation';
-import { translation_for } from 'translation/translation';
-let bottom_buttons: generic_button[] = new Array().fill({
-    { 192, 228, 120, 24, button_close, button_none, 0},
-    { 328, 228, 120, 24, button_close, button_none, 1},
-});
+let bottom_buttons: generic_button[] = [
+    new generic_button(192, 228, 120, 24, button_close, button_none, 0),
+    new generic_button(328, 228, 120, 24, button_close, button_none, 1),
+];
 let bottom_button_texts: translation_key[] = new Array().fill({
     TR_BUTTON_CANCEL,
     TR_BUTTON_OK
@@ -71,7 +35,7 @@ export class unnamed28_8 {
     public index: number = 0;
     public key: key_type = null;
     public modifiers: key_modifier_type = null;
-    public callback: void ( = null;
+    public callback: () => void = null;
     public focus_button: number = 0;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.action = args[0]);
@@ -83,7 +47,7 @@ export class unnamed28_8 {
     }
 }
 let data: unnamed28_8 = new unnamed28_8();
-function init(action: hotkey_action, index: number, callback: void () {
+function init(action: hotkey_action, index: number, callback: () => void) {
     data.action = action;
     data.index = index;
     data.callback = callback;
@@ -145,13 +109,13 @@ export function window_hotkey_editor_key_released(key: key_type, modifiers: key_
         data.modifiers = modifiers;
     }
 }
-export function window_hotkey_editor_show(action: hotkey_action, index: number, callback: void () {
-    let window: window_type = {
+export function window_hotkey_editor_show(action: hotkey_action, index: number, callback: () => void) {
+    let window: window_type = new window_type(
         WINDOW_HOTKEY_EDITOR,
         draw_background,
         draw_foreground,
         handle_input
-    };
+    );
     init(action, index, callback);
     window_show(window);
 }

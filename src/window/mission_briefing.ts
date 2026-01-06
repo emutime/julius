@@ -1,103 +1,45 @@
 
 import { city_mission_reset_save_start } from 'city/mission';
 import { group_terrain } from 'core/image_group';
-import GROUP_ARROW_MESSAGE_PROBLEMS = group_terrain.GROUP_ARROW_MESSAGE_PROBLEMS;
-import GROUP_SIDEBAR_BUTTONS = group_terrain.GROUP_SIDEBAR_BUTTONS;;
-import { lang_type } from 'core/lang';
-import { lang_message_type } from 'core/lang';
-import { lang_message } from 'core/lang';
-import { lang_get_message } from 'core/lang';
+import { lang_get_message, lang_message } from 'core/lang';
 import { game_file_start_scenario_by_name } from 'game/file';
 import { game_mission_has_choice } from 'game/mission';
-import { buffer } from 'core/buffer';
-import { tutorial_availability } from 'game/tutorial';
-import { tutorial_build_buttons } from 'game/tutorial';
 import { tutorial_get_immediate_goal_text } from 'game/tutorial';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { graphics_set_clip_rectangle } from 'graphics/graphics';
-import { graphics_reset_clip_rectangle } from 'graphics/graphics';
 import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { ib } from 'graphics/image_button';
-import IB_NORMAL = ib.IB_NORMAL;
-import { image_button } from 'graphics/image_button';
-import { image_buttons_draw } from 'graphics/image_button';
-import { image_buttons_handle_mouse } from 'graphics/image_button';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
 import { font_t } from 'graphics/font';
+import { graphics_in_dialog, graphics_reset_clip_rectangle, graphics_reset_dialog, graphics_set_clip_rectangle } from 'graphics/graphics';
+import { ib, image_button, image_buttons_draw, image_buttons_handle_mouse } from 'graphics/image_button';
+import { lang_text_draw } from 'graphics/lang_text';
+import { inner_panel_draw, label_draw, outer_panel_draw } from 'graphics/panel';
+import { rich_text_draw, rich_text_draw_scrollbar, rich_text_handle_mouse, rich_text_init, rich_text_reset, rich_text_set_fonts } from 'graphics/rich_text';
+import { text_draw, text_draw_number } from 'graphics/text';
+import { window_draw_underlying_window, window_id, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { scenario_criteria_culture, scenario_criteria_culture_enabled, scenario_criteria_favor, scenario_criteria_favor_enabled, scenario_criteria_peace, scenario_criteria_peace_enabled, scenario_criteria_population, scenario_criteria_population_enabled, scenario_criteria_prosperity, scenario_criteria_prosperity_enabled } from 'scenario/criteria';
+import { scenario_campaign_mission, scenario_name } from 'scenario/property';
+import { sound_music_update } from 'sound/music';
+import { sound_speech_stop } from 'sound/speech';
+import { window_city_show } from 'window/city';
+import { intermezzo_type, window_intermezzo_show } from 'window/intermezzo';
+import { window_mission_selection_show } from 'window/mission_selection';
+import GROUP_ARROW_MESSAGE_PROBLEMS = group_terrain.GROUP_ARROW_MESSAGE_PROBLEMS;
+import GROUP_SIDEBAR_BUTTONS = group_terrain.GROUP_SIDEBAR_BUTTONS;;
+import IB_NORMAL = ib.IB_NORMAL;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
 import FONT_NORMAL_RED = font_t.FONT_NORMAL_RED;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { lang_text_draw } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { inner_panel_draw } from 'graphics/panel';
-import { label_draw } from 'graphics/panel';
-import { rich_text_init } from 'graphics/rich_text';
-import { rich_text_set_fonts } from 'graphics/rich_text';
-import { rich_text_reset } from 'graphics/rich_text';
-import { rich_text_draw } from 'graphics/rich_text';
-import { rich_text_draw_scrollbar } from 'graphics/rich_text';
-import { rich_text_handle_mouse } from 'graphics/rich_text';
-import { text_draw } from 'graphics/text';
-import { text_draw_number } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_MISSION_BRIEFING = window_id.WINDOW_MISSION_BRIEFING;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_draw_underlying_window } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { scenario_criteria_population_enabled } from 'scenario/criteria';
-import { scenario_criteria_population } from 'scenario/criteria';
-import { scenario_criteria_culture_enabled } from 'scenario/criteria';
-import { scenario_criteria_culture } from 'scenario/criteria';
-import { scenario_criteria_prosperity_enabled } from 'scenario/criteria';
-import { scenario_criteria_prosperity } from 'scenario/criteria';
-import { scenario_criteria_peace_enabled } from 'scenario/criteria';
-import { scenario_criteria_peace } from 'scenario/criteria';
-import { scenario_criteria_favor_enabled } from 'scenario/criteria';
-import { scenario_criteria_favor } from 'scenario/criteria';
-import { scenario_climate } from 'scenario/property';
-import { scenario_campaign_mission } from 'scenario/property';
-import { scenario_name } from 'scenario/property';
-import { sound_music_update } from 'sound/music';
-import { sound_speech_stop } from 'sound/speech';
-import { window_city_show } from 'window/city';
-import { intermezzo_type } from 'window/intermezzo';
 import INTERMEZZO_MISSION_BRIEFING = intermezzo_type.INTERMEZZO_MISSION_BRIEFING;
-import { intermezzo_type } from 'window/intermezzo';
-import { window_intermezzo_show } from 'window/intermezzo';
-import { window_mission_selection_show } from 'window/mission_selection';
-let GOAL_OFFSETS_X: number[] = new Array().fill({ 32, 288, 32, 288, 288, 288});
-let GOAL_OFFSETS_Y: number[] = new Array().fill({ 95, 95, 117, 117, 73, 135});
-let image_button_back: image_button = {
+let GOAL_OFFSETS_X: number[] = [32, 288, 32, 288, 288, 288];
+let GOAL_OFFSETS_Y: number[] = [95, 95, 117, 117, 73, 135];
+let image_button_back: image_button = new image_button(
     0, 0, 31, 20, IB_NORMAL, GROUP_ARROW_MESSAGE_PROBLEMS, 8, button_back, button_none, 0, 0, 1
-};
-let image_button_start_mission: image_button = {
+);
+let image_button_start_mission: image_button = new image_button(
     0, 0, 27, 27, IB_NORMAL, GROUP_SIDEBAR_BUTTONS, 56, button_start_mission, button_none, 1, 0, 1
-};
+);
 export class unnamed37_8 {
     public is_review: number = 0;
     public focus_button: number = 0;
@@ -226,12 +168,12 @@ function button_start_mission(param1: number, param2: number) {
     city_mission_reset_save_start();
 }
 function show() {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_MISSION_BRIEFING,
         draw_background,
         draw_foreground,
         handle_input
-    };
+    );
     init();
     window_show(window);
 }

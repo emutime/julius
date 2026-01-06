@@ -92,7 +92,7 @@ function draw_foreground() {
     graphics_reset_dialog();
 }
 function handle_input(m: mouse, h: hotkeys) {
-    if (data.has_buttons && image_buttons_handle_mouse(mouse_in_dialog(m), 80, 80, buttons, 2, 0)) {
+    if (data.has_buttons && image_buttons_handle_mouse(mouse_in_dialog(m), 80, 80, buttons, 2, null)) {
         return;
     }
     if (input_go_back_requested(m, h)) {
@@ -116,23 +116,23 @@ function confirm() {
 }
 export function window_popup_dialog_show(type: popup_dialog_type, close_func: (accepted: number) => void, has_ok_cancel_buttons: number) {
     if (init(type, 0, 0, close_func, has_ok_cancel_buttons)) {
-        let window: window_type = {
+        let window: window_type = new window_type(
             WINDOW_POPUP_DIALOG,
             draw_background,
             draw_foreground,
             handle_input
-        };
+        );
         window_show(window);
     }
 }
 export function window_popup_dialog_show_confirmation(text_group: number, text_id: number, close_func: (accepted: number) => void) {
     if (init(POPUP_DIALOG_NONE, text_group, text_id, close_func, 1)) {
-        let window: window_type = {
+        let window: window_type = new window_type(
             WINDOW_POPUP_DIALOG,
             draw_background,
             draw_foreground,
             handle_input
-        };
+        );
         window_show(window);
     }
 }

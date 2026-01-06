@@ -98,7 +98,7 @@ function create_migrants() {
             city_data.migration.emigration_queue_size = 0;
             if (!city_data.migration.emigration_message_shown) {
                 city_data.migration.emigration_message_shown = 1;
-                city_message_post(1, MESSAGE_EMIGRATION, 0, 0);
+                city_message_post(true, MESSAGE_EMIGRATION, 0, 0);
             }
         } else {
             city_data.migration.emigration_queue_size += city_data.migration.emigration_amount_per_batch

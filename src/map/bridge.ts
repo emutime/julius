@@ -115,7 +115,7 @@ function get_pillar_distance(length: number) {
             return 8
     }
 }
-export function map_bridge_get_sprite_id(index: number, length: number, direction: number, is_ship_bridge: number) {
+export function map_bridge_get_sprite_id(index: number, length: number, direction: number, is_ship_bridge: boolean) {
     if (is_ship_bridge) {
         let pillar_distance: number = get_pillar_distance(length);
         if (index == 1 || index == length - 2) {
@@ -188,7 +188,7 @@ export function map_bridge_get_sprite_id(index: number, length: number, directio
     }
     return 0;
 }
-export function map_bridge_add(x: number, y: number, is_ship_bridge: number) {
+export function map_bridge_add(x: number, y: number, is_ship_bridge: boolean) {
     let min_length: number = is_ship_bridge ? 5 : 2;
     if (bridge.end_grid_offset <= 0 || bridge.length < min_length) {
         bridge.length = 0;

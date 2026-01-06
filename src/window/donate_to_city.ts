@@ -1,88 +1,44 @@
 
-import { emperor_gift } from 'city/emperor';
-import { city_emperor_init_donation_amount } from 'city/emperor';
-import { city_emperor_set_donation_amount } from 'city/emperor';
-import { city_emperor_change_donation_amount } from 'city/emperor';
-import { city_emperor_donate_savings_to_city } from 'city/emperor';
-import { city_emperor_donate_amount } from 'city/emperor';
-import { direction_type } from 'core/direction';;
-import { resource_type } from 'game/resource';
-import RESOURCE_DENARII = resource_type.RESOURCE_DENARII;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { arrow_button } from 'graphics/arrow_button';
-import { arrow_buttons_draw } from 'graphics/arrow_button';
-import { arrow_buttons_handle_mouse } from 'graphics/arrow_button';
-import { button_none } from 'graphics/button';
-import { button_border_draw } from 'graphics/button';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
-import GROUP_RESOURCE_ICONS = group_terrain.GROUP_RESOURCE_ICONS;
-import { image } from 'core/image';
+import { city_emperor_change_donation_amount, city_emperor_donate_amount, city_emperor_donate_savings_to_city, city_emperor_init_donation_amount, city_emperor_set_donation_amount } from 'city/emperor';
 import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { resource_type } from 'game/resource';
+import { arrow_button, arrow_buttons_draw, arrow_buttons_handle_mouse } from 'graphics/arrow_button';
+import { button_border_draw, button_none } from 'graphics/button';
 import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_in_dialog, graphics_reset_dialog } from 'graphics/graphics';
+import { image_draw } from 'graphics/image';
+import { lang_text_draw, lang_text_draw_centered } from 'graphics/lang_text';
+import { inner_panel_draw, outer_panel_draw } from 'graphics/panel';
+import { text_draw_number, text_draw_number_centered } from 'graphics/text';
+import { tooltip_context, tooltip_type } from 'graphics/tooltip';
+import { window_id, window_invalidate, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { window_advisors_draw_dialog_background, window_advisors_show } from 'window/advisors';
+;
+import RESOURCE_DENARII = resource_type.RESOURCE_DENARII;
+import GROUP_RESOURCE_ICONS = group_terrain.GROUP_RESOURCE_ICONS;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { lang_text_draw } from 'graphics/lang_text';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { inner_panel_draw } from 'graphics/panel';
-import { text_draw_number } from 'graphics/text';
-import { text_draw_number_centered } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
 import TOOLTIP_BUTTON = tooltip_type.TOOLTIP_BUTTON;
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_DONATE_TO_CITY = window_id.WINDOW_DONATE_TO_CITY;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-import { advisor_type } from 'city/constants';
-import { window_advisors_draw_dialog_background } from 'window/advisors';
-import { window_advisors_show } from 'window/advisors';
-let buttons: generic_button[] = new Array().fill({
-    { 336, 283, 160, 20, button_cancel, button_none, 0, 0},
-    { 144, 283, 160, 20, button_donate, button_none, 0, 0},
-    { 128, 216, 64, 20, button_set_amount, button_none, 0, 0},
-    { 208, 216, 64, 20, button_set_amount, button_none, 1, 0},
-    { 288, 216, 64, 20, button_set_amount, button_none, 2, 0},
-    { 368, 216, 64, 20, button_set_amount, button_none, 3, 0},
-    { 448, 216, 64, 20, button_set_amount, button_none, 4, 0},
-});
-let arrow_buttons: arrow_button[] = new Array().fill({
-    { 240, 242, 17, 24, arrow_button_amount, 1, 0},
-    { 264, 242, 15, 24, arrow_button_amount, 0, 0},
-});
+let buttons: generic_button[] = [
+    new generic_button(336, 283, 160, 20, button_cancel, button_none, 0, 0),
+    new generic_button(144, 283, 160, 20, button_donate, button_none, 0, 0),
+    new generic_button(128, 216, 64, 20, button_set_amount, button_none, 0, 0),
+    new generic_button(208, 216, 64, 20, button_set_amount, button_none, 1, 0),
+    new generic_button(288, 216, 64, 20, button_set_amount, button_none, 2, 0),
+    new generic_button(368, 216, 64, 20, button_set_amount, button_none, 3, 0),
+    new generic_button(448, 216, 64, 20, button_set_amount, button_none, 4, 0),
+];
+let arrow_buttons: arrow_button[] = [
+    new arrow_button(240, 242, 17, 24, arrow_button_amount, 1, 0),
+    new arrow_button(264, 242, 15, 24, arrow_button_amount, 0, 0),
+];
 export class unnamed37_8 {
     public focus_button_id: number = 0;
     public focus_arrow_button_id: number = 0;
@@ -191,13 +147,13 @@ function get_tooltip(c: tooltip_context) {
     }
 }
 export function window_donate_to_city_show() {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_DONATE_TO_CITY,
         draw_background,
         draw_foreground,
         handle_input,
         get_tooltip
-    };
+    );
     city_emperor_init_donation_amount();
     window_show(window);
 }

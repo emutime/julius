@@ -1,51 +1,30 @@
 export const MAX_CHANNELS = 70;
 export const CITY_CHANNEL_OFFSET = 15;
-import { building_type } from 'building/type';
+import { building } from 'building/building';
+import { building_state, building_type } from 'building/type';
+import { city_figures_imperial_soldiers } from 'city/figures';
+import { buffer, buffer_read_i32, buffer_read_u32, buffer_skip, buffer_write_i32, buffer_write_u32 } from 'core/buffer';
+import { time_get_millis, time_millis } from 'core/time';
+import { set_sound_type, setting_sound } from 'game/settings';
+import { sound_channel } from 'sound/channel';
+import { sound_device_is_channel_playing, sound_device_play_channel_panned, sound_device_set_channel_volume } from 'sound/device';
+import { memset } from '../../ext/crt';
+export const enum sound_direction {
+    SOUND_DIRECTION_LEFT = 0,
+    SOUND_DIRECTION_CENTER = 2,
+    SOUND_DIRECTION_RIGHT = 4
+};
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
 import BUILDING_THEATER = building_type.BUILDING_THEATER;
 import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;
 import BUILDING_GLADIATOR_SCHOOL = building_type.BUILDING_GLADIATOR_SCHOOL;
-import { building_type } from 'building/type';
-import { building_state } from 'building/type';
 import BUILDING_STATE_UNUSED = building_state.BUILDING_STATE_UNUSED;;
-import { buffer } from 'core/buffer';
-import { buffer_write_u32 } from 'core/buffer';
-import { buffer_write_i32 } from 'core/buffer';
-import { buffer_read_u32 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
-import { buffer_skip } from 'core/buffer';
-import { building } from 'building/building';
-import { sound_direction } from 'sound/city';
 import SOUND_DIRECTION_LEFT = sound_direction.SOUND_DIRECTION_LEFT;
 import SOUND_DIRECTION_CENTER = sound_direction.SOUND_DIRECTION_CENTER;
 import SOUND_DIRECTION_RIGHT = sound_direction.SOUND_DIRECTION_RIGHT;
-import { city_figures_imperial_soldiers } from 'city/figures';
-import { time_millis } from 'core/time';
-import { time_get_millis } from 'core/time';
-import { set_tooltips } from 'game/settings';
-import { set_difficulty } from 'game/settings';
-import { set_sound_type } from 'game/settings';
 import SOUND_CITY = set_sound_type.SOUND_CITY;
-import { set_sound_type } from 'game/settings';
-import { set_sound } from 'game/settings';
-import { setting_sound } from 'game/settings';
-import { sound_channel } from 'sound/channel';
 import SOUND_CHANNEL_CITY_MIN = sound_channel.SOUND_CHANNEL_CITY_MIN;
 import SOUND_CHANNEL_CITY_MAX = sound_channel.SOUND_CHANNEL_CITY_MAX;
-import { sound_device_is_channel_playing } from 'sound/device';
-import { sound_device_set_channel_volume } from 'sound/device';
-import { sound_device_play_channel_panned } from 'sound/device';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 export const enum sound_channel_city_house {
     SOUND_CHANNEL_CITY_HOUSE_SLUM = 30,
     SOUND_CHANNEL_CITY_HOUSE_POOR = 34,
@@ -111,6 +90,78 @@ export const enum sound_channel_city_house {
     SOUND_CHANNEL_CITY_RIVER = 132,
     SOUND_CHANNEL_CITY_MISSION_POST = 133,
 }
+
+import SOUND_CHANNEL_CITY_HOUSE_SLUM = sound_channel_city_house.SOUND_CHANNEL_CITY_HOUSE_SLUM
+import SOUND_CHANNEL_CITY_HOUSE_POOR = sound_channel_city_house.SOUND_CHANNEL_CITY_HOUSE_POOR
+import SOUND_CHANNEL_CITY_HOUSE_MEDIUM = sound_channel_city_house.SOUND_CHANNEL_CITY_HOUSE_MEDIUM
+import SOUND_CHANNEL_CITY_HOUSE_GOOD = sound_channel_city_house.SOUND_CHANNEL_CITY_HOUSE_GOOD
+import SOUND_CHANNEL_CITY_HOUSE_POSH = sound_channel_city_house.SOUND_CHANNEL_CITY_HOUSE_POSH
+import SOUND_CHANNEL_CITY_AMPHITHEATER = sound_channel_city_house.SOUND_CHANNEL_CITY_AMPHITHEATER
+import SOUND_CHANNEL_CITY_THEATER = sound_channel_city_house.SOUND_CHANNEL_CITY_THEATER
+import SOUND_CHANNEL_CITY_HIPPODROME = sound_channel_city_house.SOUND_CHANNEL_CITY_HIPPODROME
+import SOUND_CHANNEL_CITY_COLOSSEUM = sound_channel_city_house.SOUND_CHANNEL_CITY_COLOSSEUM
+import SOUND_CHANNEL_CITY_GLADIATOR_SCHOOL = sound_channel_city_house.SOUND_CHANNEL_CITY_GLADIATOR_SCHOOL
+import SOUND_CHANNEL_CITY_LION_PIT = sound_channel_city_house.SOUND_CHANNEL_CITY_LION_PIT
+import SOUND_CHANNEL_CITY_ACTOR_COLONY = sound_channel_city_house.SOUND_CHANNEL_CITY_ACTOR_COLONY
+import SOUND_CHANNEL_CITY_CHARIOT_MAKER = sound_channel_city_house.SOUND_CHANNEL_CITY_CHARIOT_MAKER
+import SOUND_CHANNEL_CITY_GARDEN = sound_channel_city_house.SOUND_CHANNEL_CITY_GARDEN
+import SOUND_CHANNEL_CITY_CLINIC = sound_channel_city_house.SOUND_CHANNEL_CITY_CLINIC
+import SOUND_CHANNEL_CITY_HOSPITAL = sound_channel_city_house.SOUND_CHANNEL_CITY_HOSPITAL
+import SOUND_CHANNEL_CITY_BATHHOUSE = sound_channel_city_house.SOUND_CHANNEL_CITY_BATHHOUSE
+import SOUND_CHANNEL_CITY_BARBER = sound_channel_city_house.SOUND_CHANNEL_CITY_BARBER
+import SOUND_CHANNEL_CITY_SCHOOL = sound_channel_city_house.SOUND_CHANNEL_CITY_SCHOOL
+import SOUND_CHANNEL_CITY_ACADEMY = sound_channel_city_house.SOUND_CHANNEL_CITY_ACADEMY
+import SOUND_CHANNEL_CITY_LIBRARY = sound_channel_city_house.SOUND_CHANNEL_CITY_LIBRARY
+import SOUND_CHANNEL_CITY_PREFECTURE = sound_channel_city_house.SOUND_CHANNEL_CITY_PREFECTURE
+import SOUND_CHANNEL_CITY_FORT = sound_channel_city_house.SOUND_CHANNEL_CITY_FORT
+import SOUND_CHANNEL_CITY_TOWER = sound_channel_city_house.SOUND_CHANNEL_CITY_TOWER
+import SOUND_CHANNEL_CITY_TEMPLE_CERES = sound_channel_city_house.SOUND_CHANNEL_CITY_TEMPLE_CERES
+import SOUND_CHANNEL_CITY_TEMPLE_NEPTUNE = sound_channel_city_house.SOUND_CHANNEL_CITY_TEMPLE_NEPTUNE
+import SOUND_CHANNEL_CITY_TEMPLE_MERCURY = sound_channel_city_house.SOUND_CHANNEL_CITY_TEMPLE_MERCURY
+import SOUND_CHANNEL_CITY_TEMPLE_MARS = sound_channel_city_house.SOUND_CHANNEL_CITY_TEMPLE_MARS
+import SOUND_CHANNEL_CITY_TEMPLE_VENUS = sound_channel_city_house.SOUND_CHANNEL_CITY_TEMPLE_VENUS
+import SOUND_CHANNEL_CITY_MARKET = sound_channel_city_house.SOUND_CHANNEL_CITY_MARKET
+import SOUND_CHANNEL_CITY_GRANARY = sound_channel_city_house.SOUND_CHANNEL_CITY_GRANARY
+import SOUND_CHANNEL_CITY_WAREHOUSE = sound_channel_city_house.SOUND_CHANNEL_CITY_WAREHOUSE
+import SOUND_CHANNEL_CITY_SHIPYARD = sound_channel_city_house.SOUND_CHANNEL_CITY_SHIPYARD
+import SOUND_CHANNEL_CITY_DOCK = sound_channel_city_house.SOUND_CHANNEL_CITY_DOCK
+import SOUND_CHANNEL_CITY_WHARF = sound_channel_city_house.SOUND_CHANNEL_CITY_WHARF
+import SOUND_CHANNEL_CITY_PALACE = sound_channel_city_house.SOUND_CHANNEL_CITY_PALACE
+import SOUND_CHANNEL_CITY_ENGINEERS_POST = sound_channel_city_house.SOUND_CHANNEL_CITY_ENGINEERS_POST
+import SOUND_CHANNEL_CITY_SENATE = sound_channel_city_house.SOUND_CHANNEL_CITY_SENATE
+import SOUND_CHANNEL_CITY_FORUM = sound_channel_city_house.SOUND_CHANNEL_CITY_FORUM
+import SOUND_CHANNEL_CITY_RESERVOIR = sound_channel_city_house.SOUND_CHANNEL_CITY_RESERVOIR
+import SOUND_CHANNEL_CITY_FOUNTAIN = sound_channel_city_house.SOUND_CHANNEL_CITY_FOUNTAIN
+import SOUND_CHANNEL_CITY_WELL = sound_channel_city_house.SOUND_CHANNEL_CITY_WELL
+import SOUND_CHANNEL_CITY_MILITARY_ACADEMY = sound_channel_city_house.SOUND_CHANNEL_CITY_MILITARY_ACADEMY
+import SOUND_CHANNEL_CITY_ORACLE = sound_channel_city_house.SOUND_CHANNEL_CITY_ORACLE
+import SOUND_CHANNEL_CITY_BURNING_RUIN = sound_channel_city_house.SOUND_CHANNEL_CITY_BURNING_RUIN
+import SOUND_CHANNEL_CITY_WHEAT_FARM = sound_channel_city_house.SOUND_CHANNEL_CITY_WHEAT_FARM
+import SOUND_CHANNEL_CITY_VEGETABLE_FARM = sound_channel_city_house.SOUND_CHANNEL_CITY_VEGETABLE_FARM
+import SOUND_CHANNEL_CITY_FRUIT_FARM = sound_channel_city_house.SOUND_CHANNEL_CITY_FRUIT_FARM
+import SOUND_CHANNEL_CITY_OLIVE_FARM = sound_channel_city_house.SOUND_CHANNEL_CITY_OLIVE_FARM
+import SOUND_CHANNEL_CITY_VINE_FARM = sound_channel_city_house.SOUND_CHANNEL_CITY_VINE_FARM
+import SOUND_CHANNEL_CITY_PIG_FARM = sound_channel_city_house.SOUND_CHANNEL_CITY_PIG_FARM
+import SOUND_CHANNEL_CITY_QUARRY = sound_channel_city_house.SOUND_CHANNEL_CITY_QUARRY
+import SOUND_CHANNEL_CITY_IRON_MINE = sound_channel_city_house.SOUND_CHANNEL_CITY_IRON_MINE
+import SOUND_CHANNEL_CITY_TIMBER_YARD = sound_channel_city_house.SOUND_CHANNEL_CITY_TIMBER_YARD
+import SOUND_CHANNEL_CITY_CLAY_PIT = sound_channel_city_house.SOUND_CHANNEL_CITY_CLAY_PIT
+import SOUND_CHANNEL_CITY_WINE_WORKSHOP = sound_channel_city_house.SOUND_CHANNEL_CITY_WINE_WORKSHOP
+import SOUND_CHANNEL_CITY_OIL_WORKSHOP = sound_channel_city_house.SOUND_CHANNEL_CITY_OIL_WORKSHOP
+import SOUND_CHANNEL_CITY_WEAPONS_WORKSHOP = sound_channel_city_house.SOUND_CHANNEL_CITY_WEAPONS_WORKSHOP
+import SOUND_CHANNEL_CITY_FURNITURE_WORKSHOP = sound_channel_city_house.SOUND_CHANNEL_CITY_FURNITURE_WORKSHOP
+import SOUND_CHANNEL_CITY_POTTERY_WORKSHOP = sound_channel_city_house.SOUND_CHANNEL_CITY_POTTERY_WORKSHOP
+import SOUND_CHANNEL_CITY_EMPTY_LAND = sound_channel_city_house.SOUND_CHANNEL_CITY_EMPTY_LAND
+import SOUND_CHANNEL_CITY_RIVER = sound_channel_city_house.SOUND_CHANNEL_CITY_RIVER
+import SOUND_CHANNEL_CITY_MISSION_POST = sound_channel_city_house.SOUND_CHANNEL_CITY_MISSION_POST
+
+
+
+
+
+
+
+
 export class city_channel {
     public in_use: number = 0;
     public available: number = 0;
@@ -136,7 +187,7 @@ export class city_channel {
     }
 }
 let channels: city_channel[] = new Array(MAX_CHANNELS);
-let BUILDING_TYPE_TO_CHANNEL_ID: number[] = new Array().fill({
+let BUILDING_TYPE_TO_CHANNEL_ID: number[] = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //0-9
     1, 1, 1, 1, 1, 1, 2, 2, 2, 2, //10-19
     3, 3, 3, 3, 4, 4, 4, 4, 5, 5, //20-29
@@ -152,7 +203,7 @@ let BUILDING_TYPE_TO_CHANNEL_ID: number[] = new Array().fill({
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //120-129
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //130-139
     0, 0, 0, 0, 0, 0 //140-145
-});
+];
 let last_update_time: time_millis;
 export function sound_city_init() {
     last_update_time = time_get_millis();

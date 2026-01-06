@@ -1,106 +1,65 @@
 export const INDEX_OPTIONS = 1;
 ;
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
 import { game_file_editor_create_scenario } from 'game/file_editor';
 import { game_exit_editor } from 'game/game';
-import { color_t } from 'graphics/color';
 import { system_is_fullscreen_only } from 'game/system';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
-import GROUP_TOP_MENU = group_terrain.GROUP_TOP_MENU;
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
 import { image_draw } from 'graphics/image';
-import { menu_item } from 'graphics/menu';
-import { menu_bar_item } from 'graphics/menu';
-import { menu_bar_draw } from 'graphics/menu';
-import { menu_bar_handle_mouse } from 'graphics/menu';
-import { menu_draw } from 'graphics/menu';
-import { menu_handle_mouse } from 'graphics/menu';
+import { menu_bar_draw, menu_bar_handle_mouse, menu_bar_item, menu_draw, menu_handle_mouse, menu_item } from 'graphics/menu';
 import { screen_width } from 'graphics/screen';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { window_id } from 'graphics/window';
-import WINDOW_EDITOR_TOP_MENU = window_id.WINDOW_EDITOR_TOP_MENU;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_request_refresh } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { window_go_back } from 'graphics/window';
-import { map_point } from 'map/point';
-import { scenario_editor_clear_herd_points } from 'scenario/editor_map';
-import { scenario_editor_clear_fishing_points } from 'scenario/editor_map';
-import { scenario_editor_clear_invasion_points } from 'scenario/editor_map';
-import { buffer } from 'core/buffer';
+import { window_go_back, window_id, window_request_refresh, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { mouse } from 'input/mouse';
+import { scenario_editor_clear_fishing_points, scenario_editor_clear_herd_points, scenario_editor_clear_invasion_points } from 'scenario/editor_map';
 import { scenario_is_saved } from 'scenario/scenario';
 import { window_display_options_show } from 'window/display_options';
-import { file_dialog_type } from 'window/file_dialog';
-import FILE_DIALOG_SAVE = file_dialog_type.FILE_DIALOG_SAVE;
-import FILE_DIALOG_LOAD = file_dialog_type.FILE_DIALOG_LOAD;
-import { file_dialog_type } from 'window/file_dialog';
-import { file_type } from 'window/file_dialog';
-import FILE_TYPE_SCENARIO = file_type.FILE_TYPE_SCENARIO;
-import { file_type } from 'window/file_dialog';
-import { window_file_dialog_show } from 'window/file_dialog';
-import { message_dialog } from 'window/message_dialog';
-import MESSAGE_DIALOG_EDITOR_ABOUT = message_dialog.MESSAGE_DIALOG_EDITOR_ABOUT;
-import MESSAGE_DIALOG_EDITOR_HELP = message_dialog.MESSAGE_DIALOG_EDITOR_HELP;
-import { window_message_dialog_show } from 'window/message_dialog';
-import { popup_dialog_type } from 'window/popup_dialog';
-import POPUP_DIALOG_EDITOR_QUIT_WITHOUT_SAVING = popup_dialog_type.POPUP_DIALOG_EDITOR_QUIT_WITHOUT_SAVING;
-import { popup_dialog_type } from 'window/popup_dialog';
-import { window_popup_dialog_show } from 'window/popup_dialog';
+import { window_editor_empire_show } from 'window/editor/empire';
+import { window_editor_map_draw_all, window_editor_map_show } from 'window/editor/map';
+import { file_dialog_type, file_type, window_file_dialog_show } from 'window/file_dialog';
+import { message_dialog, window_message_dialog_show } from 'window/message_dialog';
+import { popup_dialog_type, window_popup_dialog_show } from 'window/popup_dialog';
 import { window_select_list_show } from 'window/select_list';
 import { window_sound_options_show } from 'window/sound_options';
 import { window_speed_options_show } from 'window/speed_options';
-import { window_editor_empire_show } from 'window/editor/empire';
-import { window_editor_map_draw_all } from 'window/editor/map';
-import { window_editor_map_show } from 'window/editor/map';
-let menu_file: menu_item[] = new Array().fill({
-    { 7, 1, menu_file_new_map, 0},
-    { 7, 2, menu_file_load_map, 0},
-    { 7, 3, menu_file_save_map, 0},
-    { 7, 4, menu_file_exit_editor, 0},
-});
-let menu_options: menu_item[] = new Array().fill({
-    { 2, 1, menu_options_display, 0},
-    { 2, 2, menu_options_sound, 0},
-    { 2, 3, menu_options_speed, 0},
-});
-let menu_help: menu_item[] = new Array().fill({
-    { 3, 1, menu_help_help, 0},
-    { 3, 7, menu_help_about, 0},
-});
-let menu_resets: menu_item[] = new Array().fill({
-    { 10, 1, menu_resets_herds, 0},
-    { 10, 2, menu_resets_fish, 0},
-    { 10, 3, menu_resets_invasions, 0},
-});
-let menu_empire: menu_item[] = new Array().fill({
-    { 149, 1, menu_empire_choose, 0},
-});
-let menu: menu_bar_item[] = new Array().fill({
-    { 7, menu_file, 4},
-    { 2, menu_options, 3},
-    { 3, menu_help, 2},
-    { 10, menu_resets, 3},
-    { 149, menu_empire, 1},
-});
+import GROUP_TOP_MENU = group_terrain.GROUP_TOP_MENU;
+import WINDOW_EDITOR_TOP_MENU = window_id.WINDOW_EDITOR_TOP_MENU;
+import FILE_DIALOG_SAVE = file_dialog_type.FILE_DIALOG_SAVE;
+import FILE_DIALOG_LOAD = file_dialog_type.FILE_DIALOG_LOAD;
+import FILE_TYPE_SCENARIO = file_type.FILE_TYPE_SCENARIO;
+import MESSAGE_DIALOG_EDITOR_ABOUT = message_dialog.MESSAGE_DIALOG_EDITOR_ABOUT;
+import MESSAGE_DIALOG_EDITOR_HELP = message_dialog.MESSAGE_DIALOG_EDITOR_HELP;
+import POPUP_DIALOG_EDITOR_QUIT_WITHOUT_SAVING = popup_dialog_type.POPUP_DIALOG_EDITOR_QUIT_WITHOUT_SAVING;
+let menu_file: menu_item[] = [
+    new menu_item(7, 1, menu_file_new_map, 0),
+    new menu_item(7, 2, menu_file_load_map, 0),
+    new menu_item(7, 3, menu_file_save_map, 0),
+    new menu_item(7, 4, menu_file_exit_editor, 0),
+];
+let menu_options: menu_item[] = [
+    new menu_item(2, 1, menu_options_display, 0),
+    new menu_item(2, 2, menu_options_sound, 0),
+    new menu_item(2, 3, menu_options_speed, 0),
+];
+let menu_help: menu_item[] = [
+    new menu_item(3, 1, menu_help_help, 0),
+    new menu_item(3, 7, menu_help_about, 0),
+];
+let menu_resets: menu_item[] = [
+    new menu_item(10, 1, menu_resets_herds, 0),
+    new menu_item(10, 2, menu_resets_fish, 0),
+    new menu_item(10, 3, menu_resets_invasions, 0),
+];
+let menu_empire: menu_item[] = [
+    new menu_item(149, 1, menu_empire_choose, 0),
+];
+let menu: menu_bar_item[] = [
+    new menu_bar_item(7, menu_file, 4),
+    new menu_bar_item(2, menu_options, 3),
+    new menu_bar_item(3, menu_help, 2),
+    new menu_bar_item(10, menu_resets, 3),
+    new menu_bar_item(149, menu_empire, 1),
+];
 export class unnamed78_8 {
     public open_sub_menu: number = 0;
     public focus_menu_id: number = 0;
@@ -130,12 +89,12 @@ function handle_input(m: mouse, h: hotkeys) {
     widget_top_menu_editor_handle_input(m, h);
 }
 function top_menu_window_show() {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_EDITOR_TOP_MENU,
         window_editor_map_draw_all,
         draw_foreground,
         handle_input
-    };
+    );
     init();
     window_show(window);
 }

@@ -266,7 +266,7 @@ function draw_line(str: number, x: number, y: number, color: color_t, measure_on
         }
     }
 }
-function draw_text(text: number, x_offset: number, y_offset: number, box_width: number, height_lines: number, color: color_t, measure_only: number) {
+function draw_text(text: Uint8Array, x_offset: number, y_offset: number, box_width: number, height_lines: number, color: color_t, measure_only: number) {
     let image_height_lines: number = 0;
     let image_id: number = 0;
     let lines_before_image: number = 0;
@@ -378,10 +378,10 @@ function draw_text(text: number, x_offset: number, y_offset: number, box_width: 
     }
     return num_lines;
 }
-export function rich_text_draw(text: number, x_offset: number, y_offset: number, box_width: number, height_lines: number, measure_only: number) {
+export function rich_text_draw(text: Uint8Array, x_offset: number, y_offset: number, box_width: number, height_lines: number, measure_only: number) {
     return draw_text(text, x_offset, y_offset, box_width, height_lines, 0, measure_only);
 }
-export function rich_text_draw_colored(text: number, x_offset: number, y_offset: number, box_width: number, height_lines: number, color: color_t) {
+export function rich_text_draw_colored(text: Uint8Array, x_offset: number, y_offset: number, box_width: number, height_lines: number, color: color_t) {
     return draw_text(text, x_offset, y_offset, box_width, height_lines, color, 0);
 }
 export function rich_text_draw_scrollbar() {

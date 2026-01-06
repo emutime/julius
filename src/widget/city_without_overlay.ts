@@ -1,25 +1,40 @@
-export const OFFSET = 1;
-import { COLOR_MASK_RED } from 'graphics/color';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { time_millis } from 'core/time';
-import { time_get_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';;
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { pixel_coordinate } from 'widget/city';
+import { building_animation_offset } from 'building/animation';
+import { building, building_get, building_main } from 'building/building';
+import { building_construction_record_view_position } from 'building/construction';
+import { building_dock_count_idle_dockers } from 'building/dock';
 import { building_type } from 'building/type';
+import { city_buildings_get_trade_center } from 'city/buildings';
+import { city_entertainment_hippodrome_has_race } from 'city/entertainment';
+import { city_labor_unemployment_percentage_for_senate } from 'city/labor';
+import { city_population } from 'city/population';
+import { city_rating_culture, city_rating_favor, city_rating_peace, city_rating_prosperity } from 'city/ratings';
+import { city_view_foreach_map_tile, city_view_foreach_valid_map_tile, city_view_foreach_valid_map_tile_row, city_view_get_viewport, city_view_orientation } from 'city/view';
+import { config_get, config_key } from 'core/config';
+import { direction_type } from 'core/direction';
+import { image, image_get, image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { time_get_millis, time_millis } from 'core/time';
+import { figure, figure_get } from 'figure/figure';
+import { formation_get, formation_get_selected } from 'figure/formation';
+import { formation_legion_at_grid_offset } from 'figure/formation_legion';
+import { figure_type } from 'figure/type';
+import { resource_type } from 'game/resource';
+import { COLOR_MASK_RED, color_t } from 'graphics/color';
+import { image_draw_blend, image_draw_isometric_footprint_from_draw_tile, image_draw_isometric_top_from_draw_tile, image_draw_masked } from 'graphics/image';
+import { map_building_at } from 'map/building';
+import { map_figure_at } from 'map/figure';
+import { GRID } from 'map/grid';
+import { map_image_at, map_image_set } from 'map/image';
+import { map_tile } from 'map/point';
+import { edge_x, map_property_is_constructing, map_property_is_deleted, map_property_is_draw_tile, map_property_multi_tile_size, map_property_multi_tile_xy } from 'map/property';
+import { map_sprite_bridge_at } from 'map/sprite';
+import { map_terrain_is, terrain } from 'map/terrain';
+import { sound_city_mark_building_view, sound_direction } from 'sound/city';
+import { pixel_coordinate } from 'widget/city';
+import { city_draw_bridge } from 'widget/city_bridge';
+import { city_building_ghost_draw, city_building_ghost_mark_deleting } from 'widget/city_building_ghost';
+import { city_draw_figure, city_draw_selected_figure } from 'widget/city_figure';
+;
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
 import BUILDING_THEATER = building_type.BUILDING_THEATER;
 import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;
@@ -37,54 +52,11 @@ import BUILDING_OIL_WORKSHOP = building_type.BUILDING_OIL_WORKSHOP;
 import BUILDING_WEAPONS_WORKSHOP = building_type.BUILDING_WEAPONS_WORKSHOP;
 import BUILDING_FURNITURE_WORKSHOP = building_type.BUILDING_FURNITURE_WORKSHOP;
 import BUILDING_POTTERY_WORKSHOP = building_type.BUILDING_POTTERY_WORKSHOP;
-import { building_type } from 'building/type';
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_main } from 'building/building';
-import { building_animation_offset } from 'building/animation';
-import { building_construction_record_view_position } from 'building/construction';
-import { building_dock_count_idle_dockers } from 'building/dock';
-import { city_buildings_get_trade_center } from 'city/buildings';
-import { city_entertainment_hippodrome_has_race } from 'city/entertainment';
-import { labor_category_data } from 'city/labor';
-import { city_labor_unemployment_percentage_for_senate } from 'city/labor';
-import { city_population } from 'city/population';
-import { selected_rating } from 'city/ratings';
-import { city_rating_culture } from 'city/ratings';
-import { city_rating_prosperity } from 'city/ratings';
-import { city_rating_peace } from 'city/ratings';
-import { city_rating_favor } from 'city/ratings';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_orientation } from 'city/view';
-import { city_view_get_viewport } from 'city/view';
-import { city_view_foreach_map_tile } from 'city/view';
-import { city_view_foreach_valid_map_tile } from 'city/view';
-import { city_view_foreach_valid_map_tile_row } from 'city/view';
-import { config_key } from 'core/config';
 import CONFIG_UI_HIGHLIGHT_LEGIONS = config_key.CONFIG_UI_HIGHLIGHT_LEGIONS;
-import { config_key } from 'core/config';
-import { config_string_key } from 'core/config';
-import { config_get } from 'core/config';
-import { figure_type } from 'figure/type';
 import FIGURE_FORT_JAVELIN = figure_type.FIGURE_FORT_JAVELIN;
 import FIGURE_FORT_MOUNTED = figure_type.FIGURE_FORT_MOUNTED;
 import FIGURE_FORT_LEGIONARY = figure_type.FIGURE_FORT_LEGIONARY;
-import { figure_type } from 'figure/type';
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_get } from 'figure/formation';
-import { formation_get_selected } from 'figure/formation';
-import { formation_legion_at_grid_offset } from 'figure/formation_legion';
-import { resource_type } from 'game/resource';
 import RESOURCE_NONE = resource_type.RESOURCE_NONE;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_TERRAIN_BLACK = group_terrain.GROUP_TERRAIN_BLACK;
 import GROUP_TERRAIN_WATER = group_terrain.GROUP_TERRAIN_WATER;
 import GROUP_TERRAIN_OVERLAY = group_terrain.GROUP_TERRAIN_OVERLAY;
@@ -107,72 +79,38 @@ import GROUP_BUILDING_HIPPODROME_2 = group_terrain.GROUP_BUILDING_HIPPODROME_2;
 import GROUP_PLAGUE_SKULL = group_terrain.GROUP_PLAGUE_SKULL;
 import GROUP_BUILDING_TRADE_CENTER_FLAG = group_terrain.GROUP_BUILDING_TRADE_CENTER_FLAG;
 import GROUP_BUILDING_GATEHOUSE = group_terrain.GROUP_BUILDING_GATEHOUSE;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { image_get } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw_masked } from 'graphics/image';
-import { image_draw_blend } from 'graphics/image';
-import { image_draw_isometric_footprint_from_draw_tile } from 'graphics/image';
-import { image_draw_isometric_top_from_draw_tile } from 'graphics/image';
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { map_building_at } from 'map/building';
-import { direction_type } from 'core/direction';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
 import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
 import DIR_6_LEFT = direction_type.DIR_6_LEFT;
-import { direction_type } from 'core/direction';
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { map_figure_at } from 'map/figure';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_image_at } from 'map/image';
-import { map_image_set } from 'map/image';
-import { edge_x } from 'map/property';
 import EDGE_X0Y0 = edge_x.EDGE_X0Y0;
 import EDGE_X1Y0 = edge_x.EDGE_X1Y0;
 import EDGE_X0Y1 = edge_x.EDGE_X0Y1;
 import EDGE_X1Y1 = edge_x.EDGE_X1Y1;
-import { map_property_is_draw_tile } from 'map/property';
-import { map_property_multi_tile_xy } from 'map/property';
-import { map_property_multi_tile_size } from 'map/property';
-import { map_property_is_constructing } from 'map/property';
-import { map_property_is_deleted } from 'map/property';
-import { map_sprite_bridge_at } from 'map/sprite';
-import { terrain } from 'map/terrain';
 import TERRAIN_GARDEN = terrain.TERRAIN_GARDEN;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_is } from 'map/terrain';
-import { sound_direction } from 'sound/city';
 import SOUND_DIRECTION_LEFT = sound_direction.SOUND_DIRECTION_LEFT;
 import SOUND_DIRECTION_CENTER = sound_direction.SOUND_DIRECTION_CENTER;
 import SOUND_DIRECTION_RIGHT = sound_direction.SOUND_DIRECTION_RIGHT;
-import { sound_city_mark_building_view } from 'sound/city';
-import { city_draw_bridge } from 'widget/city_bridge';
-import { city_building_ghost_mark_deleting } from 'widget/city_building_ghost';
-import { city_building_ghost_draw } from 'widget/city_building_ghost';
-import { city_draw_figure } from 'widget/city_figure';
-import { city_draw_selected_figure } from 'widget/city_figure';
-let ADJACENT_OFFSETS: number[] = new Array(2).fill({
-    {
-        { OFFSET(- 1, 0), OFFSET(-1, -1), OFFSET(-1, -2), OFFSET(0, -2), OFFSET(1, -2)},
-{ OFFSET(0, -1), OFFSET(1, -1), OFFSET(2, -1), OFFSET(2, 0), OFFSET(2, 1) },
-{ OFFSET(1, 0), OFFSET(1, 1), OFFSET(1, 2), OFFSET(0, 2), OFFSET(-1, 2) },
-{ OFFSET(0, 1), OFFSET(-1, 1), OFFSET(-2, 1), OFFSET(-2, 0), OFFSET(-2, -1) }
-    },
-{
-    { OFFSET(-1, 0), OFFSET(-1, -1), OFFSET(-1, -2), OFFSET(-1, -3), OFFSET(0, -3), OFFSET(1, -3), OFFSET(2, -3) },
-    { OFFSET(0, -1), OFFSET(1, -1), OFFSET(2, -1), OFFSET(3, -1), OFFSET(3, 0), OFFSET(3, 1), OFFSET(3, 2) },
-    { OFFSET(1, 0), OFFSET(1, 1), OFFSET(1, 2), OFFSET(1, 3), OFFSET(0, 3), OFFSET(-1, 3), OFFSET(-2, 3) },
-    { OFFSET(0, 1), OFFSET(-1, 1), OFFSET(-2, 1), OFFSET(-3, 1), OFFSET(-3, 0), OFFSET(-3, -1), OFFSET(-3, -2) }
-}
-});
+
+function OFFSET(x: number, y: number) { return x + GRID_SIZE * y }
+
+let ADJACENT_OFFSETS: number[][][] = [
+    [
+        [OFFSET(- 1, 0), OFFSET(-1, -1), OFFSET(-1, -2), OFFSET(0, -2), OFFSET(1, -2)],
+        [OFFSET(0, -1), OFFSET(1, -1), OFFSET(2, -1), OFFSET(2, 0), OFFSET(2, 1)],
+        [OFFSET(1, 0), OFFSET(1, 1), OFFSET(1, 2), OFFSET(0, 2), OFFSET(-1, 2)],
+        [OFFSET(0, 1), OFFSET(-1, 1), OFFSET(-2, 1), OFFSET(-2, 0), OFFSET(-2, -1)]
+    ],
+    [
+        [OFFSET(-1, 0), OFFSET(-1, -1), OFFSET(-1, -2), OFFSET(-1, -3), OFFSET(0, -3), OFFSET(1, -3), OFFSET(2, -3)],
+        [OFFSET(0, -1), OFFSET(1, -1), OFFSET(2, -1), OFFSET(3, -1), OFFSET(3, 0), OFFSET(3, 1), OFFSET(3, 2)],
+        [OFFSET(1, 0), OFFSET(1, 1), OFFSET(1, 2), OFFSET(1, 3), OFFSET(0, 3), OFFSET(-1, 3), OFFSET(-2, 3)],
+        [OFFSET(0, 1), OFFSET(-1, 1), OFFSET(-2, 1), OFFSET(-3, 1), OFFSET(-3, 0), OFFSET(-3, -1), OFFSET(-3, -2)]
+    ]
+];
 export class unnamed47_8 {
     public last_water_animation_time: time_millis = null;
     public advance_water_animation: number = 0;

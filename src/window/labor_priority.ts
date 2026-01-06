@@ -1,56 +1,22 @@
 export const MIN_DIALOG_WIDTH = 320;
-import { BLOCK_SIZE } from 'graphics/panel';
-import { COLOR_BLACK } from 'graphics/color';
-import { COLOR_RED } from 'graphics/color';
-import { labor_category_data } from 'city/labor';
-import { city_labor_set_priority } from 'city/labor';
-import { city_labor_max_selectable_priority } from 'city/labor';
+import { city_labor_max_selectable_priority, city_labor_set_priority } from 'city/labor';
 import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';;
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { graphics_draw_rect } from 'graphics/graphics';
-import { graphics_shade_rect } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
+import { COLOR_BLACK, COLOR_RED, color_t } from 'graphics/color';
 import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_draw_rect, graphics_in_dialog, graphics_reset_dialog, graphics_shade_rect } from 'graphics/graphics';
+import { lang_text_draw_centered, lang_text_get_width } from 'graphics/lang_text';
+import { BLOCK_SIZE, outer_panel_draw } from 'graphics/panel';
+import { tooltip_context, tooltip_type } from 'graphics/tooltip';
+import { window_draw_underlying_window, window_go_back, window_id, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { lang_text_get_width } from 'graphics/lang_text';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { tooltip_type } from 'graphics/tooltip';
 import TOOLTIP_BUTTON = tooltip_type.TOOLTIP_BUTTON;
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_LABOR_PRIORITY = window_id.WINDOW_LABOR_PRIORITY;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_draw_underlying_window } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { window_go_back } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
 export class unnamed15_8 {
     public category: number = 0;
     public max_items: number = 0;
@@ -62,18 +28,18 @@ export class unnamed15_8 {
     }
 }
 let data: unnamed15_8 = new unnamed15_8();
-let priority_buttons: generic_button[] = new Array().fill({
-    { 180, 256, 280, 25, button_set_priority, button_none, 0, 0}, // no prio
-    { 178, 221, 27, 27, button_set_priority, button_none, 1, 0},
-    { 210, 221, 27, 27, button_set_priority, button_none, 2, 0},
-    { 242, 221, 27, 27, button_set_priority, button_none, 3, 0},
-    { 274, 221, 27, 27, button_set_priority, button_none, 4, 0},
-    { 306, 221, 27, 27, button_set_priority, button_none, 5, 0},
-    { 338, 221, 27, 27, button_set_priority, button_none, 6, 0},
-    { 370, 221, 27, 27, button_set_priority, button_none, 7, 0},
-    { 402, 221, 27, 27, button_set_priority, button_none, 8, 0},
-    { 434, 221, 27, 27, button_set_priority, button_none, 9, 0},
-});
+let priority_buttons: generic_button[] = [
+    new generic_button(180, 256, 280, 25, button_set_priority, button_none, 0, 0), // no prio
+    new generic_button(178, 221, 27, 27, button_set_priority, button_none, 1, 0),
+    new generic_button(210, 221, 27, 27, button_set_priority, button_none, 2, 0),
+    new generic_button(242, 221, 27, 27, button_set_priority, button_none, 3, 0),
+    new generic_button(274, 221, 27, 27, button_set_priority, button_none, 4, 0),
+    new generic_button(306, 221, 27, 27, button_set_priority, button_none, 5, 0),
+    new generic_button(338, 221, 27, 27, button_set_priority, button_none, 6, 0),
+    new generic_button(370, 221, 27, 27, button_set_priority, button_none, 7, 0),
+    new generic_button(402, 221, 27, 27, button_set_priority, button_none, 8, 0),
+    new generic_button(434, 221, 27, 27, button_set_priority, button_none, 9, 0),
+];
 function init(category: number) {
     data.category = category;
     data.max_items = city_labor_max_selectable_priority(category);
@@ -151,13 +117,13 @@ function get_tooltip(c: tooltip_context) {
     }
 }
 export function window_labor_priority_show(category: number) {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_LABOR_PRIORITY,
         draw_background,
         draw_foreground,
         handle_input,
         get_tooltip
-    };
+    );
     init(category);
     window_show(window);
 }

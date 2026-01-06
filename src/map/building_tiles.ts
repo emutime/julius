@@ -80,7 +80,7 @@ function set_crop_tile(building_id: number, x: number, y: number, dx: number, dy
     map_terrain_add(grid_offset, TERRAIN_BUILDING);
     map_building_set(grid_offset, building_id);
     map_property_clear_constructing(grid_offset);
-    map_property_set_multi_tile_xy(grid_offset, dx, dy, 1);
+    map_property_set_multi_tile_xy(grid_offset, dx, dy, true);
     map_image_set(grid_offset, crop_image_id + (growth < 4 ? growth : 4));
 }
 export function map_building_tiles_add_farm(building_id: number, x: number, y: number, crop_image_id: number, progress: number) {
@@ -232,7 +232,7 @@ export function map_building_tiles_set_rubble(building_id: number, x: number, y:
             map_building_set(grid_offset, 0);
             map_building_damage_clear(grid_offset);
             map_sprite_clear_tile(grid_offset);
-            map_property_set_multi_tile_xy(grid_offset, 0, 0, 1);
+            map_property_set_multi_tile_xy(grid_offset, 0, 0, true);
             if (map_terrain_is(grid_offset, TERRAIN_WATER)) {
                 map_terrain_set(grid_offset, TERRAIN_WATER);
                 map_tiles_set_water(x + dx, y + dy);

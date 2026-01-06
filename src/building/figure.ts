@@ -585,7 +585,7 @@ function spawn_figure_hippodrome(b: building) {
                 horse2.speed_multiplier = 2;
                 if (b.data.entertainment.days1 > 0) {
                     if (city_entertainment_show_message_hippodrome()) {
-                        city_message_post(1, MESSAGE_WORKING_HIPPODROME, 0, 0);
+                        city_message_post(true, MESSAGE_WORKING_HIPPODROME, 0, 0);
                     }
                 }
             }
@@ -633,7 +633,7 @@ function spawn_figure_colosseum(b: building) {
             figure_movement_init_roaming(f);
             if (b.data.entertainment.days1 > 0 || b.data.entertainment.days2 > 0) {
                 if (city_entertainment_show_message_colosseum()) {
-                    city_message_post(1, MESSAGE_WORKING_COLOSSEUM, 0, 0);
+                    city_message_post(true, MESSAGE_WORKING_COLOSSEUM, 0, 0);
                 }
             }
         }

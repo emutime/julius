@@ -2,14 +2,12 @@ import { city_message_post, city_message_type } from 'city/message';
 import { random_byte, random_generate_next } from 'core/random';
 import { empire_city_get_for_trade_route, empire_city_is_trade_route_open } from 'empire/city';
 import { trade_route_decrease_limit, trade_route_increase_limit, trade_route_limit } from 'empire/trade_route';
-import { resource_type } from 'game/resource';
 import { game_time_month, game_time_year } from 'game/time';
-import { MAX_DEMAND_CHANGES } from 'scenario/data';
+import { MAX_DEMAND_CHANGES, scenario_t } from 'scenario/data';
 ;
 import MESSAGE_INCREASED_TRADING = city_message_type.MESSAGE_INCREASED_TRADING;
 import MESSAGE_DECREASED_TRADING = city_message_type.MESSAGE_DECREASED_TRADING;
 import MESSAGE_TRADE_STOPPED = city_message_type.MESSAGE_TRADE_STOPPED;
-import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 export let scenario: scenario_t = new scenario_t();
 export function scenario_demand_change_init() {
     for (let i: number = 0; i < MAX_DEMAND_CHANGES; i++) {
@@ -36,14 +34,14 @@ export function scenario_demand_change_process() {
         }
         if (scenario.demand_changes[i].is_rise) {
             if (trade_route_increase_limit(route, resource) && empire_city_is_trade_route_open(route)) {
-                city_message_post(1, MESSAGE_INCREASED_TRADING, city_id, resource);
+                city_message_post(true, MESSAGE_INCREASED_TRADING, city_id, resource);
             }
         } else {
             if (trade_route_decrease_limit(route, resource) && empire_city_is_trade_route_open(route)) {
                 if (trade_route_limit(route, resource) > 0) {
-                    city_message_post(1, MESSAGE_DECREASED_TRADING, city_id, resource);
+                    city_message_post(true, MESSAGE_DECREASED_TRADING, city_id, resource);
                 } else {
-                    city_message_post(1, MESSAGE_TRADE_STOPPED, city_id, resource);
+                    city_message_post(true, MESSAGE_TRADE_STOPPED, city_id, resource);
                 }
             }
         }

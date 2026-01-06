@@ -29,7 +29,7 @@ export function scenario_emperor_change_process() {
     if (data.state == 0) {
         if (game_time_year() == data.game_year && game_time_month() == data.month) {
             data.state = 1;
-            city_message_post(1, MESSAGE_EMPEROR_CHANGE, 0, 0);
+            city_message_post(true, MESSAGE_EMPEROR_CHANGE, 0, 0);
         }
     }
 }

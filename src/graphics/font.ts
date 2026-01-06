@@ -1,10 +1,6 @@
-import { IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS } from 'core/image';
-import { IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS } from 'core/image';
-import { IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS } from 'core/image';
-import { IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS } from 'core/image';
-import { IMAGE_FONT_MULTIBYTE_OFFSET } from 'core/image';
-import { language_type } from 'core/locale';;
-import { encoding_type } from 'core/encoding';
+import { encoding_type, encoding_japanese_sjis_to_image_id, encoding_trad_chinese_big5_to_image_id } from 'core/encoding';
+import { IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS, IMAGE_FONT_MULTIBYTE_OFFSET, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS } from 'core/image';
+import { Ref } from '../../ext/crt';
 import ENCODING_EASTERN_EUROPE = encoding_type.ENCODING_EASTERN_EUROPE;
 import ENCODING_CZECH = encoding_type.ENCODING_CZECH;
 import ENCODING_CYRILLIC = encoding_type.ENCODING_CYRILLIC;
@@ -13,8 +9,19 @@ import ENCODING_TRADITIONAL_CHINESE = encoding_type.ENCODING_TRADITIONAL_CHINESE
 import ENCODING_SIMPLIFIED_CHINESE = encoding_type.ENCODING_SIMPLIFIED_CHINESE;
 import ENCODING_JAPANESE = encoding_type.ENCODING_JAPANESE;
 import ENCODING_KOREAN = encoding_type.ENCODING_KOREAN;
-import { encoding_type } from 'core/encoding';
-import { font_t } from 'graphics/font';
+export const enum font_t {
+    FONT_NORMAL_PLAIN,
+    FONT_NORMAL_BLACK,
+    FONT_NORMAL_WHITE,
+    FONT_NORMAL_RED,
+    FONT_LARGE_PLAIN,
+    FONT_LARGE_BLACK,
+    FONT_LARGE_BROWN,
+    FONT_SMALL_PLAIN,
+    FONT_NORMAL_GREEN,
+    FONT_NORMAL_BROWN,
+    FONT_TYPES_MAX
+};
 import FONT_NORMAL_PLAIN = font_t.FONT_NORMAL_PLAIN;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
@@ -32,7 +39,7 @@ export class font_definition {
     public space_width: number = 0;
     public letter_spacing: number = 0;
     public line_height: number = 0;
-    public image_y_offset: int ( = null;
+    public image_y_offset: (c: number, image_height: number, line_height: number) => number = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.font = args[0]);
         args.length >= 2 && (this.image_offset = args[1]);
@@ -43,11 +50,7 @@ export class font_definition {
         args.length >= 7 && (this.image_y_offset = args[6]);
     }
 }
-import { encoding_japanese_sjis_to_image_id } from 'core/encoding_japanese';
-import { encoding_trad_chinese_big5_to_image_id } from 'core/encoding_trad_chinese';
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-let CHAR_TO_FONT_IMAGE_DEFAULT: number[] = new Array().fill({
+let CHAR_TO_FONT_IMAGE_DEFAULT: number[] = [
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x01,
     0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x3F, 0x40, 0x00, 0x00, 0x41, 0x00, 0x4A, 0x43, 0x44, 0x42, 0x46, 0x4E, 0x45, 0x4F, 0x4D,
@@ -64,8 +67,8 @@ let CHAR_TO_FONT_IMAGE_DEFAULT: number[] = new Array().fill({
     0x00, 0x6C, 0x7A, 0x78, 0x79, 0x79, 0x7B, 0x00, 0x84, 0x7E, 0x7C, 0x7D, 0x6B, 0x33, 0x00, 0x68,
     0x53, 0x52, 0x54, 0x51, 0x51, 0x85, 0x67, 0x65, 0x57, 0x56, 0x58, 0x55, 0x5B, 0x5A, 0x5C, 0x59,
     0x00, 0x66, 0x5F, 0x5E, 0x60, 0x60, 0x5D, 0x00, 0x86, 0x63, 0x62, 0x64, 0x61, 0x19, 0x00, 0x19,
-});
-let CHAR_TO_FONT_IMAGE_EASTERN: number[] = new Array().fill({
+];
+let CHAR_TO_FONT_IMAGE_EASTERN: number[] = [
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
     0x01, 0x01, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x20, 0x44, 0x6E, 0x00, 0x25, 0x00, 0x00, 0x00,
     0x00, 0x3F, 0x40, 0x00, 0x00, 0x41, 0x00, 0x4A, 0x43, 0x44, 0x42, 0x46, 0x4E, 0x45, 0x4F, 0x4D,
@@ -82,8 +85,8 @@ let CHAR_TO_FONT_IMAGE_EASTERN: number[] = new Array().fill({
     0x00, 0x6D, 0x7A, 0x6E, 0x79, 0x79, 0x7B, 0x00, 0x84, 0x7E, 0x7C, 0x7D, 0x6B, 0x33, 0x00, 0x68,
     0x53, 0x52, 0x54, 0x51, 0x51, 0x85, 0x52, 0x65, 0x57, 0x56, 0x53, 0x55, 0x5B, 0x5A, 0x5C, 0x59,
     0x00, 0x55, 0x5F, 0x56, 0x60, 0x60, 0x5D, 0x00, 0x86, 0x63, 0x62, 0x64, 0x61, 0x19, 0x00, 0x19,
-});
-let CHAR_TO_FONT_IMAGE_CZECH: number[] = new Array().fill({
+];
+let CHAR_TO_FONT_IMAGE_CZECH: number[] = [
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x01,
     0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x3F, 0x40, 0x00, 0x00, 0x41, 0x00, 0x4A, 0x43, 0x44, 0x42, 0x46, 0x4E, 0x45, 0x4F, 0x4D,
@@ -100,8 +103,8 @@ let CHAR_TO_FONT_IMAGE_CZECH: number[] = new Array().fill({
     0x00, 0x6C, 0x7A, 0x78, 0x79, 0x79, 0x7B, 0x00, 0x84, 0x7E, 0x7C, 0x7D, 0x6B, 0x79, 0x00, 0x68,
     0x53, 0x52, 0x54, 0x51, 0x51, 0x85, 0x67, 0x65, 0x57, 0x56, 0x58, 0x55, 0x5B, 0x5A, 0x5C, 0x59,
     0x00, 0x66, 0x5F, 0x5E, 0x60, 0x60, 0x5D, 0x00, 0x86, 0x63, 0x62, 0x64, 0x61, 0x19, 0x00, 0x19,
-});
-let CHAR_TO_FONT_IMAGE_CYRILLIC: number[] = new Array().fill({
+];
+let CHAR_TO_FONT_IMAGE_CYRILLIC: number[] = [
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
     0x01, 0x01, 0x00, 0x01, 0x01, 0x01, 0x00, 0x00, 0x20, 0x44, 0x6E, 0x00, 0x25, 0x00, 0x00, 0x00,
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
@@ -118,8 +121,8 @@ let CHAR_TO_FONT_IMAGE_CYRILLIC: number[] = new Array().fill({
     0x6F, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E,
     0x7F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E,
     0x8F, 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9A, 0x9B, 0x9C, 0x9D, 0x9E,
-});
-let CHAR_TO_FONT_IMAGE_JAPANESE: number[] = new Array().fill({
+];
+let CHAR_TO_FONT_IMAGE_JAPANESE: number[] = [
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x01,
     0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x40, 0x00, 0x00, 0x41, 0x00, 0x4A, 0x43, 0x44, 0x42, 0x46, 0x4E, 0x45, 0x4F, 0x4D,
@@ -136,8 +139,8 @@ let CHAR_TO_FONT_IMAGE_JAPANESE: number[] = new Array().fill({
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-});
-let CHAR_TO_FONT_IMAGE_GREEK: number[] = new Array().fill({
+];
+let CHAR_TO_FONT_IMAGE_GREEK: number[] = [
     0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x01, // 00
     0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // 10
     0x00, 0x3F, 0x40, 0x00, 0x00, 0x41, 0x00, 0x4A, 0x43, 0x44, 0x42, 0x46, 0x4E, 0x45, 0x4F, 0x4D, // 20
@@ -154,103 +157,103 @@ let CHAR_TO_FONT_IMAGE_GREEK: number[] = new Array().fill({
     0x68, 0x69, 0x00, 0x6A, 0x6B, 0x6C, 0x6D, 0x6E, 0x6F, 0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, // D0
     0x77, 0x78, 0x79, 0x7A, 0x7B, 0x7C, 0x7D, 0x7E, 0x7F, 0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, // E0
     0x87, 0x88, 0x89, 0x8A, 0x8B, 0x8C, 0x8D, 0x8E, 0x8F, 0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x00, // F0
-});
-let DEFINITIONS_DEFAULT: font_definition[] = new Array().fill({
-    { FONT_NORMAL_PLAIN, 0, 0, 6, 1, 11, image_y_offset_default },
-    { FONT_NORMAL_BLACK, 134, 0, 6, 0, 11, image_y_offset_default },
-    { FONT_NORMAL_WHITE, 268, 0, 6, 0, 11, image_y_offset_default },
-    { FONT_NORMAL_RED, 402, 0, 6, 0, 11, image_y_offset_default },
-    { FONT_LARGE_PLAIN, 536, 0, 8, 1, 23, image_y_offset_default },
-    { FONT_LARGE_BLACK, 670, 0, 8, 0, 23, image_y_offset_default },
-    { FONT_LARGE_BROWN, 804, 0, 8, 0, 24, image_y_offset_default },
-    { FONT_SMALL_PLAIN, 938, 0, 4, 1, 9, image_y_offset_default },
-    { FONT_NORMAL_GREEN, 1072, 0, 6, 0, 11, image_y_offset_default },
-    { FONT_NORMAL_BROWN, 1206, 0, 6, 0, 11, image_y_offset_default }
-});
-let DEFINITIONS_EASTERN: font_definition[] = new Array().fill({
-    { FONT_NORMAL_PLAIN, 0, 0, 6, 1, 11, image_y_offset_eastern },
-    { FONT_NORMAL_BLACK, 134, 0, 6, 0, 11, image_y_offset_eastern },
-    { FONT_NORMAL_WHITE, 268, 0, 6, 0, 11, image_y_offset_eastern },
-    { FONT_NORMAL_RED, 402, 0, 6, 0, 11, image_y_offset_eastern },
-    { FONT_LARGE_PLAIN, 536, 0, 8, 1, 23, image_y_offset_eastern },
-    { FONT_LARGE_BLACK, 670, 0, 8, 0, 23, image_y_offset_eastern },
-    { FONT_LARGE_BROWN, 804, 0, 8, 0, 24, image_y_offset_eastern },
-    { FONT_SMALL_PLAIN, 938, 0, 4, 1, 9, image_y_offset_eastern },
-    { FONT_NORMAL_GREEN, 1072, 0, 6, 0, 11, image_y_offset_eastern },
-    { FONT_NORMAL_BROWN, 1206, 0, 6, 0, 11, image_y_offset_eastern }
-});
-let DEFINITIONS_CYRILLIC: font_definition[] = new Array().fill({
-    { FONT_NORMAL_PLAIN, 0, 0, 6, 1, 11, image_y_offset_cyrillic_normal_small_plain },
-    { FONT_NORMAL_BLACK, 158, 0, 6, 0, 11, image_y_offset_cyrillic_normal_colored },
-    { FONT_NORMAL_WHITE, 316, 0, 6, 0, 11, image_y_offset_cyrillic_normal_colored },
-    { FONT_NORMAL_RED, 474, 0, 6, 0, 11, image_y_offset_cyrillic_normal_colored },
-    { FONT_LARGE_PLAIN, 632, 0, 8, 1, 23, image_y_offset_cyrillic_large_plain },
-    { FONT_LARGE_BLACK, 790, 0, 8, 0, 23, image_y_offset_cyrillic_large_black },
-    { FONT_LARGE_BROWN, 948, 0, 8, 0, 24, image_y_offset_cyrillic_large_brown },
-    { FONT_SMALL_PLAIN, 1106, 0, 4, 1, 9, image_y_offset_cyrillic_normal_small_plain },
-    { FONT_NORMAL_GREEN, 1264, 0, 6, 0, 11, image_y_offset_cyrillic_normal_colored },
-    { FONT_NORMAL_BROWN, 1422, 0, 6, 0, 11, image_y_offset_cyrillic_normal_brown }
-});
-let DEFINITIONS_GREEK: font_definition[] = new Array().fill({
-    { FONT_NORMAL_PLAIN, 0, 0, 6, 1, 11, image_y_offset_greek },
-    { FONT_NORMAL_BLACK, 149, 0, 6, 0, 11, image_y_offset_greek },
-    { FONT_NORMAL_WHITE, 298, 0, 6, 0, 11, image_y_offset_greek },
-    { FONT_NORMAL_RED, 447, 0, 6, 0, 11, image_y_offset_greek },
-    { FONT_LARGE_PLAIN, 596, 0, 8, 1, 23, image_y_offset_greek },
-    { FONT_LARGE_BLACK, 745, 0, 8, 0, 23, image_y_offset_greek },
-    { FONT_LARGE_BROWN, 894, 0, 8, 0, 24, image_y_offset_greek },
-    { FONT_SMALL_PLAIN, 1043, 0, 4, 1, 9, image_y_offset_greek },
-    { FONT_NORMAL_GREEN, 1192, 0, 6, 0, 11, image_y_offset_greek },
-    { FONT_NORMAL_BROWN, 1341, 0, 6, 0, 11, image_y_offset_greek }
-});
-let DEFINITIONS_TRADITIONAL_CHINESE: font_definition[] = new Array().fill({
-    { FONT_NORMAL_PLAIN, 0, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, 6, 1, 15, image_y_offset_chinese },
-    { FONT_NORMAL_BLACK, 134, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, 6, 0, 15, image_y_offset_chinese },
-    { FONT_NORMAL_WHITE, 268, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, 6, 0, 15, image_y_offset_chinese },
-    { FONT_NORMAL_RED, 402, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, 6, 0, 15, image_y_offset_chinese },
-    { FONT_LARGE_PLAIN, 536, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS * 2, 8, 1, 23, image_y_offset_chinese },
-    { FONT_LARGE_BLACK, 670, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS * 2, 8, 0, 23, image_y_offset_chinese },
-    { FONT_LARGE_BROWN, 804, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS * 2, 8, 0, 24, image_y_offset_chinese },
-    { FONT_SMALL_PLAIN, 938, 0, 4, 1, 9, image_y_offset_chinese },
-    { FONT_NORMAL_GREEN, 1072, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, 6, 0, 15, image_y_offset_chinese },
-    { FONT_NORMAL_BROWN, 1206, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, 6, 0, 15, image_y_offset_chinese }
-});
-let DEFINITIONS_SIMPLIFIED_CHINESE: font_definition[] = new Array().fill({
-    { FONT_NORMAL_PLAIN, 0, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, 6, 1, 15, image_y_offset_chinese },
-    { FONT_NORMAL_BLACK, 134, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, 6, 0, 15, image_y_offset_chinese },
-    { FONT_NORMAL_WHITE, 268, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, 6, 0, 15, image_y_offset_chinese },
-    { FONT_NORMAL_RED, 402, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, 6, 0, 15, image_y_offset_chinese },
-    { FONT_LARGE_PLAIN, 536, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS * 2, 8, 1, 23, image_y_offset_chinese },
-    { FONT_LARGE_BLACK, 670, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS * 2, 8, 0, 23, image_y_offset_chinese },
-    { FONT_LARGE_BROWN, 804, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS * 2, 8, 0, 24, image_y_offset_chinese },
-    { FONT_SMALL_PLAIN, 938, 0, 4, 1, 9, image_y_offset_none },
-    { FONT_NORMAL_GREEN, 1072, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, 6, 0, 15, image_y_offset_chinese },
-    { FONT_NORMAL_BROWN, 1206, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, 6, 0, 15, image_y_offset_chinese }
-});
-let DEFINITIONS_KOREAN: font_definition[] = new Array().fill({
-    { FONT_NORMAL_PLAIN, 0, IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS * 1, 6, 1, 15, image_y_offset_korean },
-    { FONT_NORMAL_BLACK, 134, 0, 6, 0, 11, image_y_offset_korean },
-    { FONT_NORMAL_WHITE, 268, 0, 6, 0, 11, image_y_offset_korean },
-    { FONT_NORMAL_RED, 402, 0, 6, 0, 11, image_y_offset_korean },
-    { FONT_LARGE_PLAIN, 536, IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS * 2, 8, 1, 23, image_y_offset_korean },
-    { FONT_LARGE_BLACK, 670, IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS * 2, 8, 0, 23, image_y_offset_korean },
-    { FONT_LARGE_BROWN, 804, IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS * 2, 8, 0, 24, image_y_offset_korean },
-    { FONT_SMALL_PLAIN, 938, 0, 4, 1, 9, image_y_offset_korean },
-    { FONT_NORMAL_GREEN, 1072, 0, 6, 0, 11, image_y_offset_korean },
-    { FONT_NORMAL_BROWN, 1206, 0, 6, 0, 11, image_y_offset_korean }
-});
-let DEFINITIONS_JAPANESE: font_definition[] = new Array().fill({
-    { FONT_NORMAL_PLAIN, 0, IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS * 1, 6, 0, 15, image_y_offset_japanese },
-    { FONT_NORMAL_BLACK, 134, IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, 6, 0, 11, image_y_offset_japanese },
-    { FONT_NORMAL_WHITE, 268, IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, 6, 0, 11, image_y_offset_japanese },
-    { FONT_NORMAL_RED, 402, IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, 6, 0, 11, image_y_offset_japanese },
-    { FONT_LARGE_PLAIN, 536, IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS * 2, 8, 1, 23, image_y_offset_japanese },
-    { FONT_LARGE_BLACK, 670, IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS * 2, 8, 0, 23, image_y_offset_japanese },
-    { FONT_LARGE_BROWN, 804, IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS * 2, 8, 0, 24, image_y_offset_japanese },
-    { FONT_SMALL_PLAIN, 938, 0, 4, 1, 9, image_y_offset_japanese },
-    { FONT_NORMAL_GREEN, 1072, IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, 6, 0, 11, image_y_offset_japanese },
-    { FONT_NORMAL_BROWN, 1206, IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, 6, 0, 11, image_y_offset_japanese }
-});
+];
+let DEFINITIONS_DEFAULT: font_definition[] = [
+    { font: FONT_NORMAL_PLAIN, image_offset: 0, multibyte_image_offset: 0, space_width: 6, letter_spacing: 1, line_height: 11, image_y_offset: image_y_offset_default },
+    { font: FONT_NORMAL_BLACK, image_offset: 134, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_default },
+    { font: FONT_NORMAL_WHITE, image_offset: 268, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_default },
+    { font: FONT_NORMAL_RED, image_offset: 402, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_default },
+    { font: FONT_LARGE_PLAIN, image_offset: 536, multibyte_image_offset: 0, space_width: 8, letter_spacing: 1, line_height: 23, image_y_offset: image_y_offset_default },
+    { font: FONT_LARGE_BLACK, image_offset: 670, multibyte_image_offset: 0, space_width: 8, letter_spacing: 0, line_height: 23, image_y_offset: image_y_offset_default },
+    { font: FONT_LARGE_BROWN, image_offset: 804, multibyte_image_offset: 0, space_width: 8, letter_spacing: 0, line_height: 24, image_y_offset: image_y_offset_default },
+    { font: FONT_SMALL_PLAIN, image_offset: 938, multibyte_image_offset: 0, space_width: 4, letter_spacing: 1, line_height: 9, image_y_offset: image_y_offset_default },
+    { font: FONT_NORMAL_GREEN, image_offset: 1072, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_default },
+    { font: FONT_NORMAL_BROWN, image_offset: 1206, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_default }
+];
+let DEFINITIONS_EASTERN: font_definition[] = [
+    { font: FONT_NORMAL_PLAIN, image_offset: 0, multibyte_image_offset: 0, space_width: 6, letter_spacing: 1, line_height: 11, image_y_offset: image_y_offset_eastern },
+    { font: FONT_NORMAL_BLACK, image_offset: 134, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_eastern },
+    { font: FONT_NORMAL_WHITE, image_offset: 268, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_eastern },
+    { font: FONT_NORMAL_RED, image_offset: 402, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_eastern },
+    { font: FONT_LARGE_PLAIN, image_offset: 536, multibyte_image_offset: 0, space_width: 8, letter_spacing: 1, line_height: 23, image_y_offset: image_y_offset_eastern },
+    { font: FONT_LARGE_BLACK, image_offset: 670, multibyte_image_offset: 0, space_width: 8, letter_spacing: 0, line_height: 23, image_y_offset: image_y_offset_eastern },
+    { font: FONT_LARGE_BROWN, image_offset: 804, multibyte_image_offset: 0, space_width: 8, letter_spacing: 0, line_height: 24, image_y_offset: image_y_offset_eastern },
+    { font: FONT_SMALL_PLAIN, image_offset: 938, multibyte_image_offset: 0, space_width: 4, letter_spacing: 1, line_height: 9, image_y_offset: image_y_offset_eastern },
+    { font: FONT_NORMAL_GREEN, image_offset: 1072, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_eastern },
+    { font: FONT_NORMAL_BROWN, image_offset: 1206, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_eastern }
+]
+let DEFINITIONS_CYRILLIC: font_definition[] = [
+    { font: FONT_NORMAL_PLAIN, image_offset: 0, multibyte_image_offset: 0, space_width: 6, letter_spacing: 1, line_height: 11, image_y_offset: image_y_offset_cyrillic_normal_small_plain },
+    { font: FONT_NORMAL_BLACK, image_offset: 158, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_cyrillic_normal_colored },
+    { font: FONT_NORMAL_WHITE, image_offset: 316, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_cyrillic_normal_colored },
+    { font: FONT_NORMAL_RED, image_offset: 474, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_cyrillic_normal_colored },
+    { font: FONT_LARGE_PLAIN, image_offset: 632, multibyte_image_offset: 0, space_width: 8, letter_spacing: 1, line_height: 23, image_y_offset: image_y_offset_cyrillic_large_plain },
+    { font: FONT_LARGE_BLACK, image_offset: 790, multibyte_image_offset: 0, space_width: 8, letter_spacing: 0, line_height: 23, image_y_offset: image_y_offset_cyrillic_large_black },
+    { font: FONT_LARGE_BROWN, image_offset: 948, multibyte_image_offset: 0, space_width: 8, letter_spacing: 0, line_height: 24, image_y_offset: image_y_offset_cyrillic_large_brown },
+    { font: FONT_SMALL_PLAIN, image_offset: 1106, multibyte_image_offset: 0, space_width: 4, letter_spacing: 1, line_height: 9, image_y_offset: image_y_offset_cyrillic_normal_small_plain },
+    { font: FONT_NORMAL_GREEN, image_offset: 1264, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_cyrillic_normal_colored },
+    { font: FONT_NORMAL_BROWN, image_offset: 1422, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_cyrillic_normal_brown }
+]
+let DEFINITIONS_GREEK: font_definition[] = [
+    { font: FONT_NORMAL_PLAIN, image_offset: 0, multibyte_image_offset: 0, space_width: 6, letter_spacing: 1, line_height: 11, image_y_offset: image_y_offset_greek },
+    { font: FONT_NORMAL_BLACK, image_offset: 149, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_greek },
+    { font: FONT_NORMAL_WHITE, image_offset: 298, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_greek },
+    { font: FONT_NORMAL_RED, image_offset: 447, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_greek },
+    { font: FONT_LARGE_PLAIN, image_offset: 596, multibyte_image_offset: 0, space_width: 8, letter_spacing: 1, line_height: 23, image_y_offset: image_y_offset_greek },
+    { font: FONT_LARGE_BLACK, image_offset: 745, multibyte_image_offset: 0, space_width: 8, letter_spacing: 0, line_height: 23, image_y_offset: image_y_offset_greek },
+    { font: FONT_LARGE_BROWN, image_offset: 894, multibyte_image_offset: 0, space_width: 8, letter_spacing: 0, line_height: 24, image_y_offset: image_y_offset_greek },
+    { font: FONT_SMALL_PLAIN, image_offset: 1043, multibyte_image_offset: 0, space_width: 4, letter_spacing: 1, line_height: 9, image_y_offset: image_y_offset_greek },
+    { font: FONT_NORMAL_GREEN, image_offset: 1192, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_greek },
+    { font: FONT_NORMAL_BROWN, image_offset: 1341, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_greek }
+]
+let DEFINITIONS_TRADITIONAL_CHINESE: font_definition[] = [
+    { font: FONT_NORMAL_PLAIN, image_offset: 0, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 1, line_height: 15, image_y_offset: image_y_offset_chinese },
+    { font: FONT_NORMAL_BLACK, image_offset: 134, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_chinese },
+    { font: FONT_NORMAL_WHITE, image_offset: 268, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_chinese },
+    { font: FONT_NORMAL_RED, image_offset: 402, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_chinese },
+    { font: FONT_LARGE_PLAIN, image_offset: 536, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS * 2, space_width: 8, letter_spacing: 1, line_height: 23, image_y_offset: image_y_offset_chinese },
+    { font: FONT_LARGE_BLACK, image_offset: 670, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS * 2, space_width: 8, letter_spacing: 0, line_height: 23, image_y_offset: image_y_offset_chinese },
+    { font: FONT_LARGE_BROWN, image_offset: 804, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS * 2, space_width: 8, letter_spacing: 0, line_height: 24, image_y_offset: image_y_offset_chinese },
+    { font: FONT_SMALL_PLAIN, image_offset: 938, multibyte_image_offset: 0, space_width: 4, letter_spacing: 1, line_height: 9, image_y_offset: image_y_offset_chinese },
+    { font: FONT_NORMAL_GREEN, image_offset: 1072, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_chinese },
+    { font: FONT_NORMAL_BROWN, image_offset: 1206, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_chinese }
+]
+let DEFINITIONS_SIMPLIFIED_CHINESE: font_definition[] = [
+    { font: FONT_NORMAL_PLAIN, image_offset: 0, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 1, line_height: 15, image_y_offset: image_y_offset_chinese },
+    { font: FONT_NORMAL_BLACK, image_offset: 134, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_chinese },
+    { font: FONT_NORMAL_WHITE, image_offset: 268, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_chinese },
+    { font: FONT_NORMAL_RED, image_offset: 402, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_chinese },
+    { font: FONT_LARGE_PLAIN, image_offset: 536, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS * 2, space_width: 8, letter_spacing: 1, line_height: 23, image_y_offset: image_y_offset_chinese },
+    { font: FONT_LARGE_BLACK, image_offset: 670, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS * 2, space_width: 8, letter_spacing: 0, line_height: 23, image_y_offset: image_y_offset_chinese },
+    { font: FONT_LARGE_BROWN, image_offset: 804, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS * 2, space_width: 8, letter_spacing: 0, line_height: 24, image_y_offset: image_y_offset_chinese },
+    { font: FONT_SMALL_PLAIN, image_offset: 938, multibyte_image_offset: 0, space_width: 4, letter_spacing: 1, line_height: 9, image_y_offset: image_y_offset_none },
+    { font: FONT_NORMAL_GREEN, image_offset: 1072, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_chinese },
+    { font: FONT_NORMAL_BROWN, image_offset: 1206, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_chinese }
+]
+let DEFINITIONS_KOREAN: font_definition[] = [
+    { font: FONT_NORMAL_PLAIN, image_offset: 0, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS * 1, space_width: 6, letter_spacing: 1, line_height: 15, image_y_offset: image_y_offset_korean },
+    { font: FONT_NORMAL_BLACK, image_offset: 134, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_korean },
+    { font: FONT_NORMAL_WHITE, image_offset: 268, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_korean },
+    { font: FONT_NORMAL_RED, image_offset: 402, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_korean },
+    { font: FONT_LARGE_PLAIN, image_offset: 536, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS * 2, space_width: 8, letter_spacing: 1, line_height: 23, image_y_offset: image_y_offset_korean },
+    { font: FONT_LARGE_BLACK, image_offset: 670, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS * 2, space_width: 8, letter_spacing: 0, line_height: 23, image_y_offset: image_y_offset_korean },
+    { font: FONT_LARGE_BROWN, image_offset: 804, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS * 2, space_width: 8, letter_spacing: 0, line_height: 24, image_y_offset: image_y_offset_korean },
+    { font: FONT_SMALL_PLAIN, image_offset: 938, multibyte_image_offset: 0, space_width: 4, letter_spacing: 1, line_height: 9, image_y_offset: image_y_offset_korean },
+    { font: FONT_NORMAL_GREEN, image_offset: 1072, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_korean },
+    { font: FONT_NORMAL_BROWN, image_offset: 1206, multibyte_image_offset: 0, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_korean }
+]
+let DEFINITIONS_JAPANESE: font_definition[] = [
+    { font: FONT_NORMAL_PLAIN, image_offset: 0, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS * 1, space_width: 6, letter_spacing: 0, line_height: 15, image_y_offset: image_y_offset_japanese },
+    { font: FONT_NORMAL_BLACK, image_offset: 134, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_japanese },
+    { font: FONT_NORMAL_WHITE, image_offset: 268, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_japanese },
+    { font: FONT_NORMAL_RED, image_offset: 402, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_japanese },
+    { font: FONT_LARGE_PLAIN, image_offset: 536, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS * 2, space_width: 8, letter_spacing: 1, line_height: 23, image_y_offset: image_y_offset_japanese },
+    { font: FONT_LARGE_BLACK, image_offset: 670, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS * 2, space_width: 8, letter_spacing: 0, line_height: 23, image_y_offset: image_y_offset_japanese },
+    { font: FONT_LARGE_BROWN, image_offset: 804, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS * 2, space_width: 8, letter_spacing: 0, line_height: 24, image_y_offset: image_y_offset_japanese },
+    { font: FONT_SMALL_PLAIN, image_offset: 938, multibyte_image_offset: 0, space_width: 4, letter_spacing: 1, line_height: 9, image_y_offset: image_y_offset_japanese },
+    { font: FONT_NORMAL_GREEN, image_offset: 1072, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_japanese },
+    { font: FONT_NORMAL_BROWN, image_offset: 1206, multibyte_image_offset: IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, space_width: 6, letter_spacing: 0, line_height: 11, image_y_offset: image_y_offset_japanese }
+]
 export const enum multibyte {
     MULTIBYTE_NONE = 0,
     MULTIBYTE_TRADITIONAL_CHINESE = 1,
@@ -258,9 +261,16 @@ export const enum multibyte {
     MULTIBYTE_KOREAN = 3,
     MULTIBYTE_JAPANESE = 4,
 }
+
+import MULTIBYTE_NONE = multibyte.MULTIBYTE_NONE;
+import MULTIBYTE_TRADITIONAL_CHINESE = multibyte.MULTIBYTE_TRADITIONAL_CHINESE;
+import MULTIBYTE_SIMPLIFIED_CHINESE = multibyte.MULTIBYTE_SIMPLIFIED_CHINESE;
+import MULTIBYTE_KOREAN = multibyte.MULTIBYTE_KOREAN;
+import MULTIBYTE_JAPANESE = multibyte.MULTIBYTE_JAPANESE;
+
 export class unnamed249_8 {
-    public font_mapping: number = 0;
-    public font_definitions: font_definition = null;
+    public font_mapping: number[] = null;
+    public font_definitions: font_definition[] = null;
     public multibyte: number = 0;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.font_mapping = args[0]);
@@ -531,12 +541,14 @@ export function font_definition_for(font: font_t) {
     return data.font_definitions[font];
 }
 export function font_can_display(character: number) {
-    let dummy: number;
+    let dummy: Ref<number> = new Ref<number>(0);
     return font_letter_id(data.font_definitions[FONT_NORMAL_BLACK], character, dummy) >= 0;
 }
-export function font_letter_id(def: font_definition, str: number, num_bytes: number) {
-    if (data.multibyte != MULTIBYTE_NONE && * str >= 0x80) {
-        * num_bytes = 2;
+
+// todo
+export function font_letter_id(def: font_definition, str: number, num_bytes: Ref<number>) {
+    if (data.multibyte != MULTIBYTE_NONE && str >= 0x80) {
+        num_bytes.v = 2;
         if (data.multibyte == MULTIBYTE_TRADITIONAL_CHINESE) {
             let char_id: number = (str[0] & 0x7f) | ((str[1] & 0x7f) << 7);
             if (char_id >= IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS) {
@@ -564,7 +576,7 @@ export function font_letter_id(def: font_definition, str: number, num_bytes: num
         } else if (data.multibyte == MULTIBYTE_JAPANESE) {
             let char_id: number;
             if (str[0] >= 0xa0 && str[0] < 0xe0) {
-                * num_bytes = 1;
+                num_bytes.v = 1;
                 char_id = encoding_japanese_sjis_to_image_id(str[0], 0);
             } else {
                 char_id = encoding_japanese_sjis_to_image_id(str[0], str[1]);
@@ -577,10 +589,10 @@ export function font_letter_id(def: font_definition, str: number, num_bytes: num
             return -1;
         }
     } else {
-        * num_bytes = 1;
-        if (!data.font_mapping[* str]) {
+        num_bytes.v = 1;
+        if (!data.font_mapping[str]) {
             return -1;
         }
-        return data.font_mapping[* str] + def.image_offset - 1;
+        return data.font_mapping[str] + def.image_offset - 1;
     }
 }

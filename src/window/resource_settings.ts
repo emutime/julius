@@ -1,117 +1,56 @@
 
-import { resource_type } from 'game/resource';
+import { building_count_industry_active, building_count_industry_total } from 'building/count';
+import { building_type } from 'building/type';
+import { resource_trade_status } from 'city/constants';
+import { city_resource_change_export_over, city_resource_count, city_resource_cycle_trade_status, city_resource_export_over, city_resource_is_mothballed, city_resource_is_stockpiled, city_resource_toggle_mothballed, city_resource_toggle_stockpiled, city_resource_trade_status } from 'city/resource';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { empire_can_export_resource, empire_can_import_resource, empire_can_produce_resource } from 'empire/city';
+import { resource_image_offset, resource_image_type, resource_type } from 'game/resource';
+import { arrow_button, arrow_buttons_draw, arrow_buttons_handle_mouse } from 'graphics/arrow_button';
+import { button_border_draw, button_none } from 'graphics/button';
+import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_in_dialog, graphics_reset_dialog } from 'graphics/graphics';
+import { image_draw } from 'graphics/image';
+import { ib, image_button, image_buttons_draw, image_buttons_handle_mouse } from 'graphics/image_button';
+import { lang_text_draw, lang_text_draw_amount, lang_text_draw_centered } from 'graphics/lang_text';
+import { outer_panel_draw } from 'graphics/panel';
+import { text_draw_number } from 'graphics/text';
+import { window_draw_underlying_window, window_go_back, window_id, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { scenario_building_allowed } from 'scenario/building';
+import { message_dialog, window_message_dialog_show } from 'window/message_dialog';
 import RESOURCE_MEAT = resource_type.RESOURCE_MEAT;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
 import RESOURCE_IMAGE_ICON = resource_image_type.RESOURCE_IMAGE_ICON;
-import { resource_image_type } from 'game/resource';
-import { resource_image_offset } from 'game/resource';;
-import { buffer } from 'core/buffer';
-import { building_type } from 'building/type';
+;
 import BUILDING_WHARF = building_type.BUILDING_WHARF;
-import { building_type } from 'building/type';
-import { building_count_industry_active } from 'building/count';
-import { building_count_industry_total } from 'building/count';
-import { advisor_type } from 'city/constants';
-import { resource_trade_status } from 'city/constants';
 import TRADE_STATUS_NONE = resource_trade_status.TRADE_STATUS_NONE;
 import TRADE_STATUS_IMPORT = resource_trade_status.TRADE_STATUS_IMPORT;
 import TRADE_STATUS_EXPORT = resource_trade_status.TRADE_STATUS_EXPORT;
-import { resource_trade_status } from 'city/constants';
-import { resource_list } from 'city/resource';
-import { city_resource_count } from 'city/resource';
-import { city_resource_trade_status } from 'city/resource';
-import { city_resource_cycle_trade_status } from 'city/resource';
-import { city_resource_export_over } from 'city/resource';
-import { city_resource_change_export_over } from 'city/resource';
-import { city_resource_is_stockpiled } from 'city/resource';
-import { city_resource_toggle_stockpiled } from 'city/resource';
-import { city_resource_is_mothballed } from 'city/resource';
-import { city_resource_toggle_mothballed } from 'city/resource';
-import { direction_type } from 'core/direction';
-import { group_terrain } from 'core/image_group';
 import GROUP_RESOURCE_ICONS = group_terrain.GROUP_RESOURCE_ICONS;
 import GROUP_CONTEXT_ICONS = group_terrain.GROUP_CONTEXT_ICONS;
-import { empire_city } from 'empire/city';
-import { empire_can_import_resource } from 'empire/city';
-import { empire_can_export_resource } from 'empire/city';
-import { empire_can_produce_resource } from 'empire/city';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { arrow_button } from 'graphics/arrow_button';
-import { arrow_buttons_draw } from 'graphics/arrow_button';
-import { arrow_buttons_handle_mouse } from 'graphics/arrow_button';
-import { button_none } from 'graphics/button';
-import { button_border_draw } from 'graphics/button';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { ib } from 'graphics/image_button';
 import IB_NORMAL = ib.IB_NORMAL;
-import { image_button } from 'graphics/image_button';
-import { image_buttons_draw } from 'graphics/image_button';
-import { image_buttons_handle_mouse } from 'graphics/image_button';
-import { lang_text_draw } from 'graphics/lang_text';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { lang_text_draw_amount } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { text_draw_number } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_RESOURCE_SETTINGS = window_id.WINDOW_RESOURCE_SETTINGS;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_draw_underlying_window } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { window_go_back } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-import { scenario_building_allowed } from 'scenario/building';
-import { advisor_window_type } from 'window/advisors';
-import { message_dialog } from 'window/message_dialog';
 import MESSAGE_DIALOG_INDUSTRY = message_dialog.MESSAGE_DIALOG_INDUSTRY;
-import { window_message_dialog_show } from 'window/message_dialog';
-let resource_image_buttons: image_button[] = new Array().fill({
-    { 58, 332, 27, 27, IB_NORMAL, GROUP_CONTEXT_ICONS, 0, button_help, button_none, 0, 0, 1},
-    { 558, 335, 24, 24, IB_NORMAL, GROUP_CONTEXT_ICONS, 4, button_ok, button_none, 0, 0, 1}
-});
-let resource_arrow_buttons: arrow_button[] = new Array().fill({
-    { 314, 215, 17, 24, button_export_up_down, 1, 0},
-    { 338, 215, 15, 24, button_export_up_down, 0, 0}
-});
-let resource_generic_buttons: generic_button[] = new Array().fill({
-    { 98, 250, 432, 30, button_toggle_industry, button_none, 0, 0},
-    { 98, 212, 432, 30, button_toggle_trade, button_none, 0, 0},
-    { 98, 288, 432, 50, button_toggle_stockpile, button_none, 0, 0},
-});
+let resource_image_buttons: image_button[] = [
+    new image_button(58, 332, 27, 27, IB_NORMAL, GROUP_CONTEXT_ICONS, 0, button_help, button_none, 0, 0, 1),
+    new image_button(558, 335, 24, 24, IB_NORMAL, GROUP_CONTEXT_ICONS, 4, button_ok, button_none, 0, 0, 1)
+];
+let resource_arrow_buttons: arrow_button[] = [
+    new arrow_button(314, 215, 17, 24, button_export_up_down, 1, 0),
+    new arrow_button(338, 215, 15, 24, button_export_up_down, 0, 0)
+];
+let resource_generic_buttons: generic_button[] = [
+    new generic_button(98, 250, 432, 30, button_toggle_industry, button_none, 0, 0),
+    new generic_button(98, 212, 432, 30, button_toggle_trade, button_none, 0, 0),
+    new generic_button(98, 288, 432, 50, button_toggle_stockpile, button_none, 0, 0),
+];
 export class unnamed46_8 {
     public resource: resource_type = null;
     public focus_button_id: number = 0;
@@ -258,12 +197,12 @@ function button_toggle_stockpile(param1: number, param2: number) {
     city_resource_toggle_stockpiled(data.resource);
 }
 export function window_resource_settings_show(resource: resource_type) {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_RESOURCE_SETTINGS,
         draw_background,
         draw_foreground,
         handle_input
-    };
+    );
     init(resource);
     window_show(window);
 }

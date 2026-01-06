@@ -203,7 +203,7 @@ function lower_land_tile(_x: number, _y: number, grid_offset: number, terrain: n
         terrain |= TERRAIN_ELEVATION
         terrain &= ~(TERRAIN_ACCESS_RAMP)
         map_property_set_multi_tile_size(grid_offset, 1);
-        map_property_set_multi_tile_xy(grid_offset, 0, 0, 1);
+        map_property_set_multi_tile_xy(grid_offset, 0, 0, true);
     }
     let elevation: number = map_elevation_at(grid_offset);
     if (elevation <= 0) {

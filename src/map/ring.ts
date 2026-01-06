@@ -9,8 +9,7 @@ export class ring_tile {
         args.length >= 3 && (this.grid_offset = args[2]);
     }
 }
-import { map_grid_delta } from 'map/grid';
-import { map_data } from './data';
+import { map_data, map_grid_delta } from 'map/grid';
 export class unnamed6_8 {
     public tiles: ring_tile[] = new Array(1080).fill(null);
     public index: number[] = new Array(6).fill(0);

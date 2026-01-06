@@ -260,7 +260,7 @@ export function empire_object_get_battle_icon(path_id: number, year: number) {
             }
         }
     }
-    return 0;
+    return null;
 }
 export function empire_object_get_max_invasion_path() {
     let max_path: number = 0;

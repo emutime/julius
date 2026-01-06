@@ -68,16 +68,16 @@ function update_debt_state() {
         city_finance_calculate_totals();
         city_data.emperor.debt_state = 1;
         city_data.emperor.months_in_debt = 0;
-        city_message_post(1, MESSAGE_CITY_IN_DEBT, 0, 0);
+        city_message_post(true, MESSAGE_CITY_IN_DEBT, 0, 0);
         city_ratings_reduce_prosperity_after_bailout();
     } else if (city_data.emperor.debt_state == 1) {
         city_data.emperor.debt_state = 2;
         city_data.emperor.months_in_debt = 0;
-        city_message_post(1, MESSAGE_CITY_IN_DEBT_AGAIN, 0, 0);
+        city_message_post(true, MESSAGE_CITY_IN_DEBT_AGAIN, 0, 0);
         city_ratings_change_favor(-5);
     } else if (city_data.emperor.debt_state == 2) {
         if (city_data.emperor.months_in_debt == -1) {
-            city_message_post(1, MESSAGE_CITY_IN_DEBT_AGAIN, 0, 0);
+            city_message_post(true, MESSAGE_CITY_IN_DEBT_AGAIN, 0, 0);
             city_data.emperor.months_in_debt = 0;
         }
         if (game_time_day() == 0) {
@@ -87,13 +87,13 @@ function update_debt_state() {
             city_data.emperor.debt_state = 3;
             city_data.emperor.months_in_debt = 0;
             if (!city_data.figure.imperial_soldiers) {
-                city_message_post(1, MESSAGE_CITY_STILL_IN_DEBT, 0, 0);
+                city_message_post(true, MESSAGE_CITY_STILL_IN_DEBT, 0, 0);
                 city_ratings_change_favor(-10);
             }
         }
     } else if (city_data.emperor.debt_state == 3) {
         if (city_data.emperor.months_in_debt == -1) {
-            city_message_post(1, MESSAGE_CITY_STILL_IN_DEBT, 0, 0);
+            city_message_post(true, MESSAGE_CITY_STILL_IN_DEBT, 0, 0);
             city_data.emperor.months_in_debt = 0;
         }
         if (game_time_day() == 0) {
@@ -118,10 +118,10 @@ function process_caesar_invasion() {
                 formation_caesar_retreat();
                 if (!city_data.emperor.invasion.retreat_message_shown) {
                     city_data.emperor.invasion.retreat_message_shown = 1;
-                    city_message_post(1, MESSAGE_CAESAR_ARMY_RETREAT, 0, 0);
+                    city_message_post(true, MESSAGE_CAESAR_ARMY_RETREAT, 0, 0);
                 }
             } else if (city_data.emperor.invasion.duration_day_countdown == 0) {
-                city_message_post(1, MESSAGE_CAESAR_ARMY_CONTINUE, 0, 0);
+                city_message_post(true, MESSAGE_CAESAR_ARMY_CONTINUE, 0, 0);
             }
         }
     } else if (city_data.emperor.invasion.soldiers_killed
@@ -131,11 +131,11 @@ function process_caesar_invasion() {
         if (city_data.ratings.favor < 35) {
             city_ratings_change_favor(10);
             if (city_data.emperor.invasion.count < 2) {
-                city_message_post(1, MESSAGE_CAESAR_RESPECT_1, 0, 0);
+                city_message_post(true, MESSAGE_CAESAR_RESPECT_1, 0, 0);
             } else if (city_data.emperor.invasion.count < 3) {
-                city_message_post(1, MESSAGE_CAESAR_RESPECT_2, 0, 0);
+                city_message_post(true, MESSAGE_CAESAR_RESPECT_2, 0, 0);
             } else {
-                city_message_post(1, MESSAGE_CAESAR_RESPECT_3, 0, 0);
+                city_message_post(true, MESSAGE_CAESAR_RESPECT_3, 0, 0);
             }
         }
     } else if (city_data.emperor.invasion.days_until_invasion <= 0) {
@@ -143,7 +143,7 @@ function process_caesar_invasion() {
             city_data.emperor.invasion.warnings_given++;
             city_data.emperor.invasion.days_until_invasion = 192;
             if (city_data.emperor.invasion.warnings_given <= 1) {
-                city_message_post(1, MESSAGE_CAESAR_WRATH, 0, 0);
+                city_message_post(true, MESSAGE_CAESAR_WRATH, 0, 0);
             }
         }
     } else {

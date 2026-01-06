@@ -78,23 +78,23 @@ export function city_gods_reset_neptune_blessing() {
 function perform_blessing(god: god_type) {
     switch (god) {
         case GOD_CERES:
-            city_message_post(1, MESSAGE_BLESSING_FROM_CERES, 0, 0);
+            city_message_post(true, MESSAGE_BLESSING_FROM_CERES, 0, 0);
             building_bless_farms();
             break
         case GOD_NEPTUNE:
-            city_message_post(1, MESSAGE_BLESSING_FROM_NEPTUNE, 0, 0);
+            city_message_post(true, MESSAGE_BLESSING_FROM_NEPTUNE, 0, 0);
             city_data.religion.neptune_double_trade_active = 1;
             break
         case GOD_MERCURY:
-            city_message_post(1, MESSAGE_BLESSING_FROM_MERCURY, 0, 0);
+            city_message_post(true, MESSAGE_BLESSING_FROM_MERCURY, 0, 0);
             building_granary_bless();
             break
         case GOD_MARS:
-            city_message_post(1, MESSAGE_BLESSING_FROM_MARS, 0, 0);
+            city_message_post(true, MESSAGE_BLESSING_FROM_MARS, 0, 0);
             city_data.religion.mars_spirit_power = 10;
             break
         case GOD_VENUS:
-            city_message_post(1, MESSAGE_BLESSING_FROM_VENUS, 0, 0);
+            city_message_post(true, MESSAGE_BLESSING_FROM_VENUS, 0, 0);
             city_sentiment_change_happiness(25);
             break
     }
@@ -102,27 +102,27 @@ function perform_blessing(god: god_type) {
 function perform_small_curse(god: god_type) {
     switch (god) {
         case GOD_CERES:
-            city_message_post(1, MESSAGE_CERES_IS_UPSET, 0, 0);
+            city_message_post(true, MESSAGE_CERES_IS_UPSET, 0, 0);
             building_curse_farms(0);
             break
         case GOD_NEPTUNE:
-            city_message_post(1, MESSAGE_NEPTUNE_IS_UPSET, 0, 0);
+            city_message_post(true, MESSAGE_NEPTUNE_IS_UPSET, 0, 0);
             figure_sink_all_ships();
             city_data.religion.neptune_sank_ships = 1;
             break
         case GOD_MERCURY:
-            city_message_post(1, MESSAGE_MERCURY_IS_UPSET, 0, 0);
+            city_message_post(true, MESSAGE_MERCURY_IS_UPSET, 0, 0);
             building_granary_warehouse_curse(0);
             break
         case GOD_MARS:
             if (scenario_invasion_start_from_mars()) {
-                city_message_post(1, MESSAGE_MARS_IS_UPSET, 0, 0);
+                city_message_post(true, MESSAGE_MARS_IS_UPSET, 0, 0);
             } else {
-                city_message_post(1, MESSAGE_WRATH_OF_MARS_NO_MILITARY, 0, 0);
+                city_message_post(true, MESSAGE_WRATH_OF_MARS_NO_MILITARY, 0, 0);
             }
             break
         case GOD_VENUS:
-            city_message_post(1, MESSAGE_VENUS_IS_UPSET, 0, 0);
+            city_message_post(true, MESSAGE_VENUS_IS_UPSET, 0, 0);
             city_sentiment_set_max_happiness(50);
             city_sentiment_change_happiness(-5);
             city_health_change(-10);
@@ -133,34 +133,34 @@ function perform_small_curse(god: god_type) {
 function perform_large_curse(god: god_type) {
     switch (god) {
         case GOD_CERES:
-            city_message_post(1, MESSAGE_WRATH_OF_CERES, 0, 0);
+            city_message_post(true, MESSAGE_WRATH_OF_CERES, 0, 0);
             building_curse_farms(1);
             break
         case GOD_NEPTUNE:
             if (city_data.trade.num_sea_routes <= 0) {
-                city_message_post(1, MESSAGE_WRATH_OF_NEPTUNE_NO_SEA_TRADE, 0, 0);
+                city_message_post(true, MESSAGE_WRATH_OF_NEPTUNE_NO_SEA_TRADE, 0, 0);
                 return 0;
             } else {
-                city_message_post(1, MESSAGE_WRATH_OF_NEPTUNE, 0, 0);
+                city_message_post(true, MESSAGE_WRATH_OF_NEPTUNE, 0, 0);
                 figure_sink_all_ships();
                 city_data.religion.neptune_sank_ships = 1;
                 city_trade_start_sea_trade_problems(80);
             }
             break
         case GOD_MERCURY:
-            city_message_post(1, MESSAGE_WRATH_OF_MERCURY, 0, 0);
+            city_message_post(true, MESSAGE_WRATH_OF_MERCURY, 0, 0);
             building_granary_warehouse_curse(1);
             break
         case GOD_MARS:
             if (formation_legion_curse()) {
-                city_message_post(1, MESSAGE_WRATH_OF_MARS, 0, 0);
+                city_message_post(true, MESSAGE_WRATH_OF_MARS, 0, 0);
                 scenario_invasion_start_from_mars();
             } else {
-                city_message_post(1, MESSAGE_WRATH_OF_MARS_NO_MILITARY, 0, 0);
+                city_message_post(true, MESSAGE_WRATH_OF_MARS_NO_MILITARY, 0, 0);
             }
             break
         case GOD_VENUS:
-            city_message_post(1, MESSAGE_WRATH_OF_VENUS, 0, 0);
+            city_message_post(true, MESSAGE_WRATH_OF_VENUS, 0, 0);
             city_sentiment_set_max_happiness(40);
             city_sentiment_change_happiness(-10);
             if (city_data.health.value >= 80) {
@@ -261,9 +261,9 @@ function update_god_moods() {
     } else if (min_happiness < 30) {
         city_data.religion.angry_message_delay = 20;
         if (min_happiness < 10) {
-            city_message_post(0, MESSAGE_GODS_WRATHFUL, 0, 0);
+            city_message_post(false, MESSAGE_GODS_WRATHFUL, 0, 0);
         } else {
-            city_message_post(0, MESSAGE_GODS_UNHAPPY, 0, 0);
+            city_message_post(false, MESSAGE_GODS_UNHAPPY, 0, 0);
         }
     }
 }

@@ -1,51 +1,27 @@
 export const DISPLAY_TIME_MILLIS = 1000;
-import { intermezzo_type } from 'window/intermezzo';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { time_get_millis, time_millis } from 'core/time';
+import { graphics_clear_screen } from 'graphics/graphics';
+import { image_draw } from 'graphics/image';
+import { screen_height, screen_width } from 'graphics/screen';
+import { window_id, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { mouse } from 'input/mouse';
+import { scenario_campaign_mission, scenario_is_custom } from 'scenario/property';
+import { sound_music_stop } from 'sound/music';
+import { sound_speech_play_file, sound_speech_stop } from 'sound/speech';
+export const enum intermezzo_type {
+    INTERMEZZO_MISSION_BRIEFING = 0,
+    INTERMEZZO_FIRED = 1,
+    INTERMEZZO_WON = 2,
+};
 import INTERMEZZO_MISSION_BRIEFING = intermezzo_type.INTERMEZZO_MISSION_BRIEFING;
 import INTERMEZZO_FIRED = intermezzo_type.INTERMEZZO_FIRED;
 import INTERMEZZO_WON = intermezzo_type.INTERMEZZO_WON;
-import { time_millis } from 'core/time';
-import { time_get_millis } from 'core/time';;
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_clear_screen } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_INTERMEZZO_BACKGROUND = group_terrain.GROUP_INTERMEZZO_BACKGROUND;
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { screen_width } from 'graphics/screen';
-import { screen_height } from 'graphics/screen';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_INTERMEZZO = window_id.WINDOW_INTERMEZZO;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { scenario_climate } from 'scenario/property';
-import { scenario_is_custom } from 'scenario/property';
-import { scenario_campaign_mission } from 'scenario/property';
-import { sound_music_stop } from 'sound/music';
-import { sound_speech_play_file } from 'sound/speech';
-import { sound_speech_stop } from 'sound/speech';
-let SOUND_FILES_BRIEFING: char[] = new Array(32).fill({
+let SOUND_FILES_BRIEFING: string[] = [
     "wavs/01b.wav",
     "wavs/02b.wav",
     "wavs/03b.wav",
@@ -68,8 +44,8 @@ let SOUND_FILES_BRIEFING: char[] = new Array(32).fill({
     "wavs/20b.wav",
     "wavs/21b.wav",
     "wavs/22b.wav",
-});
-let SOUND_FILES_WON: char[] = new Array(32).fill({
+];
+let SOUND_FILES_WON: string[] = [
     "wavs/01w.wav",
     "wavs/02w.wav",
     "wavs/03w.wav",
@@ -92,11 +68,11 @@ let SOUND_FILES_WON: char[] = new Array(32).fill({
     "wavs/20w.wav",
     "wavs/21w.wav",
     "wavs/22w.wav",
-});
-let SOUND_FILE_LOSE: char[] = new Array().fill("wavs/lose_game.wav");
+];
+let SOUND_FILE_LOSE: string[] = ["wavs/lose_game.wav"];
 export class unnamed66_8 {
     public type: intermezzo_type = null;
-    public callback: void ( = null;
+    public callback: (() => void) | null = null;
     public start_time: time_millis = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.type = args[0]);
@@ -105,7 +81,7 @@ export class unnamed66_8 {
     }
 }
 let data: unnamed66_8 = new unnamed66_8();
-function init(type: intermezzo_type, callback: void () {
+function init(type: intermezzo_type, callback: () => void) {
     data.type = type;
     data.callback = callback;
     data.start_time = time_get_millis();
@@ -151,13 +127,13 @@ function handle_input(m: mouse, h: hotkeys) {
         data.callback();
     }
 }
-export function window_intermezzo_show(type: intermezzo_type, callback: void () {
-    let window: window_type = {
+export function window_intermezzo_show(type: intermezzo_type, callback: () => void) {
+    let window: window_type = new window_type(
         WINDOW_INTERMEZZO,
         draw_background,
         0,
         handle_input
-    };
+    );
     init(type, callback);
     window_show(window);
 }

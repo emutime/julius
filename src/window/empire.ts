@@ -1,20 +1,45 @@
 export const MAX_WIDTH = 2032;
 export const MAX_HEIGHT = 1136;
-import { building_type } from 'building/type';
-import { build_menu_group } from 'building/menu';
 import { building_menu_update } from 'building/menu';
-import { city_military_distant_battle_city_is_roman } from 'city/military';
-import { city_military_distant_battle_roman_army_is_traveling } from 'city/military';
-import { city_military_distant_battle_roman_army_is_traveling_forth } from 'city/military';
-import { city_military_distant_battle_enemy_months_traveled } from 'city/military';
-import { city_military_distant_battle_roman_months_traveled } from 'city/military';
-import { city_military_months_until_distant_battle } from 'city/military';;
-import { warning_type } from 'city/warning';
+import { advisor_type } from 'city/constants';
+import { city_military_distant_battle_city_is_roman, city_military_distant_battle_enemy_months_traveled, city_military_distant_battle_roman_army_is_traveling, city_military_distant_battle_roman_army_is_traveling_forth, city_military_distant_battle_roman_months_traveled, city_military_months_until_distant_battle } from 'city/military';
+import { pixel_offset } from 'city/view';
+import { city_warning_show, warning_type } from 'city/warning';
+import { image, image_get, image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { empire_city, empire_city_get, empire_city_get_for_object, empire_city_is_trade_route_open, empire_city_open_trade } from 'empire/city';
+import { empire_adjust_scroll, empire_clear_selected_object, empire_scroll_map, empire_select_object, empire_selected_object, empire_set_viewport } from 'empire/empire';
+import { empire_object, empire_object_city_buys_resource, empire_object_city_sells_resource, empire_object_foreach, empire_object_get, empire_object_update_animation } from 'empire/object';
+import { trade_route_limit, trade_route_traded } from 'empire/trade_route';
+import { empire_city_type, empire_object_type } from 'empire/type';
+import { resource_image_offset, resource_image_type, resource_type } from 'game/resource';
+import { tutorial_advisor_empire_availability, tutorial_availability } from 'game/tutorial';
+import { button_border_draw, button_none } from 'graphics/button';
+import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_clear_screen, graphics_draw_inset_rect, graphics_reset_clip_rectangle, graphics_set_clip_rectangle } from 'graphics/graphics';
+import { image_draw } from 'graphics/image';
+import { ib, image_button, image_buttons_draw, image_buttons_handle_mouse } from 'graphics/image_button';
+import { lang_text_draw, lang_text_draw_amount, lang_text_draw_centered, lang_text_draw_multiline, lang_text_get_width } from 'graphics/lang_text';
+import { screen_height, screen_width } from 'graphics/screen';
+import { text_draw_number } from 'graphics/text';
+import { tooltip_context, tooltip_type } from 'graphics/tooltip';
+import { window_id, window_invalidate, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse } from 'input/mouse';
+import { scroll_drag_end, scroll_drag_start, scroll_get_delta, scroll_type } from 'input/scroll';
+import { touch, touch_get_earliest, touch_was_click } from 'input/touch';
+import { scenario_empire_is_expanded } from 'scenario/empire';
+import { scenario_invasion_foreach_warning } from 'scenario/invasion';
+import { window_advisors_show_advisor } from 'window/advisors';
+import { window_city_show } from 'window/city';
+import { message_dialog, window_message_dialog_show } from 'window/message_dialog';
+import { popup_dialog_type, window_popup_dialog_show } from 'window/popup_dialog';
+import { window_resource_settings_show } from 'window/resource_settings';
+import { window_trade_opened_show } from 'window/trade_opened';
 import WARNING_NOT_AVAILABLE = warning_type.WARNING_NOT_AVAILABLE;
 import WARNING_NOT_AVAILABLE_YET = warning_type.WARNING_NOT_AVAILABLE_YET;
-import { warning_type } from 'city/warning';
-import { city_warning_show } from 'city/warning';
-import { group_terrain } from 'core/image_group';
 import GROUP_EMPIRE_MAP = group_terrain.GROUP_EMPIRE_MAP;
 import GROUP_CONTEXT_ICONS = group_terrain.GROUP_CONTEXT_ICONS;
 import GROUP_EMPIRE_PANELS = group_terrain.GROUP_EMPIRE_PANELS;
@@ -24,8 +49,6 @@ import GROUP_EMPIRE_TRADE_ROUTE_TYPE = group_terrain.GROUP_EMPIRE_TRADE_ROUTE_TY
 import GROUP_MESSAGE_ADVISOR_BUTTONS = group_terrain.GROUP_MESSAGE_ADVISOR_BUTTONS;
 import GROUP_EMPIRE_FOREIGN_CITY = group_terrain.GROUP_EMPIRE_FOREIGN_CITY;
 import GROUP_TRADE_AMOUNT = group_terrain.GROUP_TRADE_AMOUNT;
-import { buffer } from 'core/buffer';
-import { resource_type } from 'game/resource';
 import RESOURCE_WHEAT = resource_type.RESOURCE_WHEAT;
 import RESOURCE_VEGETABLES = resource_type.RESOURCE_VEGETABLES;
 import RESOURCE_FRUIT = resource_type.RESOURCE_FRUIT;
@@ -43,167 +66,60 @@ import RESOURCE_FURNITURE = resource_type.RESOURCE_FURNITURE;
 import RESOURCE_POTTERY = resource_type.RESOURCE_POTTERY;
 import RESOURCE_MIN = resource_type.RESOURCE_MIN;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
 import RESOURCE_IMAGE_ICON = resource_image_type.RESOURCE_IMAGE_ICON;
-import { resource_image_type } from 'game/resource';
-import { resource_image_offset } from 'game/resource';
-import { empire_city } from 'empire/city';
-import { empire_city_get } from 'empire/city';
-import { empire_city_get_for_object } from 'empire/city';
-import { empire_city_is_trade_route_open } from 'empire/city';
-import { empire_city_open_trade } from 'empire/city';
-import { empire_scroll_map } from 'empire/empire';
-import { empire_set_viewport } from 'empire/empire';
-import { empire_adjust_scroll } from 'empire/empire';
-import { empire_selected_object } from 'empire/empire';
-import { empire_clear_selected_object } from 'empire/empire';
-import { empire_select_object } from 'empire/empire';
-import { empire_object } from 'empire/object';
-import { empire_object_get } from 'empire/object';
-import { empire_object_foreach } from 'empire/object';
-import { empire_object_city_buys_resource } from 'empire/object';
-import { empire_object_city_sells_resource } from 'empire/object';
-import { empire_object_update_animation } from 'empire/object';
-import { trade_route_limit } from 'empire/trade_route';
-import { trade_route_traded } from 'empire/trade_route';
-import { empire_object } from 'empire/type';
-import EMPIRE_OBJECT_CITY = empire_object.EMPIRE_OBJECT_CITY;
-import EMPIRE_OBJECT_BATTLE_ICON = empire_object.EMPIRE_OBJECT_BATTLE_ICON;
-import EMPIRE_OBJECT_LAND_TRADE_ROUTE = empire_object.EMPIRE_OBJECT_LAND_TRADE_ROUTE;
-import EMPIRE_OBJECT_SEA_TRADE_ROUTE = empire_object.EMPIRE_OBJECT_SEA_TRADE_ROUTE;
-import EMPIRE_OBJECT_ROMAN_ARMY = empire_object.EMPIRE_OBJECT_ROMAN_ARMY;
-import EMPIRE_OBJECT_ENEMY_ARMY = empire_object.EMPIRE_OBJECT_ENEMY_ARMY;
-import { empire_city } from 'empire/type';
-import EMPIRE_CITY_DISTANT_ROMAN = empire_city.EMPIRE_CITY_DISTANT_ROMAN;
-import EMPIRE_CITY_OURS = empire_city.EMPIRE_CITY_OURS;
-import EMPIRE_CITY_TRADE = empire_city.EMPIRE_CITY_TRADE;
-import EMPIRE_CITY_FUTURE_TRADE = empire_city.EMPIRE_CITY_FUTURE_TRADE;
-import EMPIRE_CITY_DISTANT_FOREIGN = empire_city.EMPIRE_CITY_DISTANT_FOREIGN;
-import EMPIRE_CITY_VULNERABLE_ROMAN = empire_city.EMPIRE_CITY_VULNERABLE_ROMAN;
-import EMPIRE_CITY_FUTURE_ROMAN = empire_city.EMPIRE_CITY_FUTURE_ROMAN;
-import { tutorial_availability } from 'game/tutorial';
+import EMPIRE_OBJECT_CITY = empire_object_type.EMPIRE_OBJECT_CITY;
+import EMPIRE_OBJECT_BATTLE_ICON = empire_object_type.EMPIRE_OBJECT_BATTLE_ICON;
+import EMPIRE_OBJECT_LAND_TRADE_ROUTE = empire_object_type.EMPIRE_OBJECT_LAND_TRADE_ROUTE;
+import EMPIRE_OBJECT_SEA_TRADE_ROUTE = empire_object_type.EMPIRE_OBJECT_SEA_TRADE_ROUTE;
+import EMPIRE_OBJECT_ROMAN_ARMY = empire_object_type.EMPIRE_OBJECT_ROMAN_ARMY;
+import EMPIRE_OBJECT_ENEMY_ARMY = empire_object_type.EMPIRE_OBJECT_ENEMY_ARMY;
+import EMPIRE_CITY_DISTANT_ROMAN = empire_city_type.EMPIRE_CITY_DISTANT_ROMAN;
+import EMPIRE_CITY_OURS = empire_city_type.EMPIRE_CITY_OURS;
+import EMPIRE_CITY_TRADE = empire_city_type.EMPIRE_CITY_TRADE;
+import EMPIRE_CITY_FUTURE_TRADE = empire_city_type.EMPIRE_CITY_FUTURE_TRADE;
+import EMPIRE_CITY_DISTANT_FOREIGN = empire_city_type.EMPIRE_CITY_DISTANT_FOREIGN;
+import EMPIRE_CITY_VULNERABLE_ROMAN = empire_city_type.EMPIRE_CITY_VULNERABLE_ROMAN;
+import EMPIRE_CITY_FUTURE_ROMAN = empire_city_type.EMPIRE_CITY_FUTURE_ROMAN;
 import AVAILABLE = tutorial_availability.AVAILABLE;
 import NOT_AVAILABLE = tutorial_availability.NOT_AVAILABLE;
-import { tutorial_availability } from 'game/tutorial';
-import { tutorial_build_buttons } from 'game/tutorial';
-import { tutorial_advisor_empire_availability } from 'game/tutorial';
-import { button_none } from 'graphics/button';
-import { button_border_draw } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { touch_get_earliest } from 'input/touch';
-import { touch_was_click } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_set_clip_rectangle } from 'graphics/graphics';
-import { graphics_reset_clip_rectangle } from 'graphics/graphics';
-import { graphics_clear_screen } from 'graphics/graphics';
-import { graphics_draw_inset_rect } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { image_get } from 'core/image';
-import { font_t } from 'graphics/font';
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { ib } from 'graphics/image_button';
 import IB_NORMAL = ib.IB_NORMAL;
-import { image_button } from 'graphics/image_button';
-import { image_buttons_draw } from 'graphics/image_button';
-import { image_buttons_handle_mouse } from 'graphics/image_button';
-import { lang_text_get_width } from 'graphics/lang_text';
-import { lang_text_draw } from 'graphics/lang_text';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { lang_text_draw_amount } from 'graphics/lang_text';
-import { lang_text_draw_multiline } from 'graphics/lang_text';
-import { screen_width } from 'graphics/screen';
-import { screen_height } from 'graphics/screen';
-import { text_draw_number } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
 import TOOLTIP_BUTTON = tooltip_type.TOOLTIP_BUTTON;
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_EMPIRE = window_id.WINDOW_EMPIRE;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-import { view_tile } from 'city/view';
-import { pixel_offset } from 'city/view';
-import { map_callback } from 'city/view';
-import { scroll_type } from 'input/scroll';
 import SCROLL_TYPE_EMPIRE = scroll_type.SCROLL_TYPE_EMPIRE;
-import { scroll_type } from 'input/scroll';
-import { scroll_get_delta } from 'input/scroll';
-import { scroll_drag_start } from 'input/scroll';
-import { scroll_drag_end } from 'input/scroll';
-import { scenario_empire_is_expanded } from 'scenario/empire';
-import { scenario_invasion_foreach_warning } from 'scenario/invasion';
-import { advisor_type } from 'city/constants';
 import ADVISOR_TRADE = advisor_type.ADVISOR_TRADE;
-import { advisor_type } from 'city/constants';
-import { window_advisors_show_advisor } from 'window/advisors';
-import { window_city_show } from 'window/city';
-import { message_dialog } from 'window/message_dialog';
 import MESSAGE_DIALOG_EMPIRE_MAP = message_dialog.MESSAGE_DIALOG_EMPIRE_MAP;
-import { window_message_dialog_show } from 'window/message_dialog';
-import { popup_dialog_type } from 'window/popup_dialog';
 import POPUP_DIALOG_OPEN_TRADE = popup_dialog_type.POPUP_DIALOG_OPEN_TRADE;
-import { popup_dialog_type } from 'window/popup_dialog';
-import { window_popup_dialog_show } from 'window/popup_dialog';
-import { window_resource_settings_show } from 'window/resource_settings';
-import { window_trade_opened_show } from 'window/trade_opened';
-let image_button_help: image_button[] = new Array().fill({
-    { 0, 0, 27, 27, IB_NORMAL, GROUP_CONTEXT_ICONS, 0, button_help, button_none, 0, 0, 1}
-});
-let image_button_return_to_city: image_button[] = new Array().fill({
-    { 0, 0, 24, 24, IB_NORMAL, GROUP_CONTEXT_ICONS, 4, button_return_to_city, button_none, 0, 0, 1}
-});
-let image_button_advisor: image_button[] = new Array().fill({
-    {- 4, 0, 24, 24, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 12, button_advisor, button_none, ADVISOR_TRADE, 0, 1}
-});
-let generic_button_trade_resource: generic_button[] = new Array().fill({
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_WHEAT, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_VEGETABLES, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_FRUIT, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_OLIVES, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_VINES, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_MEAT, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_WINE, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_OIL, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_IRON, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_TIMBER, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_CLAY, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_MARBLE, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_WEAPONS, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_FURNITURE, 0},
-    { 0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_POTTERY, 0}
-});
-let generic_button_open_trade: generic_button[] = new Array().fill({
-    { 30, 56, 440, 26, button_open_trade, button_none, 0, 0}
-});
+let image_button_help: image_button[] = [
+    new image_button(0, 0, 27, 27, IB_NORMAL, GROUP_CONTEXT_ICONS, 0, button_help, button_none, 0, 0, 1)
+];
+let image_button_return_to_city: image_button[] = [
+    new image_button(0, 0, 24, 24, IB_NORMAL, GROUP_CONTEXT_ICONS, 4, button_return_to_city, button_none, 0, 0, 1)
+];
+let image_button_advisor: image_button[] = [
+    new image_button(-4, 0, 24, 24, IB_NORMAL, GROUP_MESSAGE_ADVISOR_BUTTONS, 12, button_advisor, button_none, ADVISOR_TRADE, 0, 1)
+];
+let generic_button_trade_resource: generic_button[] = [
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_WHEAT, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_VEGETABLES, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_FRUIT, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_OLIVES, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_VINES, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_MEAT, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_WINE, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_OIL, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_IRON, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_TIMBER, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_CLAY, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_MARBLE, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_WEAPONS, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_FURNITURE, 0),
+    new generic_button(0, 0, 101, 27, button_show_resource_window, button_none, RESOURCE_POTTERY, 0)
+];
+let generic_button_open_trade: generic_button[] = [
+    new generic_button(30, 56, 440, 26, button_open_trade, button_none, 0, 0)
+];
 export class unnamed71_8 {
     public selected_button: number = 0;
     public selected_city: number = 0;
@@ -274,18 +190,18 @@ function draw_trade_resource(resource: resource_type, trade_max: number, x_offse
     let resource_offset: number = resource_image_offset(resource, RESOURCE_IMAGE_ICON);
     image_draw(image_id + resource_offset, x_offset + 1, y_offset + 1);
     if (data.focus_resource == resource) {
-        button_border_draw(x_offset - 2, y_offset - 2, 101 + 4, 30, 1);
+        button_border_draw(x_offset - 2, y_offset - 2, 101 + 4, 30, true);
     }
     switch (trade_max) {
         case 15:
             image_draw(image_group(GROUP_TRADE_AMOUNT), x_offset + 21, y_offset - 1);
-            break
+            break;
         case 25:
             image_draw(image_group(GROUP_TRADE_AMOUNT) + 1, x_offset + 17, y_offset - 1);
-            break
+            break;
         case 40:
             image_draw(image_group(GROUP_TRADE_AMOUNT) + 2, x_offset + 13, y_offset - 1);
-            break
+            break;
     }
 }
 function draw_trade_city_info(object: empire_object, city: empire_city) {
@@ -296,7 +212,7 @@ function draw_trade_city_info(object: empire_object, city: empire_city) {
         let index: number = 0;
         for (let resource: number = RESOURCE_MIN; resource < RESOURCE_MAX; resource++) {
             if (!empire_object_city_sells_resource(object.id, resource)) {
-                continue
+                continue;
             }
             let trade_max: number = trade_route_limit(city.route_id, resource);
             draw_trade_resource(resource, trade_max, x_offset + 104 * index + 120, y_offset + 31);
@@ -307,7 +223,7 @@ function draw_trade_city_info(object: empire_object, city: empire_city) {
             let text_width: number = text_draw_number(trade_now, '@', "",
                 x_offset + 104 * index + 150, y_offset + 40, FONT_NORMAL_GREEN);
             text_width += lang_text_draw(47, 11,
-                x_offset + 104 * index + 148 + text_width, y_offset + 40, FONT_NORMAL_GREEN)
+                x_offset + 104 * index + 148 + text_width, y_offset + 40, FONT_NORMAL_GREEN);
             text_draw_number(trade_max, '@', "",
                 x_offset + 104 * index + 138 + text_width, y_offset + 40, FONT_NORMAL_GREEN);
             index++;
@@ -316,7 +232,7 @@ function draw_trade_city_info(object: empire_object, city: empire_city) {
         index = 0;
         for (let resource: number = RESOURCE_MIN; resource < RESOURCE_MAX; resource++) {
             if (!empire_object_city_buys_resource(object.id, resource)) {
-                continue
+                continue;
             }
             let trade_max: number = trade_route_limit(city.route_id, resource);
             draw_trade_resource(resource, trade_max, x_offset + 104 * index + 120, y_offset + 62);
@@ -327,7 +243,7 @@ function draw_trade_city_info(object: empire_object, city: empire_city) {
             let text_width: number = text_draw_number(trade_now, '@', "",
                 x_offset + 104 * index + 150, y_offset + 71, FONT_NORMAL_GREEN);
             text_width += lang_text_draw(47, 11,
-                x_offset + 104 * index + 148 + text_width, y_offset + 71, FONT_NORMAL_GREEN)
+                x_offset + 104 * index + 148 + text_width, y_offset + 71, FONT_NORMAL_GREEN);
             text_draw_number(trade_max, '@', "",
                 x_offset + 104 * index + 138 + text_width, y_offset + 71, FONT_NORMAL_GREEN);
             index++;
@@ -336,20 +252,20 @@ function draw_trade_city_info(object: empire_object, city: empire_city) {
         let index: number = lang_text_draw(47, 5, x_offset + 50, y_offset + 42, FONT_NORMAL_GREEN);
         for (let resource: number = RESOURCE_MIN; resource < RESOURCE_MAX; resource++) {
             if (!empire_object_city_sells_resource(object.id, resource)) {
-                continue
+                continue;
             }
             let trade_max: number = trade_route_limit(city.route_id, resource);
             draw_trade_resource(resource, trade_max, x_offset + index + 60, y_offset + 33);
-            index += 32
+            index += 32;
         }
-        index += lang_text_draw(47, 4, x_offset + index + 100, y_offset + 42, FONT_NORMAL_GREEN)
+        index += lang_text_draw(47, 4, x_offset + index + 100, y_offset + 42, FONT_NORMAL_GREEN);
         for (let resource: number = RESOURCE_MIN; resource < RESOURCE_MAX; resource++) {
             if (!empire_object_city_buys_resource(object.id, resource)) {
-                continue
+                continue;
             }
             let trade_max: number = trade_route_limit(city.route_id, resource);
             draw_trade_resource(resource, trade_max, x_offset + index + 110, y_offset + 33);
-            index += 32
+            index += 32;
         }
         index = lang_text_draw_amount(8, 0, city.cost_to_open,
             x_offset + 40, y_offset + 73, FONT_NORMAL_GREEN);
@@ -365,25 +281,25 @@ function draw_city_info(object: empire_object) {
     switch (city.type) {
         case EMPIRE_CITY_DISTANT_ROMAN:
             lang_text_draw_centered(47, 12, x_offset, y_offset + 42, 240, FONT_NORMAL_GREEN);
-            break
+            break;
         case EMPIRE_CITY_VULNERABLE_ROMAN:
             if (city_military_distant_battle_city_is_roman()) {
                 lang_text_draw_centered(47, 12, x_offset, y_offset + 42, 240, FONT_NORMAL_GREEN);
             } else {
                 lang_text_draw_centered(47, 13, x_offset, y_offset + 42, 240, FONT_NORMAL_GREEN);
             }
-            break
+            break;
         case EMPIRE_CITY_FUTURE_TRADE:
         case EMPIRE_CITY_DISTANT_FOREIGN:
         case EMPIRE_CITY_FUTURE_ROMAN:
             lang_text_draw_centered(47, 0, x_offset, y_offset + 42, 240, FONT_NORMAL_GREEN);
-            break
+            break;
         case EMPIRE_CITY_OURS:
             lang_text_draw_centered(47, 1, x_offset, y_offset + 42, 240, FONT_NORMAL_GREEN);
-            break
+            break;
         case EMPIRE_CITY_TRADE:
             draw_trade_city_info(object, city);
-            break
+            break;
     }
 }
 function draw_roman_army_info(object: empire_object) {
@@ -447,8 +363,8 @@ function draw_empire_object(obj: empire_object) {
             return;
         }
     }
-    let x: number
-    let y: number
+    let x: number;
+    let y: number;
     let image_id: number;
     if (scenario_empire_is_expanded()) {
         x = obj.expanded.x;
@@ -620,7 +536,7 @@ function handle_input(m: mouse, h: hotkeys) {
                         }
                         if (button_id) {
                             data.focus_resource = resource;
-                            break
+                            break;
                         }
                     }
                 } else {
@@ -659,16 +575,16 @@ function get_tooltip_resource(c: tooltip_context) {
             if (is_mouse_hit(c, x_offset + 60 + item_offset, y_offset + 33, 26)) {
                 return r;
             }
-            item_offset += 32
+            item_offset += 32;
         }
     }
-    item_offset += lang_text_get_width(47, 4, FONT_NORMAL_GREEN)
+    item_offset += lang_text_get_width(47, 4, FONT_NORMAL_GREEN);
     for (let r: number = RESOURCE_MIN; r <= RESOURCE_MAX; r++) {
         if (empire_object_city_buys_resource(object_id, r)) {
             if (is_mouse_hit(c, x_offset + 110 + item_offset, y_offset + 33, 26)) {
                 return r;
             }
-            item_offset += 32
+            item_offset += 32;
         }
     }
     return 0;
@@ -703,13 +619,13 @@ function get_tooltip(c: tooltip_context) {
         switch (data.focus_button_id) {
             case 1:
                 c.text_id = 1;
-                break
+                break;
             case 2:
                 c.text_id = 2;
-                break
+                break;
             case 3:
                 c.text_id = 69;
-                break
+                break;
         }
     } else {
         get_tooltip_trade_route_type(c);
@@ -738,13 +654,13 @@ function button_open_trade(param1: number, param2: number) {
     window_popup_dialog_show(POPUP_DIALOG_OPEN_TRADE, confirmed_open_trade, 2);
 }
 export function window_empire_show() {
-    let window: window_type = {
+    let window: window_type = new window_type(
         WINDOW_EMPIRE,
         draw_background,
         draw_foreground,
         handle_input,
         get_tooltip
-    };
+    );
     init();
     window_show(window);
 }

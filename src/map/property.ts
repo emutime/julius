@@ -3,6 +3,7 @@
 import { buffer } from 'core/buffer';
 import { GRID, grid_u8, map_grid_and_u8, map_grid_clear_u8, map_grid_copy_u8, map_grid_load_state_u8, map_grid_offset, map_grid_save_state_u8, map_grid_size } from 'map/grid';
 import { map_random_get } from 'map/random';
+import { Ref } from '../../ext/crt';
 import GRID_SIZE = GRID.GRID_SIZE;
 export const enum bit_size {
     BIT_SIZE1 = 0,
@@ -28,6 +29,30 @@ export const enum bit_size {
     EDGE_NATIVE_LAND = 128,
     EDGE_NO_NATIVE_LAND = 127,
 }
+
+import BIT_SIZE1 = bit_size.BIT_SIZE1;
+import BIT_SIZE2 = bit_size.BIT_SIZE2;
+import BIT_SIZE3 = bit_size.BIT_SIZE3;
+import BIT_SIZE4 = bit_size.BIT_SIZE4;
+import BIT_SIZE5 = bit_size.BIT_SIZE5;
+import BIT_SIZES = bit_size.BIT_SIZES;
+import BIT_NO_SIZES = bit_size.BIT_NO_SIZES;
+import BIT_CONSTRUCTION = bit_size.BIT_CONSTRUCTION;
+import BIT_NO_CONSTRUCTION = bit_size.BIT_NO_CONSTRUCTION;
+import BIT_ALTERNATE_TERRAIN = bit_size.BIT_ALTERNATE_TERRAIN;
+import BIT_DELETED = bit_size.BIT_DELETED;
+import BIT_NO_DELETED = bit_size.BIT_NO_DELETED;
+import BIT_PLAZA_OR_EARTHQUAKE = bit_size.BIT_PLAZA_OR_EARTHQUAKE;
+import BIT_NO_PLAZA = bit_size.BIT_NO_PLAZA;
+import BIT_NO_CONSTRUCTION_AND_DELETED = bit_size.BIT_NO_CONSTRUCTION_AND_DELETED;
+import EDGE_MASK_X = bit_size.EDGE_MASK_X;
+import EDGE_MASK_Y = bit_size.EDGE_MASK_Y;
+import EDGE_MASK_XY = bit_size.EDGE_MASK_XY;
+import EDGE_LEFTMOST_TILE = bit_size.EDGE_LEFTMOST_TILE;
+import EDGE_NO_LEFTMOST_TILE = bit_size.EDGE_NO_LEFTMOST_TILE;
+import EDGE_NATIVE_LAND = bit_size.EDGE_NATIVE_LAND;
+import EDGE_NO_NATIVE_LAND = bit_size.EDGE_NO_NATIVE_LAND;
+
 let edge_grid: grid_u8;
 let bitfields_grid: grid_u8;
 let edge_backup: grid_u8;
@@ -65,7 +90,7 @@ export function map_property_multi_tile_y(grid_offset: number) {
 export function map_property_is_multi_tile_xy(grid_offset: number, x: number, y: number) {
     return (edge_grid.items[grid_offset] & EDGE_MASK_XY) == edge_for(x, y);
 }
-export function map_property_set_multi_tile_xy(grid_offset: number, x: number, y: number, is_draw_tile: number) {
+export function map_property_set_multi_tile_xy(grid_offset: number, x: number, y: number, is_draw_tile: boolean) {
     if (is_draw_tile) {
         edge_grid.items[grid_offset] = edge_for(x, y) | EDGE_LEFTMOST_TILE;
     } else {
@@ -106,11 +131,11 @@ export function map_property_set_multi_tile_size(grid_offset: number, size: numb
     }
 }
 export function map_property_init_alternate_terrain() {
-    let mapWidthRef: { value: number } = { value: 0 };
-    let mapHeightRef: { value: number } = { value: 0 };
+    let mapWidthRef: Ref<number> = new Ref(0);
+    let mapHeightRef: Ref<number> = new Ref(0);
     map_grid_size(mapWidthRef, mapHeightRef);
-    let map_width: number = mapWidthRef.value;
-    let map_height: number = mapHeightRef.value;
+    let map_width: number = mapWidthRef.v;
+    let map_height: number = mapHeightRef.v;
     for (let y: number = 0; y < map_height; y++) {
         for (let x: number = 0; x < map_width; x++) {
             let grid_offset: number = map_grid_offset(x, y);

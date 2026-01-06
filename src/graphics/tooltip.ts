@@ -1,21 +1,35 @@
 export const COMPOSED_TOOLTIP_TEXT_MAX = 1000;
-import { COLOR_BLACK } from 'graphics/color';
-import { COLOR_WHITE } from 'graphics/color';
-import { COLOR_TOOLTIP } from 'graphics/color';
-import { time_millis } from 'core/time';
-import { time_get_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
+import { advisor_type } from 'city/constants';
+import { city_labor_unemployment_percentage, city_labor_workers_needed, city_labor_workers_unemployed } from 'city/labor';
+import { city_rating_culture, city_rating_favor, city_rating_peace, city_rating_prosperity } from 'city/ratings';
+import { time_get_millis, time_millis } from 'core/time';
+import { set_tooltips, setting_tooltips } from 'game/settings';
+import { COLOR_BLACK, color_t, COLOR_TOOLTIP, COLOR_WHITE } from 'graphics/color';
+import { font_t } from 'graphics/font';
+import { graphics_draw_from_buffer, graphics_draw_rect, graphics_fill_rect, graphics_save_to_buffer } from 'graphics/graphics';
+import { lang_text_draw_colored } from 'graphics/lang_text';
+import { screen_dialog_offset_x, screen_dialog_offset_y, screen_height } from 'graphics/screen';
+import { text_draw_multiline, text_draw_number_colored, text_measure_multiline } from 'graphics/text';
+import { window_get_id, window_id, window_is } from 'graphics/window';
 import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
+import { scenario_criteria_culture, scenario_criteria_culture_enabled, scenario_criteria_favor, scenario_criteria_favor_enabled, scenario_criteria_peace, scenario_criteria_peace_enabled, scenario_criteria_prosperity, scenario_criteria_prosperity_enabled } from 'scenario/criteria';
+import { scenario_is_open_play } from 'scenario/property';
+import { window_advisors_get_advisor } from 'window/advisors';
+import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
+export const enum tooltip_type {
+    TOOLTIP_NONE = 0,
+    TOOLTIP_BUTTON = 1,
+    TOOLTIP_OVERLAY = 2,
+    TOOLTIP_SENATE = 3
+};
 import TOOLTIP_NONE = tooltip_type.TOOLTIP_NONE;
 import TOOLTIP_BUTTON = tooltip_type.TOOLTIP_BUTTON;
 import TOOLTIP_OVERLAY = tooltip_type.TOOLTIP_OVERLAY;
 import TOOLTIP_SENATE = tooltip_type.TOOLTIP_SENATE;
-import { tooltip_extra_text_type } from 'graphics/tooltip';
+export const  enum tooltip_extra_text_type {
+    TOOLTIP_EXTRA_TEXT_COMMA_SEPARATED = 0,
+    TOOLTIP_EXTRA_TEXT_JOINED_BY_SPACE = 1
+};
 import TOOLTIP_EXTRA_TEXT_COMMA_SEPARATED = tooltip_extra_text_type.TOOLTIP_EXTRA_TEXT_COMMA_SEPARATED;
 export class tooltip_context {
     public mouse_x: number = 0;
@@ -45,85 +59,16 @@ export class tooltip_context {
         args.length >= 12 && (this.extra_text_ids = args[11]);
     }
 }
-import { labor_category_data } from 'city/labor';
-import { city_labor_unemployment_percentage } from 'city/labor';
-import { city_labor_workers_needed } from 'city/labor';
-import { city_labor_workers_unemployed } from 'city/labor';
-import { building_type } from 'building/type';
-import { selected_rating } from 'city/ratings';
-import { city_rating_culture } from 'city/ratings';
-import { city_rating_prosperity } from 'city/ratings';
-import { city_rating_peace } from 'city/ratings';
-import { city_rating_favor } from 'city/ratings';;
-import { lang_type } from 'core/lang';
-import { lang_message_type } from 'core/lang';
-import { lang_message } from 'core/lang';
-import { lang_get_string } from 'core/lang';
-import { string_copy } from 'core/string';
-import { string_length } from 'core/string';
-import { string_from_int } from 'core/string';
-import { set_tooltips } from 'game/settings';
+;
 import TOOLTIPS_FULL = set_tooltips.TOOLTIPS_FULL;
-import { set_tooltips } from 'game/settings';
-import { set_difficulty } from 'game/settings';
-import { set_sound_type } from 'game/settings';
-import { set_sound } from 'game/settings';
-import { setting_tooltips } from 'game/settings';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_save_to_buffer } from 'graphics/graphics';
-import { graphics_draw_from_buffer } from 'graphics/graphics';
-import { graphics_draw_rect } from 'graphics/graphics';
-import { graphics_fill_rect } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { font_t } from 'graphics/font';
 import FONT_SMALL_PLAIN = font_t.FONT_SMALL_PLAIN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { lang_text_draw_colored } from 'graphics/lang_text';
-import { screen_height } from 'graphics/screen';
-import { screen_dialog_offset_x } from 'graphics/screen';
-import { screen_dialog_offset_y } from 'graphics/screen';
-import { text_draw_number_colored } from 'graphics/text';
-import { text_draw_multiline } from 'graphics/text';
-import { text_measure_multiline } from 'graphics/text';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_ADVISORS = window_id.WINDOW_ADVISORS;
 import WINDOW_LABOR_PRIORITY = window_id.WINDOW_LABOR_PRIORITY;
 import WINDOW_DONATE_TO_CITY = window_id.WINDOW_DONATE_TO_CITY;
 import WINDOW_TRADE_PRICES = window_id.WINDOW_TRADE_PRICES;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_is } from 'graphics/window';
-import { window_get_id } from 'graphics/window';
-import { buffer } from 'core/buffer';
-import { scenario_criteria_culture_enabled } from 'scenario/criteria';
-import { scenario_criteria_culture } from 'scenario/criteria';
-import { scenario_criteria_prosperity_enabled } from 'scenario/criteria';
-import { scenario_criteria_prosperity } from 'scenario/criteria';
-import { scenario_criteria_peace_enabled } from 'scenario/criteria';
-import { scenario_criteria_peace } from 'scenario/criteria';
-import { scenario_criteria_favor_enabled } from 'scenario/criteria';
-import { scenario_criteria_favor } from 'scenario/criteria';
-import { scenario_climate } from 'scenario/property';
-import { scenario_is_open_play } from 'scenario/property';
-import { advisor_type } from 'city/constants';
 import ADVISOR_LABOR = advisor_type.ADVISOR_LABOR;
 import ADVISOR_TRADE = advisor_type.ADVISOR_TRADE;
 import ADVISOR_POPULATION = advisor_type.ADVISOR_POPULATION;
-import { advisor_type } from 'city/constants';
-import { window_advisors_get_advisor } from 'window/advisors';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
 let DEFAULT_TEXT_GROUP: number = 68;
 let TOOLTIP_DELAY_MILLIS: time_millis = 150;
 let last_update: time_millis = 0;
@@ -135,7 +80,7 @@ export class unnamed27_8 {
     public width: number = 0;
     public height: number = 0;
     public buffer_size: number = 0;
-    public buffer: color_t = null;
+    public buffer: color_t[] = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.is_active = args[0]);
         args.length >= 2 && (this.x = args[1]);
@@ -193,40 +138,40 @@ function save_window_under_tooltip_to_buffer(x: number, y: number, width: number
     if (buffer_size > button_tooltip_info.buffer_size) {
         button_tooltip_info.buffer_size = buffer_size;
         free(button_tooltip_info.buffer);
-        button_tooltip_info.buffer = (color_t *)malloc(buffer_size * sizeof(color_t));
+        button_tooltip_info.buffer = new Array(buffer_size);
     }
     graphics_save_to_buffer(x, y, width, height, button_tooltip_info.buffer);
 }
 function get_tooltip_text(c: tooltip_context) {
-    let text: number = lang_get_string(c.text_group, c.text_id);
-    if (c.has_numeric_prefix) {
-        let offset: number = string_from_int(composed_tooltip_text, c.numeric_prefix, 0);
-        string_copy(text, composed_tooltip_text[offset], COMPOSED_TOOLTIP_TEXT_MAX - offset);
-        text = composed_tooltip_text;
-    } else if (c.num_extra_texts > 0) {
-        string_copy(text, composed_tooltip_text, COMPOSED_TOOLTIP_TEXT_MAX);
-        let offset: number = string_length(composed_tooltip_text);
-        let is_comma_separated: number = c.extra_text_type == TOOLTIP_EXTRA_TEXT_COMMA_SEPARATED;
-        if (is_comma_separated) {
-            composed_tooltip_text[offset++] = ':';
-            composed_tooltip_text[offset++] = '\n';
-        } else {
-            composed_tooltip_text[offset++] = ' ';
-        }
-        for (let i: number = 0; i < c.num_extra_texts; i++) {
-            if (i) {
-                if (is_comma_separated) {
-                    composed_tooltip_text[offset++] = ',';
-                }
-                composed_tooltip_text[offset++] = ' ';
-            }
-            let extra_value: number = lang_get_string(c.extra_text_groups[i], c.extra_text_ids[i]);
-            string_copy(extra_value, composed_tooltip_text[offset], COMPOSED_TOOLTIP_TEXT_MAX - offset);
-            offset += string_length(extra_value)
-        }
-        text = composed_tooltip_text;
-    }
-    return text;
+    // let text: number = lang_get_string(c.text_group, c.text_id);
+    // if (c.has_numeric_prefix) {
+    //     let offset: number = string_from_int(composed_tooltip_text, c.numeric_prefix, 0);
+    //     string_copy(text, composed_tooltip_text[offset], COMPOSED_TOOLTIP_TEXT_MAX - offset);
+    //     text = composed_tooltip_text;
+    // } else if (c.num_extra_texts > 0) {
+    //     string_copy(text, composed_tooltip_text, COMPOSED_TOOLTIP_TEXT_MAX);
+    //     let offset: number = string_length(composed_tooltip_text);
+    //     let is_comma_separated: number = c.extra_text_type == TOOLTIP_EXTRA_TEXT_COMMA_SEPARATED;
+    //     if (is_comma_separated) {
+    //         composed_tooltip_text[offset++] = ':';
+    //         composed_tooltip_text[offset++] = '\n';
+    //     } else {
+    //         composed_tooltip_text[offset++] = ' ';
+    //     }
+    //     for (let i: number = 0; i < c.num_extra_texts; i++) {
+    //         if (i) {
+    //             if (is_comma_separated) {
+    //                 composed_tooltip_text[offset++] = ',';
+    //             }
+    //             composed_tooltip_text[offset++] = ' ';
+    //         }
+    //         let extra_value: number = lang_get_string(c.extra_text_groups[i], c.extra_text_ids[i]);
+    //         string_copy(extra_value, composed_tooltip_text[offset], COMPOSED_TOOLTIP_TEXT_MAX - offset);
+    //         offset += string_length(extra_value)
+    //     }
+    //     text = composed_tooltip_text;
+    // }
+    // return text;
 }
 function draw_button_tooltip(c: tooltip_context) {
     let text: number = get_tooltip_text(c);
@@ -390,12 +335,12 @@ function draw_tooltip(c: tooltip_context) {
 export function tooltip_invalidate() {
     button_tooltip_info.is_active = 0;
 }
-export function tooltip_handle(m: mouse, func: void () {
+export function tooltip_handle(m: mouse, func: (context: tooltip_context) => void) {
     if (m.is_touch && !m.left.is_down) {
         reset_timer();
         return;
     }
-    let context: tooltip_context = { m.x, m.y };
+    let context: tooltip_context = new tooltip_context(m.x, m.y);
     context.text_group = DEFAULT_TEXT_GROUP;
     if (setting_tooltips() && func) {
         func(context);

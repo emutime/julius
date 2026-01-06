@@ -132,7 +132,7 @@ function is_clear(x: number, y: number, size: number, disallowed_terrain: number
 export function map_tiles_are_clear(x: number, y: number, size: number, disallowed_terrain: number) {
     return is_clear(x, y, size, disallowed_terrain, 0);
 }
-function foreach_map_tile(callback: void () {
+function foreach_map_tile(callback: (x: number, y: number, grid_offset: number) => void) {
     let grid_offset: number = map_data.start_offset;
     for (let y: number = 0; y < map_data.height; y++, grid_offset += map_data.border_size) {
         for (let x: number = 0; x < map_data.width; x++, grid_offset++) {
@@ -140,7 +140,7 @@ function foreach_map_tile(callback: void () {
         }
     }
 }
-function foreach_region_tile(x_min: number, y_min: number, x_max: number, y_max: number, callback: void () {
+function foreach_region_tile(x_min: number, y_min: number, x_max: number, y_max: number, callback: (x: number, y: number, grid_offset: number) => void) {
     map_grid_bound_area(x_min, y_min, x_max, y_max);
     let grid_offset: number = map_grid_offset(x_min, y_min);
     for (let yy: number = y_min; yy <= y_max; yy++) {
@@ -1077,7 +1077,7 @@ function set_elevation_image(x: number, y: number, grid_offset: number) {
             map_terrain_remove(grid_offset, TERRAIN_ELEVATION);
             let terrain: number = map_terrain_get(grid_offset);
             if (!(terrain & TERRAIN_BUILDING)) {
-                map_property_set_multi_tile_xy(grid_offset, 0, 0, 1);
+                map_property_set_multi_tile_xy(grid_offset, 0, 0, true);
                 if (terrain & TERRAIN_SHRUB) {
                     map_image_set(grid_offset, image_group(GROUP_TERRAIN_SHRUB) + (map_random_get(grid_offset) & 7));
                 } else if (terrain & TERRAIN_TREE) {
@@ -1095,7 +1095,7 @@ function set_elevation_image(x: number, y: number, grid_offset: number) {
                 }
             }
         } else {
-            map_property_set_multi_tile_xy(grid_offset, 0, 0, 1);
+            map_property_set_multi_tile_xy(grid_offset, 0, 0, true);
             map_terrain_add(grid_offset, TERRAIN_ELEVATION);
             map_image_set(grid_offset, image_group(GROUP_TERRAIN_ELEVATION) + img.group_offset + img.item_offset);
         }

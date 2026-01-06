@@ -1,3 +1,11 @@
+import { tooltip_context, tooltip_handle, tooltip_invalidate } from 'graphics/tooltip';
+import { warning_draw } from 'graphics/warning';
+import { input_cursor_update } from 'input/cursor';
+import { hotkey_handle_global_keys, hotkey_reset_state, hotkey_state, hotkeys } from 'input/hotkey';
+import { joystick_to_mouse_and_keyboard, mapping_action } from 'input/joystick';
+import { mouse, mouse_determine_button_state, mouse_get, mouse_reset_button_state, mouse_reset_scroll } from 'input/mouse';
+import { scroll_stop } from 'input/scroll';
+import { reset_touches, touch_to_mouse } from 'input/touch';
 export const MAX_QUEUE = 3;
 export const enum window_id {
     WINDOW_LOGO,
@@ -69,38 +77,13 @@ export const enum window_id {
     WINDOW_EDITOR_EDIT_DEMAND_CHANGE,
     WINDOW_EDITOR_WIN_CRITERIA,
 };
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { reset_touches } from 'input/touch';
-import { touch_to_mouse } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_get } from 'input/mouse';
-import { mouse_reset_scroll } from 'input/mouse';
-import { mouse_reset_button_state } from 'input/mouse';
-import { mouse_determine_button_state } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { tooltip_invalidate } from 'graphics/tooltip';
-import { tooltip_handle } from 'graphics/tooltip';;
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { hotkey_state } from 'input/hotkey';
-import { hotkey_reset_state } from 'input/hotkey';
-import { hotkey_handle_global_keys } from 'input/hotkey';
+;
 export class window_type {
-    public id: window_id = null;
-    public draw_background: void ( = null;
-    public draw_foreground: void ( = null;
-    public handle_input: void ( = null;
-    public get_tooltip: void ( = null;
+    public id: window_id = window_id.WINDOW_LOGO;
+    public draw_background: () => void = null;
+    public draw_foreground: () => void = null;
+    public handle_input: (m: mouse, h: hotkeys) => void = null;
+    public get_tooltip: ((c: tooltip_context) => void) | null = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.id = args[0]);
         args.length >= 2 && (this.draw_background = args[1]);
@@ -109,24 +92,7 @@ export class window_type {
         args.length >= 5 && (this.get_tooltip = args[4]);
     }
 }
-import { warning_draw } from 'graphics/warning';
-import { cursor_shape } from 'input/cursor';
-import { cursor_scale } from 'input/cursor';
-import { cursor } from 'input/cursor';
-import { input_cursor_update } from 'input/cursor';
-import { joystick_element } from 'input/joystick';
-import { mapping_action } from 'input/joystick';
 import MAPPING_ACTION_MAX = mapping_action.MAPPING_ACTION_MAX;
-import { mapping_action } from 'input/joystick';
-import { mapping_element } from 'input/joystick';
-import { joystick_model } from 'input/joystick';
-import { joystick_to_mouse_and_keyboard } from 'input/joystick';
-import { buffer } from 'core/buffer';
-import { view_tile } from 'city/view';
-import { pixel_offset } from 'city/view';
-import { map_callback } from 'city/view';
-import { scroll_type } from 'input/scroll';
-import { scroll_stop } from 'input/scroll';
 export class unnamed13_8 {
     public window_queue: window_type[] = new Array(MAX_QUEUE).fill(null);
     public queue_index: number = 0;
@@ -184,7 +150,7 @@ export function window_get_id() {
 export function window_show(window: window_type) {
     reset_input();
     increase_queue_index();
-    data.window_queue[data.queue_index] = * window;
+    data.window_queue[data.queue_index] = window;
     data.current_window = data.window_queue[data.queue_index];
     if (!data.current_window.draw_background) {
         data.current_window.draw_background = noop;

@@ -4,7 +4,7 @@ export const MENU_Y_OFFSET = 110;
 export const MENU_ITEM_HEIGHT = 24;
 export const MENU_ITEM_WIDTH = 176;
 export const MENU_CLICK_MARGIN = 20;
-import { building_type } from 'building/type';
+
 import BUILDING_NONE = building_type.BUILDING_NONE;
 import BUILDING_MENU_FARMS = building_type.BUILDING_MENU_FARMS;
 import BUILDING_MENU_RAW_MATERIALS = building_type.BUILDING_MENU_RAW_MATERIALS;
@@ -16,12 +16,12 @@ import BUILDING_LARGE_TEMPLE_CERES = building_type.BUILDING_LARGE_TEMPLE_CERES;
 import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
 import BUILDING_MENU_SMALL_TEMPLES = building_type.BUILDING_MENU_SMALL_TEMPLES;
 import BUILDING_MENU_LARGE_TEMPLES = building_type.BUILDING_MENU_LARGE_TEMPLES;
-import { building_type } from 'building/type';
+
 import { house_level } from 'building/type';
 import { building_construction_set_type } from 'building/construction';
 import { building_construction_clear_type } from 'building/construction';
 import { building_construction_type } from 'building/construction';
-import { build_menu_group } from 'building/menu';
+
 import BUILD_MENU_VACANT_HOUSE = build_menu_group.BUILD_MENU_VACANT_HOUSE;
 import BUILD_MENU_CLEAR_LAND = build_menu_group.BUILD_MENU_CLEAR_LAND;
 import BUILD_MENU_ROAD = build_menu_group.BUILD_MENU_ROAD;
@@ -40,7 +40,7 @@ import BUILD_MENU_WORKSHOPS = build_menu_group.BUILD_MENU_WORKSHOPS;
 import BUILD_MENU_SMALL_TEMPLES = build_menu_group.BUILD_MENU_SMALL_TEMPLES;
 import BUILD_MENU_LARGE_TEMPLES = build_menu_group.BUILD_MENU_LARGE_TEMPLES;
 import BUILD_MENU_FORTS = build_menu_group.BUILD_MENU_FORTS;
-import { build_menu_group } from 'building/menu';
+
 import { building_menu_count_items } from 'building/menu';
 import { building_menu_next_index } from 'building/menu';
 import { building_menu_type } from 'building/menu';
@@ -70,9 +70,9 @@ import GROUP_PANEL_WINDOWS_DESERT = group_terrain.GROUP_PANEL_WINDOWS_DESERT;
 import { color_t } from 'graphics/color';
 import { image } from 'core/image';
 import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
+
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
-import { font_t } from 'graphics/font';
+
 import { font_definition } from 'graphics/font';
 import { lang_text_draw_centered } from 'graphics/lang_text';
 import { label_draw } from 'graphics/panel';
@@ -86,15 +86,15 @@ import { key_modifier_type } from 'input/keys';
 import { hotkey_action } from 'core/hotkey_config';
 import { hotkey_mapping } from 'core/hotkey_config';
 import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
+
 import WINDOW_BUILD_MENU = window_id.WINDOW_BUILD_MENU;
-import { window_id } from 'graphics/window';
+
 import { window_type } from 'graphics/window';
 import { window_show } from 'graphics/window';
 import { input_go_back_requested } from 'input/input';
-import { scenario_climate } from 'scenario/property';
+
 import CLIMATE_DESERT = scenario_climate.CLIMATE_DESERT;
-import { scenario_climate } from 'scenario/property';
+
 import { scenario_property_climate } from 'scenario/property';
 import { translation_key } from 'translation/translation';
 import TR_BUILD_ALL_TEMPLES = translation_key.TR_BUILD_ALL_TEMPLES;
@@ -107,44 +107,44 @@ import { widget_sidebar_city_handle_mouse_build_menu } from 'widget/sidebar/city
 import { window_city_draw_panels } from 'window/city';
 import { window_city_draw } from 'window/city';
 import { window_city_show } from 'window/city';
-let build_menu_buttons: generic_button[] = new Array().fill({
-    { 0, 0, 256, 20, button_menu_index, button_none, 1, 0},
-    { 0, 24, 256, 20, button_menu_index, button_none, 2, 0},
-    { 0, 48, 256, 20, button_menu_index, button_none, 3, 0},
-    { 0, 72, 256, 20, button_menu_index, button_none, 4, 0},
-    { 0, 96, 256, 20, button_menu_index, button_none, 5, 0},
-    { 0, 120, 256, 20, button_menu_index, button_none, 6, 0},
-    { 0, 144, 256, 20, button_menu_index, button_none, 7, 0},
-    { 0, 168, 256, 20, button_menu_index, button_none, 8, 0},
-    { 0, 192, 256, 20, button_menu_index, button_none, 9, 0},
-    { 0, 216, 256, 20, button_menu_index, button_none, 10, 0},
-    { 0, 240, 256, 20, button_menu_index, button_none, 11, 0},
-    { 0, 264, 256, 20, button_menu_index, button_none, 12, 0},
-    { 0, 288, 256, 20, button_menu_index, button_none, 13, 0},
-    { 0, 312, 256, 20, button_menu_index, button_none, 14, 0},
-    { 0, 336, 256, 20, button_menu_index, button_none, 15, 0},
-    { 0, 360, 256, 20, button_menu_index, button_none, 16, 0},
-    { 0, 384, 256, 20, button_menu_index, button_none, 17, 0},
-    { 0, 408, 256, 20, button_menu_index, button_none, 18, 0},
-    { 0, 432, 256, 20, button_menu_index, button_none, 19, 0},
-    { 0, 456, 256, 20, button_menu_index, button_none, 20, 0},
-    { 0, 480, 256, 20, button_menu_index, button_none, 21, 0},
-    { 0, 504, 256, 20, button_menu_index, button_none, 22, 0},
-    { 0, 528, 256, 20, button_menu_index, button_none, 23, 0},
-    { 0, 552, 256, 20, button_menu_index, button_none, 24, 0},
-    { 0, 576, 256, 20, button_menu_index, button_none, 25, 0},
-    { 0, 600, 256, 20, button_menu_index, button_none, 26, 0},
-    { 0, 624, 256, 20, button_menu_index, button_none, 27, 0},
-    { 0, 648, 256, 20, button_menu_index, button_none, 28, 0},
-    { 0, 672, 256, 20, button_menu_index, button_none, 29, 0},
-    { 0, 696, 256, 20, button_menu_index, button_none, 30, 0},
-});
-let Y_MENU_OFFSETS: number[] = new Array().fill({
+let build_menu_buttons: generic_button[] = [
+    new generic_button(0, 0, 256, 20, button_menu_index, button_none, 1, 0),
+    new generic_button(0, 24, 256, 20, button_menu_index, button_none, 2, 0),
+    new generic_button(0, 48, 256, 20, button_menu_index, button_none, 3, 0),
+    new generic_button(0, 72, 256, 20, button_menu_index, button_none, 4, 0),
+    new generic_button(0, 96, 256, 20, button_menu_index, button_none, 5, 0),
+    new generic_button(0, 120, 256, 20, button_menu_index, button_none, 6, 0),
+    new generic_button(0, 144, 256, 20, button_menu_index, button_none, 7, 0),
+    new generic_button(0, 168, 256, 20, button_menu_index, button_none, 8, 0),
+    new generic_button(0, 192, 256, 20, button_menu_index, button_none, 9, 0),
+    new generic_button(0, 216, 256, 20, button_menu_index, button_none, 10, 0),
+    new generic_button(0, 240, 256, 20, button_menu_index, button_none, 11, 0),
+    new generic_button(0, 264, 256, 20, button_menu_index, button_none, 12, 0),
+    new generic_button(0, 288, 256, 20, button_menu_index, button_none, 13, 0),
+    new generic_button(0, 312, 256, 20, button_menu_index, button_none, 14, 0),
+    new generic_button(0, 336, 256, 20, button_menu_index, button_none, 15, 0),
+    new generic_button(0, 360, 256, 20, button_menu_index, button_none, 16, 0),
+    new generic_button(0, 384, 256, 20, button_menu_index, button_none, 17, 0),
+    new generic_button(0, 408, 256, 20, button_menu_index, button_none, 18, 0),
+    new generic_button(0, 432, 256, 20, button_menu_index, button_none, 19, 0),
+    new generic_button(0, 456, 256, 20, button_menu_index, button_none, 20, 0),
+    new generic_button(0, 480, 256, 20, button_menu_index, button_none, 21, 0),
+    new generic_button(0, 504, 256, 20, button_menu_index, button_none, 22, 0),
+    new generic_button(0, 528, 256, 20, button_menu_index, button_none, 23, 0),
+    new generic_button(0, 552, 256, 20, button_menu_index, button_none, 24, 0),
+    new generic_button(0, 576, 256, 20, button_menu_index, button_none, 25, 0),
+    new generic_button(0, 600, 256, 20, button_menu_index, button_none, 26, 0),
+    new generic_button(0, 624, 256, 20, button_menu_index, button_none, 27, 0),
+    new generic_button(0, 648, 256, 20, button_menu_index, button_none, 28, 0),
+    new generic_button(0, 672, 256, 20, button_menu_index, button_none, 29, 0),
+    new generic_button(0, 696, 256, 20, button_menu_index, button_none, 30, 0),
+];
+let Y_MENU_OFFSETS: number[] = [
     0, 322, 306, 274, 258, 226, 210, 178, 162, 130, 114,
-    82, 66, 34, 18, - 30, -46, -62, -78, -78, -94,
+    82, 66, 34, 18, -30, -46, -62, -78, -78, -94,
     -94, -110, -110,
     0, 0, 0, 0, 0, 0
-});
+];
 export class unnamed71_8 {
     public selected_submenu: build_menu_group = null;
     public num_items: number = 0;
@@ -360,13 +360,13 @@ export function window_build_menu_show(submenu: number) {
         return;
     }
     if (init(submenu)) {
-        let window: window_type = {
+        let window: window_type = new window_type(
             WINDOW_BUILD_MENU,
             draw_background,
             draw_foreground,
             handle_input,
             0
-        };
+        );
         window_show(window);
     }
 }
