@@ -1,10 +1,7 @@
 import { buffer, buffer_read_i16, buffer_read_i32, buffer_read_raw, buffer_read_u8, buffer_skip, buffer_write_i16, buffer_write_i32, buffer_write_raw, buffer_write_u8 } from 'core/buffer';
 import { difficulty_starting_favor } from 'game/difficulty';
 import { setting_personal_savings_for_mission } from 'game/settings';
-import { MAX_ALLOWED_BUILDINGS, MAX_BRIEF_DESCRIPTION, MAX_BRIEFING, MAX_DEMAND_CHANGES, MAX_FISH_POINTS, MAX_HERD_POINTS, MAX_INVASION_POINTS, MAX_INVASIONS, MAX_PLAYER_NAME, MAX_PRICE_CHANGES, MAX_REQUESTS, MAX_SCENARIO_NAME } from 'scenario/data';
-;
-export let scenario: scenario_t = new scenario_t();
-export let scenario: scenario_t = new scenario_t();
+import { MAX_ALLOWED_BUILDINGS, MAX_BRIEF_DESCRIPTION, MAX_BRIEFING, MAX_DEMAND_CHANGES, MAX_FISH_POINTS, MAX_HERD_POINTS, MAX_INVASION_POINTS, MAX_INVASIONS, MAX_PLAYER_NAME, MAX_PRICE_CHANGES, MAX_REQUESTS, MAX_SCENARIO_NAME, scenario, scenario_t } from 'scenario/data';
 export function scenario_is_saved() {
     return scenario.is_saved;
 }

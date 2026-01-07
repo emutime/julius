@@ -988,26 +988,26 @@ function get_access_ramp_image_offset(x: number, y: number) {
     if (!map_grid_is_inside(x, y, 1)) {
         return -1;
     }
-    let offsets: number[] = {
-        { OFFSET(0, 1), OFFSET(1, 1), OFFSET(0, 0), OFFSET(1, 0), OFFSET(0, 2), OFFSET(1, 2) },
-    { OFFSET(0, 0), OFFSET(0, 1), OFFSET(1, 0), OFFSET(1, 1), OFFSET(-1, 0), OFFSET(-1, 1) },
-    { OFFSET(0, 0), OFFSET(1, 0), OFFSET(0, 1), OFFSET(1, 1), OFFSET(0, -1), OFFSET(1, -1) },
-    { OFFSET(1, 0), OFFSET(1, 1), OFFSET(0, 0), OFFSET(0, 1), OFFSET(2, 0), OFFSET(2, 1) },
-};
-let base_offset: number = map_grid_offset(x, y);
-let image_offset: number = -1;
-for (let dir: number = 0; dir < 4; dir++) {
-    let right_tiles: number = 0;
-    let height: number = -1;
-    for (let i: number = 0; i < 6; i++) {
-        let grid_offset: number = base_offset + offsets[dir][i];
-        if (i < 2) {
-            if (map_terrain_is(grid_offset, TERRAIN_ELEVATION)) {
-                right_tiles++;
-            }
-            height = map_elevation_at(grid_offset);
-        } else if (i < 4) {
-            if (map_terrain_is(grid_offset, TERRAIN_ACCESS_RAMP) &&
+    let offsets: number[][] = [
+        [OFFSET(0, 1), OFFSET(1, 1), OFFSET(0, 0), OFFSET(1, 0), OFFSET(0, 2), OFFSET(1, 2)],
+        [OFFSET(0, 0), OFFSET(0, 1), OFFSET(1, 0), OFFSET(1, 1), OFFSET(-1, 0), OFFSET(-1, 1)],
+        [OFFSET(0, 0), OFFSET(1, 0), OFFSET(0, 1), OFFSET(1, 1), OFFSET(0, -1), OFFSET(1, -1)],
+        [OFFSET(1, 0), OFFSET(1, 1), OFFSET(0, 0), OFFSET(0, 1), OFFSET(2, 0), OFFSET(2, 1)],
+    ];
+    let base_offset: number = map_grid_offset(x, y);
+    let image_offset: number = -1;
+    for (let dir: number = 0; dir < 4; dir++) {
+        let right_tiles: number = 0;
+        let height: number = -1;
+        for (let i: number = 0; i < 6; i++) {
+            let grid_offset: number = base_offset + offsets[dir][i];
+            if (i < 2) {
+                if (map_terrain_is(grid_offset, TERRAIN_ELEVATION)) {
+                    right_tiles++;
+                }
+                height = map_elevation_at(grid_offset);
+            } else if (i < 4) {
+                if (map_terrain_is(grid_offset, TERRAIN_ACCESS_RAMP) &&
                 map_elevation_at(grid_offset) < height) {
                 right_tiles++;
             }

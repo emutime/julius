@@ -1,18 +1,7 @@
-import { MAX_HERD_POINTS } from 'scenario/data';
-import { MAX_FISH_POINTS } from 'scenario/data';
-import { map_point } from 'map/point';
-import { map_point_store_result } from 'map/point';
-import { direction_type } from 'core/direction';;
+import { MAX_HERD_POINTS, MAX_FISH_POINTS, scenario } from 'scenario/data';
+import { map_point, map_point_store_result } from 'map/point';
 import { calc_maximum_distance } from 'core/calc';
-import { buffer } from 'core/buffer';
-import { GRID } from 'map/grid';
-import GRID_SIZE = GRID.GRID_SIZE;
 import { map_grid_init } from 'map/grid';
-import { request_t } from 'scenario/data';
-import { invasion_t } from 'scenario/data';
-import { price_change_t } from 'scenario/data';
-import { demand_change_t } from 'scenario/data';
-export let scenario: scenario_t = new scenario_t();
 export function scenario_map_init() {
     map_grid_init(scenario.map.width, scenario.map.height,
         scenario.map.grid_start, scenario.map.grid_border_size);
@@ -31,25 +20,25 @@ export function scenario_map_init_entry_exit() {
     }
 }
 export function scenario_map_entry() {
-    let point: map_point = { scenario.entry_point.x, scenario.entry_point.y };
+    let point: map_point = { x: scenario.entry_point.x, y: scenario.entry_point.y };
     return point;
 }
 export function scenario_map_exit() {
-    let point: map_point = { scenario.exit_point.x, scenario.exit_point.y };
+    let point: map_point = { x: scenario.exit_point.x, y: scenario.exit_point.y };
     return point;
 }
 export function scenario_map_has_river_entry() {
     return scenario.river_entry_point.x != -1 && scenario.river_entry_point.y != -1;
 }
 export function scenario_map_river_entry() {
-    let point: map_point = { scenario.river_entry_point.x, scenario.river_entry_point.y };
+    let point: map_point = { x: scenario.river_entry_point.x, y: scenario.river_entry_point.y };
     return point;
 }
 export function scenario_map_has_river_exit() {
     return scenario.river_exit_point.x != -1 && scenario.river_exit_point.y != -1;
 }
 export function scenario_map_river_exit() {
-    let point: map_point = { scenario.river_exit_point.x, scenario.river_exit_point.y };
+    let point: map_point = { x: scenario.river_exit_point.x, y: scenario.river_exit_point.y };
     return point;
 }
 export function scenario_map_foreach_herd_point(callback: (x: number, y: number) => void) {

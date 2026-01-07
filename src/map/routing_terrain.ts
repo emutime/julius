@@ -361,25 +361,25 @@ export function map_routing_update_walls() {
 export function map_routing_is_wall_passable(grid_offset: number) {
     return terrain_walls.items[grid_offset] == WALL_0_PASSABLE;
 }
-function wall_tile_in_radius(x: number, y: number, radius: number, x_wall: number, y_wall: number) {
+function wall_tile_in_radius(x: number, y: number, radius: number, x_wall: Ref<number>, y_wall: Ref<number>) {
     let size: number = 1;
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref<number>(0);
+    let y_min: Ref<number> = new Ref<number>(0);
+    let x_max: Ref<number> = new Ref<number>(0);
+    let y_max: Ref<number> = new Ref<number>(0);
     map_grid_get_area(x, y, size, radius, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+        for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             if (map_routing_is_wall_passable(map_grid_offset(xx, yy))) {
-                * x_wall = xx;
-                * y_wall = yy;
+                x_wall.v = xx;
+                y_wall.v = yy;
                 return 1;
             }
         }
     }
     return 0;
 }
-export function map_routing_wall_tile_in_radius(x: number, y: number, radius: number, x_wall: number, y_wall: number) {
+export function map_routing_wall_tile_in_radius(x: number, y: number, radius: number, x_wall: Ref<number>, y_wall: Ref<number>) {
     for (let i: number = 1; i <= radius; i++) {
         if (wall_tile_in_radius(x, y, i, x_wall, y_wall)) {
             return 1;
