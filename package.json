@@ -4,5 +4,8 @@
     "glob": "^11.0.3",
     "ts-morph": "^25.0.1",
     "ts-node": "^10.9.2"
+  },
+  "dependencies": {
+    "typescript": "^5.9.3"
   }
 }
