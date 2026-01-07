@@ -29,6 +29,17 @@ export const enum bit_size {
     EDGE_NATIVE_LAND = 128,
     EDGE_NO_NATIVE_LAND = 127,
 }
+export const enum edge_x {
+    EDGE_X0Y0 = 0,
+    EDGE_X1Y0 = 1,
+    EDGE_X2Y0 = 2,
+    EDGE_X0Y1 = 8,
+    EDGE_X1Y1 = 9,
+    EDGE_X2Y1 = 10,
+    EDGE_X0Y2 = 16,
+    EDGE_X1Y2 = 17,
+    EDGE_X2Y2 = 18,
+}
 
 import BIT_SIZE1 = bit_size.BIT_SIZE1;
 import BIT_SIZE2 = bit_size.BIT_SIZE2;

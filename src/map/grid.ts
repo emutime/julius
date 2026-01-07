@@ -170,7 +170,7 @@ export function map_grid_clear_i8(grid: Int8Array) {
 export function map_grid_clear_u8(grid: Uint8Array) {
     grid.fill(0);
 }
-export function map_grid_clear_u16(grid: Uint16Array) {
+export function map_grid_clear_u16(grid: number[]) {
     grid.fill(0);
 }
 export function map_grid_clear_i16(grid: Int16Array) {
@@ -196,7 +196,7 @@ export function map_grid_copy_u8(src: Uint8Array, dst: Uint8Array) {
         dst[i] = src[i];
     }
 }
-export function map_grid_copy_u16(src: Uint16Array, dst: Uint16Array) {
+export function map_grid_copy_u16(src: number[], dst: number[]) {
     for (let i: number = 0; i < GRID_SIZE * GRID_SIZE; i++) {
         dst[i] = src[i];
     }

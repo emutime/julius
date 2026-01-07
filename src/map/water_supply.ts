@@ -1,6 +1,7 @@
 import { building, building_get, MAX_BUILDINGS } from 'building/building';
 import { building_list_large_add, building_list_large_clear, building_list_large_items, building_list_large_size, building_list_small_add, building_list_small_clear, building_list_small_items, building_list_small_size } from 'building/list';
 import { building_state, building_type } from 'building/type';
+import { Ref } from '../../ext/crt';
 import { image_group } from 'core/image';
 import { group_terrain } from 'core/image_group';
 import { map_aqueduct_at, map_aqueduct_set } from 'map/aqueduct';
@@ -8,14 +9,19 @@ import { map_building_at } from 'map/building';
 import { map_building_tiles_add } from 'map/building_tiles';
 import { map_data_t } from 'map/data';
 import { map_desirability_get } from 'map/desirability';
-import { GRID, map_grid_get_area, map_grid_offset } from 'map/grid';
+import { GRID, map_grid_delta, map_grid_get_area, map_grid_offset } from 'map/grid';
 import { map_image_at, map_image_set } from 'map/image';
 import { edge_x, map_property_multi_tile_xy } from 'map/property';
 import { map_terrain_add_with_radius, map_terrain_exists_tile_in_area_with_type, map_terrain_is, map_terrain_remove_all, terrain } from 'map/terrain';
-import { well } from 'map/water_supply';
+import { map_data } from 'map/data';
 import { scenario_climate, scenario_property_climate } from 'scenario/property';
 export const MAX_QUEUE = 1000;
 export const OFFSET = 1;
+export const enum well {
+	WELL_NECESSARY = 0,
+	WELL_UNNECESSARY_FOUNTAIN = 1,
+	WELL_UNNECESSARY_NO_HOUSES = 2
+}
 import WELL_NECESSARY = well.WELL_NECESSARY;
 import WELL_UNNECESSARY_FOUNTAIN = well.WELL_UNNECESSARY_FOUNTAIN;
 import WELL_UNNECESSARY_NO_HOUSES = well.WELL_UNNECESSARY_NO_HOUSES;
@@ -28,7 +34,6 @@ import GROUP_BUILDING_FOUNTAIN_1 = group_terrain.GROUP_BUILDING_FOUNTAIN_1;
 import GROUP_BUILDING_FOUNTAIN_2 = group_terrain.GROUP_BUILDING_FOUNTAIN_2;
 import GROUP_BUILDING_FOUNTAIN_3 = group_terrain.GROUP_BUILDING_FOUNTAIN_3;
 import GROUP_BUILDING_AQUEDUCT_NO_WATER = group_terrain.GROUP_BUILDING_AQUEDUCT_NO_WATER;
-export let map_data: map_data_t = new map_data_t();
 import GRID_SIZE = GRID.GRID_SIZE;
 import EDGE_X0Y0 = edge_x.EDGE_X0Y0;
 import EDGE_X2Y0 = edge_x.EDGE_X2Y0;
@@ -56,15 +61,15 @@ export class unnamed25_8 {
 let queue: unnamed25_8 = new unnamed25_8();
 function mark_well_access(well_id: number, radius: number) {
     let well: building = building_get(well_id);
-    let xMinRef: { value: number } = { value: 0 };
-    let yMinRef: { value: number } = { value: 0 };
-    let xMaxRef: { value: number } = { value: 0 };
-    let yMaxRef: { value: number } = { value: 0 };
+    let xMinRef: Ref<number> = new Ref<number>(0);
+    let yMinRef: Ref<number> = new Ref<number>(0);
+    let xMaxRef: Ref<number> = new Ref<number>(0);
+    let yMaxRef: Ref<number> = new Ref<number>(0);
     map_grid_get_area(well.x, well.y, 1, radius, xMinRef, yMinRef, xMaxRef, yMaxRef);
-    let x_min: number = xMinRef.value;
-    let y_min: number = yMinRef.value;
-    let x_max: number = xMaxRef.value;
-    let y_max: number = yMaxRef.value;
+    let x_min: number = xMinRef.v;
+    let y_min: number = yMinRef.v;
+    let x_max: number = xMaxRef.v;
+    let y_max: number = yMaxRef.v;
     for (let yy: number = y_min; yy <= y_max; yy++) {
         for (let xx: number = x_min; xx <= x_max; xx++) {
             let building_id: number = map_building_at(map_grid_offset(xx, yy));
@@ -93,7 +98,7 @@ export function map_water_supply_update_houses() {
         }
     }
     let total_wells: number = building_list_small_size();
-    let wells: number = building_list_small_items();
+    let wells: number[] = building_list_small_items();
     for (let i: number = 0; i < total_wells; i++) {
         mark_well_access(wells[i], 2);
     }
@@ -185,7 +190,7 @@ export function map_water_supply_update_reservoir_fountain() {
         }
     }
     let total_reservoirs: number = building_list_large_size();
-    let reservoirs: number = building_list_large_items();
+    let reservoirs: number[] = building_list_large_items();
     let changed: number = 1;
     let CONNECTOR_OFFSETS: number[] = [map_grid_delta(1, -1), map_grid_delta(3, 1), map_grid_delta(1, 3), map_grid_delta(-1, 1)];
     while (changed == 1) {
@@ -237,13 +242,13 @@ export function map_water_supply_update_reservoir_fountain() {
 export function map_water_supply_is_well_unnecessary(well_id: number, radius: number) {
     let well: building = building_get(well_id);
     let num_houses: number = 0;
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref<number>(0);
+    let y_min: Ref<number> = new Ref<number>(0);
+    let x_max: Ref<number> = new Ref<number>(0);
+    let y_max: Ref<number> = new Ref<number>(0);
     map_grid_get_area(well.x, well.y, 1, radius, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+        for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             let grid_offset: number = map_grid_offset(xx, yy);
             let building_id: number = map_building_at(grid_offset);
             if (building_id && building_get(building_id).house_size) {

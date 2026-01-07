@@ -160,13 +160,13 @@ export function map_terrain_exists_tile_in_area_with_type(x: number, y: number, 
     return 0;
 }
 export function map_terrain_exists_tile_in_radius_with_type(x: number, y: number, size: number, radius: number, terrain: number) {
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
-    map_grid_get_area(x, y, size, radius, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+	let x_min: Ref<number> = new Ref<number>(0);
+	let y_min: Ref<number> = new Ref<number>(0);
+	let x_max: Ref<number> = new Ref<number>(0);
+	let y_max: Ref<number> = new Ref<number>(0);
+	map_grid_get_area(x, y, size, radius, x_min, y_min, x_max, y_max);
+	for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+		for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             if (map_terrain_is(map_grid_offset(xx, yy), terrain)) {
                 return 1;
             }
@@ -195,13 +195,13 @@ export function map_terrain_exists_clear_tile_in_radius(x: number, y: number, si
     return 0;
 }
 export function map_terrain_all_tiles_in_radius_are(x: number, y: number, size: number, radius: number, terrain: number) {
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
-    map_grid_get_area(x, y, size, radius, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+	let x_min: Ref<number> = new Ref<number>(0);
+	let y_min: Ref<number> = new Ref<number>(0);
+	let x_max: Ref<number> = new Ref<number>(0);
+	let y_max: Ref<number> = new Ref<number>(0);
+	map_grid_get_area(x, y, size, radius, x_min, y_min, x_max, y_max);
+	for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+		for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             if (!map_terrain_is(map_grid_offset(xx, yy), terrain)) {
                 return 0;
             }
@@ -240,7 +240,8 @@ export function map_terrain_has_only_meadow_in_ring(x: number, y: number, distan
 export function map_terrain_is_adjacent_to_wall(x: number, y: number, size: number) {
     let base_offset: number = map_grid_offset(x, y);
     let tile_delta: number = 0;
-    for (let i: number = 0; (tile_delta = map_grid_adjacent_offsets(size, i)) != 0; i++) {
+	let deltas: number[] = map_grid_adjacent_offsets(size);
+	for (let i: number = 0; (tile_delta = deltas[i]) != 0; i++) {
         if (map_terrain_is(base_offset + tile_delta, TERRAIN_WALL)) {
             return 1;
         }
@@ -250,7 +251,8 @@ export function map_terrain_is_adjacent_to_wall(x: number, y: number, size: numb
 export function map_terrain_is_adjacent_to_water(x: number, y: number, size: number) {
     let base_offset: number = map_grid_offset(x, y);
     let tile_delta: number = 0;
-    for (let i: number = 0; (tile_delta = map_grid_adjacent_offsets(size, i)) != 0; i++) {
+	let deltas: number[] = map_grid_adjacent_offsets(size);
+	for (let i: number = 0; (tile_delta = deltas[i]) != 0; i++) {
         if (map_terrain_is(base_offset + tile_delta, TERRAIN_WATER)) {
             return 1;
         }
@@ -260,7 +262,8 @@ export function map_terrain_is_adjacent_to_water(x: number, y: number, size: num
 export function map_terrain_is_adjacent_to_open_water(x: number, y: number, size: number) {
     let base_offset: number = map_grid_offset(x, y);
     let tile_delta: number = 0;
-    for (let i: number = 0; (tile_delta = map_grid_adjacent_offsets(size, i)) != 0; i++) {
+	let deltas: number[] = map_grid_adjacent_offsets(size);
+	for (let i: number = 0; (tile_delta = deltas[i]) != 0; i++) {
         if (map_terrain_is(base_offset + tile_delta, TERRAIN_WATER) &&
             map_routing_distance(base_offset + tile_delta) > 0) {
             return 1;
@@ -271,7 +274,8 @@ export function map_terrain_is_adjacent_to_open_water(x: number, y: number, size
 export function map_terrain_get_adjacent_road_or_clear_land(x: number, y: number, size: number, x_tile: Ref<number>, y_tile: Ref<number>) {
     let base_offset: number = map_grid_offset(x, y);
     let tile_delta: number = 0;
-    for (let i: number = 0; (tile_delta = map_grid_adjacent_offsets(size, i)) != 0; i++) {
+	let deltas: number[] = map_grid_adjacent_offsets(size);
+	for (let i: number = 0; (tile_delta = deltas[i]) != 0; i++) {
         let grid_offset: number = base_offset + tile_delta;
         if (map_terrain_is(grid_offset, TERRAIN_ROAD) ||
             !map_terrain_is(grid_offset, TERRAIN_NOT_CLEAR)) {
@@ -337,15 +341,15 @@ export function map_terrain_clear() {
     map_grid_clear_u16(terrain_grid.items);
 }
 export function map_terrain_init_outside_map() {
-    let map_width: number
-    let map_height: number;
-    map_grid_size(map_width, map_height);
-    let y_start: number = (GRID_SIZE - map_height) / 2;
-    let x_start: number = (GRID_SIZE - map_width) / 2;
+	let map_width: Ref<number> = new Ref<number>(0);
+	let map_height: Ref<number> = new Ref<number>(0);
+	map_grid_size(map_width, map_height);
+	let y_start: number = (GRID_SIZE - map_height.v) / 2;
+	let x_start: number = (GRID_SIZE - map_width.v) / 2;
     for (let y: number = 0; y < GRID_SIZE; y++) {
-        let y_outside_map: number = y < y_start || y >= y_start + map_height;
+		let y_outside_map: boolean = y < y_start || y >= y_start + map_height.v;
         for (let x: number = 0; x < GRID_SIZE; x++) {
-            if (y_outside_map || x < x_start || x >= x_start + map_width) {
+			if (y_outside_map || x < x_start || x >= x_start + map_width.v) {
                 terrain_grid.items[x + GRID_SIZE * y] = TERRAIN_TREE | TERRAIN_WATER;
             }
         }
