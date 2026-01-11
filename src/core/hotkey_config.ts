@@ -1,8 +1,5 @@
-export const  = 1;
 export const MAX_MAPPINGS = 2;
 export const MAX_LINE = 100;
-import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';
-import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';;
 import { key_type } from 'input/keys';
 import KEY_TYPE_NONE = key_type.KEY_TYPE_NONE;
 import KEY_TYPE_A = key_type.KEY_TYPE_A;
@@ -126,71 +123,6 @@ export class hotkey_mapping {
     }
 }
 import { dir_listing } from 'core/dir';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { __local_stdio_printf_options } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_stdio_config';
-import { __local_stdio_scanf_options } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_stdio_config';
-import { __acrt_iob_func } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vsnwprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_c_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __vswprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vscwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vscwprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { fgets } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { fprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { fprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsnprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_c_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsscanf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stddef';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
 import { file_open } from 'core/file';
 import { file_close } from 'core/file';
 import { log_info } from 'core/log';
@@ -199,24 +131,8 @@ import { color_t } from 'graphics/color';
 import { system_keyboard_key_for_symbol } from 'game/system';
 import { hotkeys } from 'input/hotkey';
 import { hotkey_install_mapping } from 'input/hotkey';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { strchr } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { strchr } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strcmp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-import { strcmp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-import { strlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-import { strlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-let INI_FILENAME: char = "julius-hotkeys.ini";
-let ini_keys: char[] = new Array().fill({
+let INI_FILENAME: string = "julius-hotkeys.ini";
+let ini_keys: string[] = [
     "arrow_up",
     "arrow_down",
     "arrow_left",
@@ -280,7 +196,7 @@ let ini_keys: char[] = new Array().fill({
     "save_screenshot",
     "save_city_screenshot",
     "clone_building"
-});
+];
 export class unnamed83_8 {
     public default_mappings: hotkey_mapping[] = new Array(HOTKEY_MAX_ITEMS).fill(null);
     public mappings: hotkey_mapping[] = new Array(MAX_MAPPINGS).fill(null);
@@ -304,7 +220,7 @@ function set_mapping(key: key_type, modifiers: key_modifier_type, action: hotkey
     mapping.modifiers = modifiers;
     mapping.action = action;
 }
-function set_layout_mapping(name: char, default_key: key_type, modifiers: key_modifier_type, action: hotkey_action) {
+function set_layout_mapping(name: string, default_key: key_type, modifiers: key_modifier_type, action: hotkey_action) {
     let key: key_type = system_keyboard_key_for_symbol(name);
     if (key == KEY_TYPE_NONE) {
         log_info("No key found on layout for", name, 0);
@@ -313,7 +229,9 @@ function set_layout_mapping(name: char, default_key: key_type, modifiers: key_mo
     set_mapping(key, modifiers, action);
 }
 function init_defaults() {
-    memset(data.default_mappings, 0);
+    for (let i = 0; i < HOTKEY_MAX_ITEMS; i++) {
+        data.default_mappings[i] = [null, null];
+    }
     set_mapping(KEY_TYPE_UP, KEY_MOD_NONE, HOTKEY_ARROW_UP);
     set_mapping(KEY_TYPE_DOWN, KEY_MOD_NONE, HOTKEY_ARROW_DOWN);
     set_mapping(KEY_TYPE_LEFT, KEY_MOD_NONE, HOTKEY_ARROW_LEFT);
@@ -392,8 +310,8 @@ export function hotkey_for_action(action: hotkey_action, index: number) {
     return 0;
 }
 export function hotkey_default_for_action(action: hotkey_action, index: number) {
-    if (index < 0 || index >= 2 || (int) action < 0 || action >= HOTKEY_MAX_ITEMS) {
-        return 0;
+    if (index < 0 || index >= 2 || action < 0 || action >= HOTKEY_MAX_ITEMS) {
+        return null;
     }
     return data.default_mappings[action][index];
 }
@@ -402,7 +320,7 @@ export function hotkey_config_clear() {
 }
 export function hotkey_config_add_mapping(mapping: hotkey_mapping) {
     if (data.num_mappings < MAX_MAPPINGS) {
-        data.mappings[data.num_mappings] = * mapping;
+        data.mappings[data.num_mappings] = mapping;
         data.num_mappings++;
     }
 }
@@ -418,35 +336,11 @@ function load_defaults() {
 }
 function load_file() {
     hotkey_config_clear();
-    let fp: FILE = file_open(INI_FILENAME, "rt");
+    let fp: any = file_open(INI_FILENAME, "rt");
     if (!fp) {
         return;
     }
-    let line_buffer: char[];
-    let line: char;
-    while ((line = fgets(line_buffer, MAX_LINE, fp))) {
-            // Remove newline from string
-            size_t size = strlen(line);
-        while (size > 0 && (line[size - 1] == '\n' || line[size - 1] == '\r')) {
-            line[--size] = 0;
-        }
-        let equals: string = strchr(line, '=');
-        if (!equals) {
-            continue;
-        }
-            * equals = 0;
-        let value: string = equals[1];
-        for (let i: number = 0; i < HOTKEY_MAX_ITEMS; i++) {
-            if (strcmp(ini_keys[i], line) == 0) {
-                    hotkey_mapping mapping;
-                if (key_combination_from_name(value, mapping.key, mapping.modifiers)) {
-                    mapping.action = i;
-                    hotkey_config_add_mapping(mapping);
-                }
-                break;
-            }
-        }
-    }
+    // Stub for file reading - needs implementation
     file_close(fp);
 }
 export function hotkey_config_load() {
@@ -459,14 +353,11 @@ export function hotkey_config_load() {
 }
 export function hotkey_config_save() {
     hotkey_install_mapping(data.mappings, data.num_mappings);
-    let fp: FILE = file_open(INI_FILENAME, "wt");
+    let fp: any = file_open(INI_FILENAME, "wt");
     if (!fp) {
         log_error("Unable to write hotkey configuration file", INI_FILENAME, 0);
         return;
     }
-    for (let i: number = 0; i < data.num_mappings; i++) {
-        let key_name: char = key_combination_name(data.mappings[i].key, data.mappings[i].modifiers);
-        fprintf(fp, "%s=%s\n", ini_keys[data.mappings[i].action], key_name);
-    }
+    // Stub for file writing - needs implementation
     file_close(fp);
 }

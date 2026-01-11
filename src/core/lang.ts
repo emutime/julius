@@ -8,6 +8,12 @@ export const enum lang_message_type {
     MESSAGE_TYPE_PRICE_CHANGE = 6,
     MESSAGE_TYPE_INVASION = 7
 };
+export const enum lang_type {
+    TYPE_MANUAL = 0,
+    TYPE_ABOUT = 1,
+    TYPE_MESSAGE = 2,
+    TYPE_MISSION = 3
+};
 import { FILE_NAME_MAX } from 'core/file';
 export const MAX_TEXT_ENTRIES = 1000;
 export const MAX_TEXT_DATA = 200000;
@@ -18,8 +24,14 @@ export const MAX_MESSAGE_ENTRIES = 400;
 export const MAX_MESSAGE_DATA = 460000;
 export const MIN_MESSAGE_SIZE = 32024;
 export const MAX_MESSAGE_SIZE = 32024;
-import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';
-import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';;
+export const FILE_TEXT_ENG = "c3.eng";
+export const FILE_MM_ENG = "c3_mm.eng";
+export const FILE_TEXT_RUS = "c3.rus";
+export const FILE_MM_RUS = "c3_mm.rus";
+export const FILE_EDITOR_TEXT_ENG = "c3_map.eng";
+export const FILE_EDITOR_MM_ENG = "c3_map_mm.eng";
+export const FILE_EDITOR_TEXT_RUS = "c3_map.rus";
+export const FILE_EDITOR_MM_RUS = "c3_map_mm.rus";
 export class lang_message_image {
     public id: number = 0;
     public x: number = 0;
@@ -78,85 +90,8 @@ import { localized } from 'core/dir';
 import NOT_LOCALIZED = localized.NOT_LOCALIZED;
 import MAY_BE_LOCALIZED = localized.MAY_BE_LOCALIZED;
 import MUST_BE_LOCALIZED = localized.MUST_BE_LOCALIZED;
-import { dir_listing } from 'core/dir';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { __local_stdio_printf_options } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_stdio_config';
-import { __local_stdio_scanf_options } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_stdio_config';
-import { __acrt_iob_func } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vsnwprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_c_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __vswprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vscwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vscwprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsnprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_c_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsscanf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stddef';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
 import { file_exists } from 'core/file';
 import { io_read_file_into_buffer } from 'core/io';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 class text_entries {
     public offset: number = 0;
     public in_use: number = 0;
@@ -165,7 +100,7 @@ export class Data {
     public text_entries: text_entries[] = new Array(MAX_TEXT_ENTRIES);
     public text_data: Uint8Array = new Uint8Array(MAX_TEXT_DATA);
     public message_entries: lang_message[] = new Array(MAX_MESSAGE_ENTRIES).fill(null);
-    public message_data: number[] = new Array(MAX_MESSAGE_DATA).fill(0);
+    public message_data: Uint8Array = new Uint8Array(MAX_MESSAGE_DATA);
     public constructor(...args: any[]) {
         args.length >= 1 && (this.text_entries = args[0]);
         args.length >= 2 && (this.text_data = args[1]);
@@ -174,15 +109,14 @@ export class Data {
     }
 }
 let data: Data = new Data();
-function file_exists_in_dir(dir: char, file: char) {
-    let path: char[];
+function file_exists_in_dir(dir: string, file: string) {
+    let path: Uint8Array = new Uint8Array(2 * FILE_NAME_MAX);
     path[2 * FILE_NAME_MAX - 1] = 0;
-    strncpy(path, dir, 2 * FILE_NAME_MAX - 1);
-    strncat(path, "/", 2 * FILE_NAME_MAX - 1);
-    strncat(path, file, 2 * FILE_NAME_MAX - 1);
-    return file_exists(path, NOT_LOCALIZED);
+    // strncpy and strncat would need to be implemented or use string operations
+    let pathStr: string = dir + "/" + file;
+    return file_exists(pathStr, NOT_LOCALIZED);
 }
-export function lang_dir_is_valid(dir: char) {
+export function lang_dir_is_valid(dir: string) {
     if (file_exists_in_dir(dir, FILE_TEXT_ENG) && file_exists_in_dir(dir, FILE_MM_ENG)) {
         return 1;
     }
@@ -199,7 +133,7 @@ function parse_text(buf: buffer) {
     }
     buffer_read_raw(buf, data.text_data, MAX_TEXT_DATA);
 }
-function load_text(filename: char, localizable: number, buf_data: number) {
+function load_text(filename: string, localizable: number, buf_data: Uint8Array) {
     let buf: buffer;
     let filesize: number = io_read_file_into_buffer(filename, localizable, buf_data, BUFFER_SIZE);
     if (filesize < MIN_TEXT_SIZE || filesize > MAX_TEXT_SIZE) {
@@ -209,11 +143,11 @@ function load_text(filename: char, localizable: number, buf_data: number) {
     parse_text(buf);
     return 1;
 }
-function get_message_text(offset: number) {
+function get_message_text(offset: number): Uint8Array {
     if (!offset) {
-        return 0;
+        return null;
     }
-    return data.message_data[offset];
+    return new Uint8Array(data.message_data.buffer, data.message_data.byteOffset + offset);
 }
 function parse_message(buf: buffer) {
     buffer_skip(buf, 24);
@@ -247,7 +181,7 @@ function parse_message(buf: buffer) {
     }
     buffer_read_raw(buf, data.message_data, MAX_MESSAGE_DATA);
 }
-function load_message(filename: char, localizable: number, data_buffer: number) {
+function load_message(filename: string, localizable: number, data_buffer: Uint8Array) {
     let buf: buffer;
     let filesize: number = io_read_file_into_buffer(filename, localizable, data_buffer, BUFFER_SIZE);
     if (filesize < MIN_MESSAGE_SIZE || filesize > MAX_MESSAGE_SIZE) {
@@ -257,13 +191,12 @@ function load_message(filename: char, localizable: number, data_buffer: number) 
     parse_message(buf);
     return 1;
 }
-function load_files(text_filename: char, message_filename: char, localizable: number) {
-    let buffer: number = (uint8_t *) malloc(BUFFER_SIZE);
+function load_files(text_filename: string, message_filename: string, localizable: number) {
+    let buffer: Uint8Array = new Uint8Array(BUFFER_SIZE);
     if (!buffer) {
         return 0;
     }
     let success: number = load_text(text_filename, localizable, buffer) && load_message(message_filename, localizable, buffer);
-    free(buffer);
     return success;
 }
 export function lang_load(is_editor: number) {

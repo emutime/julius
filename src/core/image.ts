@@ -1,4 +1,3 @@
-export const  = 1;
 export const ENEMY_DATA_SIZE = 2400000;
 export const MAIN_DATA_SIZE = 30000000;
 export const EMPIRE_DATA_SIZE = 2000;
@@ -32,8 +31,6 @@ export const ENEMY_INDEX_OFFSET = 20680;
 export const ENEMY_ENTRIES = 801;
 export const IMAGE_FONT_MULTIBYTE_OFFSET = 10000;
 import { language_type } from 'core/locale';
-import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';
-import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';;
 import { encoding_type } from 'core/encoding';
 import ENCODING_CYRILLIC = encoding_type.ENCODING_CYRILLIC;
 import ENCODING_GREEK = encoding_type.ENCODING_GREEK;
@@ -99,121 +96,45 @@ import { buffer_skip } from 'core/buffer';
 import { localized } from 'core/dir';
 import MAY_BE_LOCALIZED = localized.MAY_BE_LOCALIZED;
 import { dir_listing } from 'core/dir';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { __local_stdio_printf_options } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_stdio_config';
-import { __local_stdio_scanf_options } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_stdio_config';
-import { __acrt_iob_func } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vsnwprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_c_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __vswprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vscwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vscwprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsnprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_c_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsscanf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stddef';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
 import { file_change_extension } from 'core/file';
 import { io_read_file_into_buffer } from 'core/io';
 import { io_read_file_part_into_buffer } from 'core/io';
 import { log_info } from 'core/log';
 import { log_error } from 'core/log';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 export const enum font {
     NO_EXTRA_FONT = 0,
     FULL_CHARSET_IN_FONT = 1,
     MULTIBYTE_IN_FONT = 2,
 }
-let MAIN_GRAPHICS_SG2: char[] = new Array(NAME_SIZE).fill({
+let MAIN_GRAPHICS_SG2: string[] = [
     "c3.sg2",
     "c3_north.sg2",
     "c3_south.sg2"
-});
-let MAIN_GRAPHICS_555: char[] = new Array(NAME_SIZE).fill({
+];
+let MAIN_GRAPHICS_555: string[] = [
     "c3.555",
     "c3_north.555",
     "c3_south.555"
-});
-let EDITOR_GRAPHICS_SG2: char[] = new Array(NAME_SIZE).fill({
+];
+let EDITOR_GRAPHICS_SG2: string[] = [
     "c3map.sg2",
     "c3map_north.sg2",
     "c3map_south.sg2"
-});
-let EDITOR_GRAPHICS_555: char[] = new Array(NAME_SIZE).fill({
+];
+let EDITOR_GRAPHICS_555: string[] = [
     "c3map.555",
     "c3map_north.555",
     "c3map_south.555"
-});
-let EMPIRE_555: char[] = new Array(NAME_SIZE).fill("The_empire.555");
-let EXTERNAL_FONTS_SG2: char[] = new Array(NAME_SIZE).fill("C3_fonts.sg2");
-let EXTERNAL_FONTS_555: char[] = new Array(NAME_SIZE).fill("C3_fonts.555");
-let CHINESE_FONTS_555: char[] = new Array(NAME_SIZE).fill("rome.555");
-let CHINESE_FONTS_555_V2: char[] = new Array(NAME_SIZE).fill("rome-v2.555");
-let KOREAN_FONTS_555: char[] = new Array(NAME_SIZE).fill("korean.555");
-let KOREAN_FONTS_555_V2: char[] = new Array(NAME_SIZE).fill("korean-v2.555");
-let JAPANESE_FONTS_555: char[] = new Array(NAME_SIZE).fill("japanese-v2.555");
-let ENEMY_GRAPHICS_SG2: char[] = new Array(NAME_SIZE).fill({
+];
+let EMPIRE_555: string = "The_empire.555";
+let EXTERNAL_FONTS_SG2: string = "C3_fonts.sg2";
+let EXTERNAL_FONTS_555: string = "C3_fonts.555";
+let CHINESE_FONTS_555: string = "rome.555";
+let CHINESE_FONTS_555_V2: string = "rome-v2.555";
+let KOREAN_FONTS_555: string = "korean.555";
+let KOREAN_FONTS_555_V2: string = "korean-v2.555";
+let JAPANESE_FONTS_555: string = "japanese-v2.555";
+let ENEMY_GRAPHICS_SG2: string[] = [
     "goths.sg2",
     "Etruscan.sg2",
     "Etruscan.sg2",
@@ -233,9 +154,9 @@ let ENEMY_GRAPHICS_SG2: char[] = new Array(NAME_SIZE).fill({
     "goths.sg2",
     "Phoenician.sg2",
     "North African.sg2",
-    "Phoenician.sg2",
-});
-let ENEMY_GRAPHICS_555: char[] = new Array(NAME_SIZE).fill({
+    "Phoenician.sg2"
+];
+let ENEMY_GRAPHICS_555: string[] = [
     "goths.555",
     "Etruscan.555",
     "Etruscan.555",
@@ -255,8 +176,8 @@ let ENEMY_GRAPHICS_555: char[] = new Array(NAME_SIZE).fill({
     "goths.555",
     "Phoenician.555",
     "North African.555",
-    "Phoenician.555",
-});
+    "Phoenician.555"
+];
 let DUMMY_IMAGE: image;
 export class unnamed125_8 {
     public current_climate: number = 0;
@@ -264,7 +185,7 @@ export class unnamed125_8 {
     public fonts_enabled: number = 0;
     public font_base_offset: number = 0;
     public group_image_ids: number[] = new Array(300).fill(0);
-    public bitmaps: char[] = new Array(100).fill(null);
+    public bitmaps: string[] = new Array(100).fill(null);
     public main: image[] = new Array(MAIN_ENTRIES).fill(null);
     public enemy: image[] = new Array(ENEMY_ENTRIES).fill(null);
     public font: image = null;
@@ -290,17 +211,17 @@ export class unnamed125_8 {
         args.length >= 14 && (this.tmp_data = args[13]);
     }
 }
-let data: unnamed125_8 = new unnamed125_8(.current_climate = -1);
+let data: unnamed125_8 = new unnamed125_8(-1);
 export function image_init() {
-    data.enemy_data = (color_t *) malloc(ENEMY_DATA_SIZE);
-    data.main_data = (color_t *) malloc(MAIN_DATA_SIZE);
-    data.empire_data = (color_t *) malloc(EMPIRE_DATA_SIZE);
-    data.tmp_data = (uint8_t *) malloc(SCRATCH_DATA_SIZE);
+    data.enemy_data = null; // Stub: should allocate ENEMY_DATA_SIZE
+    data.main_data = null; // Stub: should allocate MAIN_DATA_SIZE
+    data.empire_data = null; // Stub: should allocate EMPIRE_DATA_SIZE
+    data.tmp_data = 0; // Stub: should allocate SCRATCH_DATA_SIZE
     if (!data.main_data || !data.empire_data || !data.enemy_data || !data.tmp_data) {
-        free(data.main_data);
-        free(data.empire_data);
-        free(data.enemy_data);
-        free(data.tmp_data);
+        data.main_data = null;
+        data.empire_data = null;
+        data.enemy_data = null;
+        data.tmp_data = 0;
         return 0;
     }
     return 1;
@@ -315,7 +236,7 @@ function prepare_index(images: image, size: number) {
             }
         } else {
             img.draw.offset = offset;
-            offset += img.draw.data_length
+            offset += img.draw.data_length;
         }
     }
 }

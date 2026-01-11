@@ -118,8 +118,8 @@ import { strcmp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.2610
 import { strlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 import { strlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-let INI_FILENAME: char = "julius.ini";
-let ini_keys: char[] = new Array().fill({
+let INI_FILENAME: string = "julius.ini";
+let ini_keys: string[] = [
     "gameplay_fix_immigration",
     "gameplay_fix_100y_ghosts",
     "screen_display_scale",
@@ -135,18 +135,17 @@ let ini_keys: char[] = new Array().fill({
     "ui_show_construction_size",
     "ui_highlight_legions",
     "ui_show_military_sidebar",
-    "ui_show_speedrun_info",
-});
-let ini_string_keys: char[] = new Array().fill({
+    "ui_show_speedrun_info"
+];
+let ini_string_keys: string[] = [
     "ui_language_dir"
-});
-let values: number[] = new Array(CONFIG_MAX_ENTRIES);
-let string_values: char[] = new Array(CONFIG_STRING_MAX_ENTRIES);
-let default_values: number[] = new Array(CONFIG_MAX_ENTRIES).fill({
-    [CONFIG_SCREEN_DISPLAY_SCALE] = 100,
-    [CONFIG_SCREEN_CURSOR_SCALE] = 100
-});
-let default_string_values: char[] = new Array(CONFIG_STRING_MAX_ENTRIES);
+];
+let values: number[] = new Array(CONFIG_MAX_ENTRIES).fill(0);
+let string_values: Uint8Array[] = new Array(CONFIG_STRING_MAX_ENTRIES);
+let default_values: number[] = new Array(CONFIG_MAX_ENTRIES).fill(0);
+default_values[CONFIG_SCREEN_DISPLAY_SCALE] = 100;
+default_values[CONFIG_SCREEN_CURSOR_SCALE] = 100;
+let default_string_values: Uint8Array[] = new Array(CONFIG_STRING_MAX_ENTRIES);
 export function config_get(key: config_key) {
     return values[key];
 }
@@ -183,30 +182,32 @@ export function config_load() {
         return;
     }
     let line_buffer: char[];
-    let line: char;
+    let line: string;
     while ((line = fgets(line_buffer, MAX_LINE, fp))) {
-            // Remove newline from string
-            size_t size = strlen(line);
+        // Remove newline from string
+        let size: number = line.length;
         while (size > 0 && (line[size - 1] == '\n' || line[size - 1] == '\r')) {
-            line[--size] = 0;
+            line = line.substring(0, --size);
         }
-        let equals: string = strchr(line, '=');
-        if (equals) {
-                * equals = 0;
+        let equalsIndex: number = line.indexOf('=');
+        if (equalsIndex >= 0) {
+            let key: string = line.substring(0, equalsIndex);
+            let valueStr: string = line.substring(equalsIndex + 1);
             for (let i: number = 0; i < CONFIG_MAX_ENTRIES; i++) {
-                if (strcmp(ini_keys[i], line) == 0) {
-                    let value: number = atoi(equals[1]);
+                if (ini_keys[i] == key) {
+                    let value: number = parseInt(valueStr);
                     log_info("Config key", ini_keys[i], value);
                     values[i] = value;
                     break;
                 }
             }
-            for (int i = 0; i < CONFIG_STRING_MAX_ENTRIES; i++) {
-                if (strcmp(ini_string_keys[i], line) == 0) {
-                    const char * value = equals[1];
+            for (let i: number = 0; i < CONFIG_STRING_MAX_ENTRIES; i++) {
+                if (ini_string_keys[i] == key) {
                     log_info("Config key", ini_string_keys[i], 0);
-                    log_info("Config value", value, 0);
-                    strncpy(string_values[i], value, CONFIG_STRING_VALUE_MAX - 1);
+                    log_info("Config value", valueStr, 0);
+                    // strncpy equivalent
+                    let encoder = new TextEncoder();
+                    string_values[i] = encoder.encode(valueStr.substring(0, CONFIG_STRING_VALUE_MAX - 1));
                     break;
                 }
             }

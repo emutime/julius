@@ -1,11 +1,11 @@
 import { Ptr, PtrBuffer } from "../../ext/crt";
 
-export function string_equals(a: number, b: number) {
-    while (* a && * b && * a == * b) {
-        ++a;
-        ++b;
+export function string_equals(a: Uint8Array, b: Uint8Array) {
+    let i = 0;
+    while (a[i] && b[i] && a[i] == b[i]) {
+        i++;
     }
-    if (* a == 0 && * b == 0) {
+    if (a[i] == 0 && b[i] == 0) {
         return 1;
     } else {
         return 0;
@@ -30,15 +30,18 @@ export function string_length(str: Uint8Array) {
     }
     return length;
 }
-export function string_from_ascii(str: char) {
-    let s: char = str;
-    while (* s) {
-        if (* s & 0x80) {
-            return 0;
+export function string_from_ascii(str: string): Uint8Array | null {
+    for (let i = 0; i < str.length; i++) {
+        if (str.charCodeAt(i) & 0x80) {
+            return null;
         }
-        s++;
     }
-    return (const uint8_t *) str;
+    let result = new Uint8Array(str.length + 1);
+    for (let i = 0; i < str.length; i++) {
+        result[i] = str.charCodeAt(i);
+    }
+    result[str.length] = 0;
+    return result;
 }
 export function string_to_int(str: PtrBuffer) {
     let multipliers: number[] = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000];
@@ -109,11 +112,11 @@ export function string_from_int(dst: number, value: number, force_plus_sign: num
     } else {
         num_digits = 0;
     }
-    total_chars += num_digits
+    total_chars += num_digits;
     dst[num_digits] = 0;
     while (--num_digits >= 0) {
-        dst[num_digits] = (uint8_t)(value % 10 + '0');
-        value /= 10;
+        dst[num_digits] = Math.floor(value % 10 + '0'.charCodeAt(0));
+        value = Math.floor(value / 10);
     }
     return total_chars;
 }

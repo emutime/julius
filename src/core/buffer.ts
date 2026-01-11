@@ -107,7 +107,7 @@ export function buffer_read_u32(buf: buffer) {
 }
 export function buffer_read_i8(buf: buffer) {
     if (check_size(buf, 1)) {
-        return (int8_t) buf.data[buf.index++];
+        return buf.data[buf.index++] as number;
     } else {
         return 0;
     }

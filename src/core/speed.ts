@@ -28,55 +28,8 @@ export class speed_type {
         args.length >= 9 && (this.fine_position = args[8]);
         args.length >= 10 && (this.adjust_for_time = args[9]);
     }
-};;;;;;;;;;;;;;;;;;;;;;;;;;;
-import { acos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { acos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { asin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { asin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan2 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan2 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cosh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cosh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { exp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { exp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fabs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fabs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fmod } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fmod } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log10 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log10 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { pow } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { pow } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sinh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sinh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sqrt } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sqrt } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tanh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tanh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ceil } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ceil } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _chgsign } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _copysign } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { floor } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { floor } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { frexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { frexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _hypot } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ldexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ldexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { modf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { modf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _hypotf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';;
+}
+const FRAME_TIME = 16.67;
 export function speed_clear(speed: speed_type) {
     speed.cumulative_delta = 0.0;
     speed.fine_position = 0.0;
@@ -91,7 +44,7 @@ function adjust_speed_for_elapsed_time(delta: number, adjust_for_time: number, l
     return adjust_for_time ? (delta / FRAME_TIME) * (time_get_millis() - last_time) : delta;
 }
 function adjust_speed_for_frame_time(delta: number, adjust_for_time: number, last_time: time_millis) {
-    return adjust_for_time ? ((delta / (double)(time_get_millis() - last_time)) * FRAME_TIME) : delta;
+    return adjust_for_time ? ((delta / (time_get_millis() - last_time)) * FRAME_TIME) : delta;
 }
 export function speed_set_target(speed: speed_type, new_speed: number, total_time: time_millis, adjust_for_time: number) {
     speed.adjust_for_time = adjust_for_time;
@@ -127,10 +80,10 @@ export function speed_get_current_direction(speed: speed_type) {
     return (speed.current_speed > 0) ? SPEED_DIRECTION_POSITIVE : SPEED_DIRECTION_NEGATIVE;
 }
 function handle_fine_position(speed: speed_type, delta: number) {
-    let delta_rounded: number = (int) delta;
-    speed.fine_position += delta - delta_rounded
-    let extra_position: number = (int) speed.fine_position;
-    speed.fine_position -= extra_position
+    let delta_rounded: number = Math.floor(delta);
+    speed.fine_position += delta - delta_rounded;
+    let extra_position: number = Math.floor(speed.fine_position);
+    speed.fine_position -= extra_position;
     return delta_rounded + extra_position;
 }
 export function speed_get_delta(speed: speed_type) {
@@ -153,10 +106,10 @@ export function speed_get_delta(speed: speed_type) {
                 speed.current_speed, speed.adjust_for_time, speed.last_speed_check);
         } else {
             let full_delta: number = speed.speed_difference * (speed.total_time / FRAME_TIME);
-            let exponent: number = exp(-((int) elapsed) / (double) speed.total_time);
+            let exponent: number = Math.exp(-(Math.floor(elapsed)) / speed.total_time);
             delta = full_delta - full_delta * exponent - speed.cumulative_delta;
-            speed.cumulative_delta += delta
-            delta += desired
+            speed.cumulative_delta += delta;
+            delta += desired;
             speed.current_speed = adjust_speed_for_frame_time(delta, speed.adjust_for_time, speed.last_speed_check);
             speed.adjusted_current_speed = speed.current_speed;
         }
