@@ -7,7 +7,7 @@ import { building_type } from 'building/type';
 import { city_buildings_has_hippodrome, city_buildings_has_senate } from 'city/buildings';
 import { city_finance_out_of_money } from 'city/finance';
 import { city_view_foreach_tile_in_range, city_view_get_selected_tile_pixels, city_view_orientation } from 'city/view';
-import { config_get } from 'core/config';
+import { config_get, config_key } from 'core/config';
 import { image, image_get, image_group } from 'core/image';
 import { group_terrain } from 'core/image_group';
 import { formation_get_num_legions_cached, MAX_LEGIONS } from 'figure/formation';
@@ -30,6 +30,7 @@ import { map_water_determine_orientation_size2, map_water_determine_orientation_
 import { scenario_climate, scenario_property_climate } from 'scenario/property';
 import { city_draw_bridge_tile } from 'widget/city_bridge';
 import { Ref } from '../../ext/crt';
+import { direction_type } from 'core/direction';
 const BUILDING_NONE = building_type.BUILDING_NONE;
 const BUILDING_ROAD = building_type.BUILDING_ROAD;
 const BUILDING_DRAGGABLE_RESERVOIR = building_type.BUILDING_DRAGGABLE_RESERVOIR;
