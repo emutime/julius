@@ -1,34 +1,20 @@
-import { NO_COLUMN } from 'widget/city_overlay';
+import { building } from 'building/building';
 import { building_type } from 'building/type';
+import { figure } from 'figure/figure';
+import { figure_type } from 'figure/type';
+import { overlay } from 'game/state';
+import { tooltip_context } from 'graphics/tooltip';
+import { city_overlay, column_type, NO_COLUMN } from 'widget/city_overlay';
 import BUILDING_DOCTOR = building_type.BUILDING_DOCTOR;
 import BUILDING_HOSPITAL = building_type.BUILDING_HOSPITAL;
 import BUILDING_BATHHOUSE = building_type.BUILDING_BATHHOUSE;
 import BUILDING_BARBER = building_type.BUILDING_BARBER;
-import { building_type } from 'building/type';;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { direction_type } from 'core/direction';
-import { figure_type } from 'figure/type';
+;
 import FIGURE_BARBER = figure_type.FIGURE_BARBER;
 import FIGURE_BATHHOUSE_WORKER = figure_type.FIGURE_BATHHOUSE_WORKER;
 import FIGURE_DOCTOR = figure_type.FIGURE_DOCTOR;
 import FIGURE_SURGEON = figure_type.FIGURE_SURGEON;
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { column_type } from 'widget/city_overlay';
 import COLUMN_TYPE_ACCESS = column_type.COLUMN_TYPE_ACCESS;
-import { city_overlay } from 'widget/city_overlay';
-import { overlay } from 'game/state';
 import OVERLAY_BARBER = overlay.OVERLAY_BARBER;
 import OVERLAY_BATHHOUSE = overlay.OVERLAY_BATHHOUSE;
 import OVERLAY_CLINIC = overlay.OVERLAY_CLINIC;
@@ -114,7 +100,7 @@ function get_tooltip_hospital(c: tooltip_context, b: building) {
     }
 }
 export function city_overlay_for_barber() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_BARBER,
         COLUMN_TYPE_ACCESS,
         show_building_barber,
@@ -124,11 +110,11 @@ export function city_overlay_for_barber() {
         get_tooltip_barber,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_bathhouse() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_BATHHOUSE,
         COLUMN_TYPE_ACCESS,
         show_building_bathhouse,
@@ -138,11 +124,11 @@ export function city_overlay_for_bathhouse() {
         get_tooltip_bathhouse,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_clinic() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_CLINIC,
         COLUMN_TYPE_ACCESS,
         show_building_clinic,
@@ -152,11 +138,11 @@ export function city_overlay_for_clinic() {
         get_tooltip_clinic,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_hospital() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_HOSPITAL,
         COLUMN_TYPE_ACCESS,
         show_building_hospital,
@@ -166,6 +152,6 @@ export function city_overlay_for_hospital() {
         get_tooltip_hospital,
         0,
         0
-    };
+    );
     return overlay;
 }

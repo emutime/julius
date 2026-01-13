@@ -7,34 +7,33 @@ export const AXIS_MAX_THRESHOLD = 1300;
 export const JOYSTICK_MAPPING_ELEMENTS_MAX = 2;
 export const TRACKBALL_TO_AXIS_RATIO = 5;
 export const AXIS_MAX_VALUE = 32767;
-import { SPEED_CHANGE_IMMEDIATE } from 'core/speed';
-export const MAX_HOTKEYS = 6;
-import { time_millis } from 'core/time';
-import { time_get_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
+export const JOYSTICK_MAX_NAME = 64;
+export const JOYSTICK_MAX_GUID = 33;
+import HOTKEY_OFFSET = mapping_action.MAPPING_ACTION_ROTATE_MAP_LEFT;
+type joystick_button = number;
+type joystick_axis = number;
+import { hotkey_action } from 'core/hotkey_config';
+import { log_info } from 'core/log';
+import { SPEED_CHANGE_IMMEDIATE, speed_clear, speed_get_delta, speed_set_target, speed_type } from 'core/speed';
+import { time_get_millis, time_millis } from 'core/time';
+import { system_keyboard_show, system_move_mouse_cursor } from 'game/system';
+import { window_id, window_is } from 'graphics/window';
+import { hotkey_set_value_for_action } from 'input/hotkey';
+import { joystick_axis_position, joystick_element, joystick_hat_position } from 'input/joystick';
+import { keyboard_is_capturing } from 'input/keyboard';
+import { mouse, mouse_remove_touch, mouse_set_left_down, mouse_set_right_down, mouse_set_scroll, scroll_state } from 'input/mouse';
+import { scroll_arrow_down, scroll_arrow_left, scroll_arrow_right, scroll_arrow_up } from 'input/scroll';
 import { touch_cycle_mode } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
+export const MAX_HOTKEYS = 6;
 import SCROLL_NONE = scroll_state.SCROLL_NONE;
 import SCROLL_UP = scroll_state.SCROLL_UP;
 import SCROLL_DOWN = scroll_state.SCROLL_DOWN;
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_set_left_down } from 'input/mouse';
-import { mouse_set_right_down } from 'input/mouse';
-import { mouse_set_scroll } from 'input/mouse';
-import { mouse_remove_touch } from 'input/mouse';
-import { joystick_element } from 'input/joystick';
 import JOYSTICK_ELEMENT_NONE = joystick_element.JOYSTICK_ELEMENT_NONE;
 import JOYSTICK_ELEMENT_AXIS = joystick_element.JOYSTICK_ELEMENT_AXIS;
 import JOYSTICK_ELEMENT_TRACKBALL = joystick_element.JOYSTICK_ELEMENT_TRACKBALL;
 import JOYSTICK_ELEMENT_BUTTON = joystick_element.JOYSTICK_ELEMENT_BUTTON;
 import JOYSTICK_ELEMENT_HAT = joystick_element.JOYSTICK_ELEMENT_HAT;
-import { joystick_axis_position } from 'input/joystick';
 import JOYSTICK_AXIS_POSITIVE = joystick_axis_position.JOYSTICK_AXIS_POSITIVE;
-import { joystick_hat_position } from 'input/joystick';
 import JOYSTICK_HAT_UP = joystick_hat_position.JOYSTICK_HAT_UP;
 import JOYSTICK_HAT_LEFT = joystick_hat_position.JOYSTICK_HAT_LEFT;
 import JOYSTICK_HAT_DOWN = joystick_hat_position.JOYSTICK_HAT_DOWN;
@@ -85,7 +84,8 @@ import MAPPING_ACTION_SHOW_VIRTUAL_KEYBOARD = mapping_action.MAPPING_ACTION_SHOW
 import MAPPING_ACTION_CYCLE_TOUCH_TYPE = mapping_action.MAPPING_ACTION_CYCLE_TOUCH_TYPE;
 import MAPPING_ACTION_RESET_MAPPING = mapping_action.MAPPING_ACTION_RESET_MAPPING;
 import MAPPING_ACTION_MAX = mapping_action.MAPPING_ACTION_MAX;
-class unnamed63_5 {
+
+class element {
     public type: joystick_element = null;
     public id: number = 0;
     public position: number = 0;
@@ -97,7 +97,7 @@ class unnamed63_5 {
 }
 export class mapping_element {
     public action: mapping_action = null;
-    public element: element = new Array(JOYSTICK_MAPPING_ELEMENTS_MAX).fill(null);
+    public element: element[] = new Array(JOYSTICK_MAPPING_ELEMENTS_MAX).fill(null);
     public constructor(...args: any[]) {
         args.length >= 1 && (this.action = args[0]);
         args.length >= 2 && (this.element = args[1]);
@@ -105,8 +105,8 @@ export class mapping_element {
 }
 export class joystick_model {
     public connected_joysticks: number = 0;
-    public name: char[] = new Array(JOYSTICK_MAX_NAME).fill(null);
-    public guid: char[] = new Array(JOYSTICK_MAX_GUID).fill(null);
+    public name: string = "";
+    public guid: string = "";
     public mapping: mapping_element[] = new Array(MAX_JOYSTICK_MAPPINGS).fill(null);
     public num_mappings: number = 0;
     public constructor(...args: any[]) {
@@ -117,60 +117,30 @@ export class joystick_model {
         args.length >= 5 && (this.num_mappings = args[4]);
     }
 }
-import { log_info } from 'core/log';
-import { speed_direction } from 'core/speed';
-import { speed_type } from 'core/speed';
-import { speed_clear } from 'core/speed';
-import { speed_set_target } from 'core/speed';
-import { speed_get_delta } from 'core/speed';;
-import { color_t } from 'graphics/color';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { system_keyboard_show } from 'game/system';
-import { system_move_mouse_cursor } from 'game/system';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { hotkey_action } from 'core/hotkey_config';
+;
 import HOTKEY_TOGGLE_PAUSE = hotkey_action.HOTKEY_TOGGLE_PAUSE;
 import HOTKEY_CYCLE_LEGION = hotkey_action.HOTKEY_CYCLE_LEGION;
 import HOTKEY_INCREASE_GAME_SPEED = hotkey_action.HOTKEY_INCREASE_GAME_SPEED;
 import HOTKEY_DECREASE_GAME_SPEED = hotkey_action.HOTKEY_DECREASE_GAME_SPEED;
 import HOTKEY_ROTATE_MAP_LEFT = hotkey_action.HOTKEY_ROTATE_MAP_LEFT;
 import HOTKEY_ROTATE_MAP_RIGHT = hotkey_action.HOTKEY_ROTATE_MAP_RIGHT;
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { hotkey_set_value_for_action } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_CITY = window_id.WINDOW_CITY;
 import WINDOW_CITY_MILITARY = window_id.WINDOW_CITY_MILITARY;
 import WINDOW_EMPIRE = window_id.WINDOW_EMPIRE;
 import WINDOW_EDITOR_MAP = window_id.WINDOW_EDITOR_MAP;
 import WINDOW_EDITOR_EMPIRE = window_id.WINDOW_EDITOR_EMPIRE;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_is } from 'graphics/window';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { keyboard_is_capturing } from 'input/keyboard';
-import { buffer } from 'core/buffer';
-import { view_tile } from 'city/view';
-import { pixel_offset } from 'city/view';
-import { map_callback } from 'city/view';
-import { scroll_type } from 'input/scroll';
-import { scroll_arrow_left } from 'input/scroll';
-import { scroll_arrow_right } from 'input/scroll';
-import { scroll_arrow_up } from 'input/scroll';
-import { scroll_arrow_down } from 'input/scroll';
-export const enum joystick_trackball_x {
+export const enum joystick_trackball_pos {
     JOYSTICK_TRACKBALL_X_POSITIVE = 0,
     JOYSTICK_TRACKBALL_X_NEGATIVE = 1,
     JOYSTICK_TRACKBALL_Y_POSITIVE = 2,
     JOYSTICK_TRACKBALL_Y_NEGATIVE = 3,
 }
+
+import JOYSTICK_TRACKBALL_X_POSITIVE = joystick_trackball_pos.JOYSTICK_TRACKBALL_X_POSITIVE;
+import JOYSTICK_TRACKBALL_X_NEGATIVE = joystick_trackball_pos.JOYSTICK_TRACKBALL_X_NEGATIVE;
+import JOYSTICK_TRACKBALL_Y_POSITIVE = joystick_trackball_pos.JOYSTICK_TRACKBALL_Y_POSITIVE;
+import JOYSTICK_TRACKBALL_Y_NEGATIVE = joystick_trackball_pos.JOYSTICK_TRACKBALL_Y_NEGATIVE;
+
 export const enum direction {
     DIRECTION_UP = 0,
     DIRECTION_LEFT = 1,
@@ -178,12 +148,25 @@ export const enum direction {
     DIRECTION_RIGHT = 3,
     NUM_DIRECTIONS = 4,
 }
+
+import DIRECTION_UP = direction.DIRECTION_UP;
+import DIRECTION_LEFT = direction.DIRECTION_LEFT;
+import DIRECTION_DOWN = direction.DIRECTION_DOWN;
+import DIRECTION_RIGHT = direction.DIRECTION_RIGHT;
+import NUM_DIRECTIONS = direction.NUM_DIRECTIONS;
+
 export const enum input_state {
     INPUT_STATE_IS_UP,
     INPUT_STATE_WENT_DOWN,
     INPUT_STATE_IS_DOWN,
     INPUT_STATE_WENT_UP,
 }
+
+import INPUT_STATE_IS_UP = input_state.INPUT_STATE_IS_UP;
+import INPUT_STATE_WENT_DOWN = input_state.INPUT_STATE_WENT_DOWN;
+import INPUT_STATE_IS_DOWN = input_state.INPUT_STATE_IS_DOWN;
+import INPUT_STATE_WENT_UP = input_state.INPUT_STATE_WENT_UP;
+
 export class joystick_hat {
     public top: joystick_button = null;
     public left: joystick_button = null;
@@ -291,14 +274,22 @@ function update_hat(hat: joystick_hat, position: joystick_hat_position) {
     hat.right = (position & JOYSTICK_HAT_RIGHT) ? 1 : 0;
 }
 function update_trackball(trackball: joystick_trackball, delta_x: number, delta_y: number) {
-    trackball.delta_x += delta_x
-    trackball.delta_y += delta_y
+    trackball.delta_x += delta_x;
+    trackball.delta_y += delta_y;
 }
-function reset_joystick_state(joystick: joystick_info) {
-    memset(joystick.axis, 0);
-    memset(joystick.button, 0);
-    memset(joystick.trackball, 0);
-    memset(joystick.hat, 0);
+function reset_joystick_state(joystick: joystick_info): void {
+    for (let i: number = 0; i < MAX_AXIS; i++) {
+        joystick.axis[i] = null;
+    }
+    for (let i: number = 0; i < MAX_BUTTONS; i++) {
+        joystick.button[i] = null;
+    }
+    for (let i: number = 0; i < MAX_TRACKBALLS; i++) {
+        joystick.trackball[i] = null;
+    }
+    for (let i: number = 0; i < MAX_HATS; i++) {
+        joystick.hat[i] = null;
+    }
 }
 function get_free_joystick() {
     for (let i: number = 0; i < MAX_CONTROLLERS; ++i) {
@@ -308,27 +299,27 @@ function get_free_joystick() {
     }
     return 0;
 }
-function get_model_by_guid(guid: char) {
+function get_model_by_guid(guid: string): joystick_model {
     for (let i: number = 0; i < MAX_CONTROLLERS; ++i) {
         let model: joystick_model = data.connected_models[i];
-        if (strcmp(guid, model.guid) == 0) {
+        if (guid === model.guid) {
             return model;
         }
     }
-    return 0;
+    return null;
 }
-export function joystick_has_model(guid: char) {
-    return get_model_by_guid(guid) != 0;
+export function joystick_has_model(guid: string): boolean {
+    return get_model_by_guid(guid) != null;
 }
-export function joystick_add_model(model: joystick_model) {
+export function joystick_add_model(model: joystick_model): void {
     for (let i: number = 0; i < MAX_CONTROLLERS; ++i) {
         if (!data.connected_models[i].connected_joysticks) {
-            memcpy(data.connected_models[i], model, sizeof(joystick_model));
+            data.connected_models[i] = model;
             return;
         }
     }
 }
-export function joystick_add(joystick_id: number, guid: char) {
+export function joystick_add(joystick_id: number, guid: string) {
     let joystick: joystick_info = get_free_joystick();
     let model: joystick_model = get_model_by_guid(guid);
     if (!joystick || !model) {
@@ -353,21 +344,21 @@ function get_joystick_by_id(joystick_id: number) {
 export function joystick_is_active(joystick_id: number) {
     return get_joystick_by_id(joystick_id) != 0;
 }
-export function joystick_remove(joystick_id: number) {
+export function joystick_remove(joystick_id: number): number {
     let joystick: joystick_info = get_joystick_by_id(joystick_id);
     if (!joystick) {
         return 0;
     }
     joystick.connected = 0;
     joystick.model.connected_joysticks--;
-    let name: char = joystick.model.name;
-    joystick.model = 0;
+    let name: string = joystick.model.name;
+    joystick.model = null;
     reset_joystick_state(joystick);
     data.connected_joysticks--;
     log_info("Joystick removed with name", name, 0);
     return 1;
 }
-export function joystick_update_element(joystick_id: number, element: joystick_element, element_id: number, value1: number, value2: number) {
+export function joystick_update_element(joystick_id: number, element: joystick_element, element_id: number, value1: number, value2: number): void {
     let joystick: joystick_info = get_joystick_by_id(joystick_id);
     if (!joystick) {
         return;
@@ -375,19 +366,19 @@ export function joystick_update_element(joystick_id: number, element: joystick_e
     switch (element) {
         case JOYSTICK_ELEMENT_BUTTON:
             joystick.button[element_id] = value1;
-            break
+            break;
         case JOYSTICK_ELEMENT_HAT:
             update_hat(joystick.hat[element_id], value1);
-            break
+            break;
         case JOYSTICK_ELEMENT_AXIS:
-            joystick.axis[element_id] = (abs(value1) > AXIS_MAX_THRESHOLD) ? value1 : 0;
-            break
+            joystick.axis[element_id] = (Math.abs(value1) > AXIS_MAX_THRESHOLD) ? value1 : 0;
+            break;
         case JOYSTICK_ELEMENT_TRACKBALL:
             update_trackball(joystick.trackball[element_id], value1, value2);
-            break
+            break;
         default:
-            log_info("Trying to update wrong joystick element", 0, element)
-            break
+            log_info("Trying to update wrong joystick element", 0, element);
+            break;
     }
 }
 function get_input_for_mapping(joystick: joystick_info, mapping: mapping_element, input: mapped_input) {
@@ -403,50 +394,50 @@ function get_input_for_mapping(joystick: joystick_info, mapping: mapping_element
                 } else {
                     current_value = (joystick.axis[element_id] < 0) ? -joystick.axis[element_id] : 0;
                 }
-                break
+                break;
             case JOYSTICK_ELEMENT_TRACKBALL:
                 switch (element_position) {
                     case JOYSTICK_TRACKBALL_X_POSITIVE:
                         if (joystick.trackball[element_id].delta_x > 0) {
                             current_value = joystick.trackball[element_id].delta_x;
                         }
-                        break
+                        break;
                     case JOYSTICK_TRACKBALL_X_NEGATIVE:
                         if (joystick.trackball[element_id].delta_x < 0) {
                             current_value = -joystick.trackball[element_id].delta_x;
                         }
-                        break
+                        break;
                     case JOYSTICK_TRACKBALL_Y_POSITIVE:
                         if (joystick.trackball[element_id].delta_y > 0) {
                             current_value = joystick.trackball[element_id].delta_y;
                         }
-                        break
+                        break;
                     case JOYSTICK_TRACKBALL_Y_NEGATIVE:
                         if (joystick.trackball[element_id].delta_y < 0) {
                             current_value = -joystick.trackball[element_id].delta_y;
                         }
-                        break
+                        break;
                 }
                 break
             case JOYSTICK_ELEMENT_BUTTON:
                 current_value = joystick.button[element_id];
-                break
+                break;
             case JOYSTICK_ELEMENT_HAT:
                 {
                     let hat: joystick_hat = joystick.hat[element_id];
                     switch (element_position) {
                         case JOYSTICK_HAT_UP:
                             current_value = hat.top;
-                            break
+                            break;
                         case JOYSTICK_HAT_LEFT:
                             current_value = hat.left;
-                            break
+                            break;
                         case JOYSTICK_HAT_DOWN:
                             current_value = hat.bottom;
-                            break
+                            break;
                         case JOYSTICK_HAT_RIGHT:
                             current_value = hat.right;
-                            break
+                            break;
                         default:
                             current_value = 0
                             log_info("Invalid hat value for hat", 0, element_id);
@@ -455,7 +446,7 @@ function get_input_for_mapping(joystick: joystick_info, mapping: mapping_element
                     break
                 }
             default:
-                continue
+                continue;
         }
         if (current_value == 0) {
             input.element = JOYSTICK_ELEMENT_NONE;
@@ -485,7 +476,7 @@ function set_input_state(input: mapped_input) {
     }
 }
 function get_joystick_input_for_action(action: mapping_action, input: mapped_input) {
-    let dummy_input: mapped_input = { 0};
+    let dummy_input: mapped_input = new mapped_input();
     if (!input) {
         input = dummy_input;
     }
@@ -535,18 +526,18 @@ function translate_input_for_element(input: mapped_input, translated_element: jo
     input.element = translated_element;
 }
 function rescale_axis(inputs: mapped_input) {
-    let analog_x: number = (float) inputs[DIRECTION_RIGHT].value - inputs[DIRECTION_LEFT].value;
-    let analog_y: number = (float) inputs[DIRECTION_DOWN].value - inputs[DIRECTION_UP].value;
+    let analog_x: number = inputs[DIRECTION_RIGHT].value - inputs[DIRECTION_LEFT].value;
+    let analog_y: number = inputs[DIRECTION_DOWN].value - inputs[DIRECTION_UP].value;
     inputs[DIRECTION_UP].value = 0;
     inputs[DIRECTION_LEFT].value = 0;
     inputs[DIRECTION_DOWN].value = 0;
     inputs[DIRECTION_RIGHT].value = 0;
-    let magnitude: number = sqrtf(analog_x * analog_x + analog_y * analog_y);
+    let magnitude: number = Math.sqrt(analog_x * analog_x + analog_y * analog_y);
     if (magnitude < DEADZONE) {
         return 0;
     }
-    let abs_analog_x: number = fabsf(analog_x);
-    let abs_analog_y: number = fabsf(analog_y);
+    let abs_analog_x: number = Math.abs(analog_x);
+    let abs_analog_y: number = Math.abs(analog_y);
     let max_x: number;
     let max_y: number;
     if (abs_analog_x > abs_analog_y) {
@@ -556,9 +547,9 @@ function rescale_axis(inputs: mapped_input) {
         max_x = (AXIS_MAX_VALUE * analog_x) / abs_analog_y;
         max_y = AXIS_MAX_VALUE;
     }
-    let maximum: number = sqrtf(max_x * max_x + max_y * max_y);
-    if (maximum > 1.25f * AXIS_MAX_VALUE) {
-        maximum = 1.25f * AXIS_MAX_VALUE;
+    let maximum: number = Math.sqrt(max_x * max_x + max_y * max_y);
+    if (maximum > 1.25 * AXIS_MAX_VALUE) {
+        maximum = 1.25 * AXIS_MAX_VALUE;
     }
     if (maximum < magnitude) {
         maximum = magnitude;
@@ -566,9 +557,9 @@ function rescale_axis(inputs: mapped_input) {
     let scaling_factor: number = maximum / magnitude * (magnitude - DEADZONE) / (maximum - DEADZONE);
     analog_x = (analog_x * scaling_factor);
     analog_y = (analog_y * scaling_factor);
-    let clamping_factor: number = 1.0f;
-    abs_analog_x = fabsf(analog_x);
-    abs_analog_y = fabsf(analog_y);
+    let clamping_factor: number = 1.0;
+    abs_analog_x = Math.abs(analog_x);
+    abs_analog_y = Math.abs(analog_y);
     if (abs_analog_x > AXIS_MAX_VALUE || abs_analog_y > AXIS_MAX_VALUE) {
         if (abs_analog_x > abs_analog_y) {
             clamping_factor = AXIS_MAX_VALUE / abs_analog_x;
@@ -576,15 +567,15 @@ function rescale_axis(inputs: mapped_input) {
             clamping_factor = AXIS_MAX_VALUE / abs_analog_y;
         }
     }
-    if (analog_y > 0.0f) {
-        inputs[DIRECTION_DOWN].value = (int)(clamping_factor * analog_y);
-    } else if (analog_y < 0.0f) {
-        inputs[DIRECTION_UP].value = (int)(clamping_factor * -analog_y);
+    if (analog_y > 0.0) {
+        inputs[DIRECTION_DOWN].value = Math.floor(clamping_factor * analog_y);
+    } else if (analog_y < 0.0) {
+        inputs[DIRECTION_UP].value = Math.floor(clamping_factor * -analog_y);
     }
-    if (analog_x > 0.0f) {
-        inputs[DIRECTION_RIGHT].value = (int)(clamping_factor * analog_x);
-    } else if (analog_x < 0.0f) {
-        inputs[DIRECTION_LEFT].value = (int)(clamping_factor * -analog_x);
+    if (analog_x > 0.0) {
+        inputs[DIRECTION_RIGHT].value = Math.floor(clamping_factor * analog_x);
+    } else if (analog_x < 0.0) {
+        inputs[DIRECTION_LEFT].value = Math.floor(clamping_factor * -analog_x);
     }
     return 1;
 }
@@ -601,7 +592,7 @@ function translate_mapping_reset() {
     return get_joystick_input_for_action(MAPPING_ACTION_RESET_MAPPING, 0);
 }
 function translate_mouse_cursor_position() {
-    let cursor_input: mapped_input[] = { 0};
+    let cursor_input: mapped_input[] = new Array(NUM_DIRECTIONS).fill(null);
     let handled: number = get_joystick_input_for_action(MAPPING_ACTION_MOUSE_CURSOR_UP, cursor_input[DIRECTION_UP]);
     handled |= get_joystick_input_for_action(MAPPING_ACTION_MOUSE_CURSOR_LEFT, cursor_input[DIRECTION_LEFT])
     handled |= get_joystick_input_for_action(MAPPING_ACTION_MOUSE_CURSOR_DOWN, cursor_input[DIRECTION_DOWN])
@@ -716,7 +707,7 @@ function translate_map_scrolling() {
             if (data.map_scroll[direction].state == INPUT_STATE_IS_DOWN ||
                 data.map_scroll[direction].state == INPUT_STATE_WENT_DOWN) {
                 stopped_scrolling = 0;
-                break
+                break;
             } else if (data.map_scroll[direction].state == INPUT_STATE_WENT_UP) {
                 stopped_scrolling |= 1
             }
@@ -788,7 +779,12 @@ export function joystick_to_mouse_and_keyboard() {
         handled |= translate_system_functions()
     }
     for (let i: number = 0; i < MAX_CONTROLLERS; ++i) {
-        memset(data.joystick[i].trackball, 0);
+        let trackball: joystick_trackball[] | null = data.joystick[i].trackball;
+        if (trackball) {
+            for (let j: number = 0; j < MAX_TRACKBALLS; j++) {
+                trackball[j] = null;
+            }
+        }
     }
     if (handled) {
         mouse_remove_touch();

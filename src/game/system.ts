@@ -13,7 +13,7 @@ export function system_center(): void {
 export function system_is_fullscreen_only(): number {
     return 0;
 }
-export function system_set_fullscreen(fullscreen: number): void {
+export function system_set_fullscreen(fullscreen: boolean): void {
 
 }
 export function system_scale_display(scale_percentage: number): number {

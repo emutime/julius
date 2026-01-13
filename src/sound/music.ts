@@ -1,20 +1,12 @@
 
-import { localized } from 'core/dir';
-import NOT_LOCALIZED = localized.NOT_LOCALIZED;
-import { dir_listing } from 'core/dir';
-import { dir_get_file } from 'core/dir';
 import { city_figures_total_invading_enemies } from 'city/figures';
-import { city_population } from 'city/population';;
-import { set_tooltips } from 'game/settings';
-import { set_difficulty } from 'game/settings';
-import { set_sound_type } from 'game/settings';
+import { city_population } from 'city/population';
+import { dir_get_file, localized } from 'core/dir';
+import { set_sound_type, setting_sound } from 'game/settings';
+import { sound_device_play_music, sound_device_set_music_volume, sound_device_stop_music } from 'sound/device';
+import NOT_LOCALIZED = localized.NOT_LOCALIZED;
+
 import SOUND_MUSIC = set_sound_type.SOUND_MUSIC;
-import { set_sound_type } from 'game/settings';
-import { set_sound } from 'game/settings';
-import { setting_sound } from 'game/settings';
-import { sound_device_set_music_volume } from 'sound/device';
-import { sound_device_play_music } from 'sound/device';
-import { sound_device_stop_music } from 'sound/device';
 export const enum track {
     TRACK_NONE = 0,
     TRACK_CITY_1 = 1,
@@ -27,6 +19,18 @@ export const enum track {
     TRACK_INTRO = 8,
     TRACK_MAX = 9,
 }
+
+import TRACK_NONE = track.TRACK_NONE
+import TRACK_CITY_1 = track.TRACK_CITY_1
+import TRACK_CITY_2 = track.TRACK_CITY_2
+import TRACK_CITY_3 = track.TRACK_CITY_3
+import TRACK_CITY_4 = track.TRACK_CITY_4
+import TRACK_CITY_5 = track.TRACK_CITY_5
+import TRACK_COMBAT_SHORT = track.TRACK_COMBAT_SHORT
+import TRACK_COMBAT_LONG = track.TRACK_COMBAT_LONG
+import TRACK_INTRO = track.TRACK_INTRO
+import TRACK_MAX = track.TRACK_MAX
+
 export class unnamed22_8 {
     public current_track: number = 0;
     public next_check: number = 0;
@@ -36,7 +40,7 @@ export class unnamed22_8 {
     }
 }
 let data: unnamed22_8 = new unnamed22_8(TRACK_NONE, 0);
-let tracks: char[] = new Array(32).fill({
+let tracks: string[] = [
     "",
     "wavs/ROME1.WAV",
     "wavs/ROME2.WAV",
@@ -46,10 +50,8 @@ let tracks: char[] = new Array(32).fill({
     "wavs/Combat_Short.wav",
     "wavs/Combat_Long.wav",
     "wavs/setup.wav"
-});
-let mp3_tracks: char[] = new Array(32).fill({
-    "",
-    "mp3/ROME1.mp3",
+];
+let mp3_tracks: string[] = [
     "mp3/ROME2.mp3",
     "mp3/ROME3.mp3",
     "mp3/ROME4.mp3",
@@ -57,7 +59,7 @@ let mp3_tracks: char[] = new Array(32).fill({
     "mp3/Combat_Short.mp3",
     "mp3/Combat_Long.mp3",
     "mp3/setup.mp3"
-});
+];
 export function sound_music_set_volume(percentage: number) {
     sound_device_set_music_volume(percentage);
 }
@@ -66,7 +68,7 @@ function play_track(track: number) {
     if (track <= TRACK_NONE || track >= TRACK_MAX) {
         return;
     }
-    let mp3_track: char = dir_get_file(mp3_tracks[track], NOT_LOCALIZED);
+    let mp3_track: string = dir_get_file(mp3_tracks[track], NOT_LOCALIZED);
     let volume: number = setting_sound(SOUND_MUSIC).volume;
     if (!mp3_track || !sound_device_play_music(mp3_track, volume)) {
         sound_device_play_music(dir_get_file(tracks[track], NOT_LOCALIZED), volume);

@@ -1,32 +1,18 @@
-import { NO_COLUMN } from 'widget/city_overlay';
+import { building } from 'building/building';
 import { building_type } from 'building/type';
+import { figure } from 'figure/figure';
+import { figure_type } from 'figure/type';
+import { overlay } from 'game/state';
+import { tooltip_context } from 'graphics/tooltip';
+import { city_overlay, column_type, NO_COLUMN } from 'widget/city_overlay';
 import BUILDING_SCHOOL = building_type.BUILDING_SCHOOL;
 import BUILDING_ACADEMY = building_type.BUILDING_ACADEMY;
 import BUILDING_LIBRARY = building_type.BUILDING_LIBRARY;
-import { building_type } from 'building/type';;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { direction_type } from 'core/direction';
-import { figure_type } from 'figure/type';
+;
 import FIGURE_SCHOOL_CHILD = figure_type.FIGURE_SCHOOL_CHILD;
 import FIGURE_TEACHER = figure_type.FIGURE_TEACHER;
 import FIGURE_LIBRARIAN = figure_type.FIGURE_LIBRARIAN;
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { column_type } from 'widget/city_overlay';
 import COLUMN_TYPE_ACCESS = column_type.COLUMN_TYPE_ACCESS;
-import { city_overlay } from 'widget/city_overlay';
-import { overlay } from 'game/state';
 import OVERLAY_EDUCATION = overlay.OVERLAY_EDUCATION;
 import OVERLAY_SCHOOL = overlay.OVERLAY_SCHOOL;
 import OVERLAY_LIBRARY = overlay.OVERLAY_LIBRARY;
@@ -114,7 +100,7 @@ function get_tooltip_academy(c: tooltip_context, b: building) {
     }
 }
 export function city_overlay_for_education() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_EDUCATION,
         COLUMN_TYPE_ACCESS,
         show_building_education,
@@ -124,11 +110,11 @@ export function city_overlay_for_education() {
         get_tooltip_education,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_school() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_SCHOOL,
         COLUMN_TYPE_ACCESS,
         show_building_school,
@@ -138,11 +124,11 @@ export function city_overlay_for_school() {
         get_tooltip_school,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_library() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_LIBRARY,
         COLUMN_TYPE_ACCESS,
         show_building_library,
@@ -152,11 +138,11 @@ export function city_overlay_for_library() {
         get_tooltip_library,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_academy() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_ACADEMY,
         COLUMN_TYPE_ACCESS,
         show_building_academy,
@@ -166,6 +152,6 @@ export function city_overlay_for_academy() {
         get_tooltip_academy,
         0,
         0
-    };
+    );
     return overlay;
 }

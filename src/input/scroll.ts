@@ -8,7 +8,8 @@ export const TOUCH_BORDER = 100;
 export const SCROLL_REGULAR_DECAY_TIME = 75;
 export const TILE_X_PIXELS = 60;
 export const TILE_Y_PIXELS = 30;
-;
+export const SCROLL_KEY_MAX_VALUE = 30000;
+
 import { buffer } from 'core/buffer';
 import { view_tile } from 'city/view';
 import { pixel_offset } from 'city/view';
@@ -73,74 +74,25 @@ import { key_modifier_type } from 'input/keys';
 import { system_mouse_set_relative_mode } from 'game/system';
 import { system_mouse_get_relative_state } from 'game/system';
 import { screen_width } from 'graphics/screen';
-import { screen_height } from 'graphics/screen';;;;;;;;;;;;;;;;;;;;;;;;;;;
-import { abs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { abs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { acos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { acos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { asin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { asin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan2 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { atan2 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cos } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cosh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { cosh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { exp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { exp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fabs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fabs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fmod } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fmod } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log10 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { log10 } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { pow } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { pow } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sin } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sinh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sinh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sqrt } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { sqrt } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tan } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tanh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { tanh } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ceil } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ceil } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _chgsign } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _copysign } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { floor } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { floor } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { frexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { frexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _hypot } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ldexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { ldexp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { modf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { modf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fmaxf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fmaxf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fminf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { fminf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';
-import { _hypotf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_math';;
-import { abs } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
-let DIRECTION_X: number[] = new Array().fill({ 0, 1, 1, 1, 0, - 1, -1, -1, 0});
-let DIRECTION_Y: number[] = new Array().fill({- 1, -1, 0, 1, 1, 1, 0, -1, 0});
-let SCROLL_STEP: number[] = new Array(SCROLL_TYPE_MAX).fill({
-    { 60, 44, 30, 20, 16, 12, 10, 8, 6, 4, 2},
-    { 20, 15, 10, 7, 5, 4, 3, 3, 2, 2, 1}
-});
+import { screen_height } from 'graphics/screen';
+let DIRECTION_X: number[] = [0, 1, 1, 1, 0, - 1, -1, -1, 0];
+let DIRECTION_Y: number[] = [- 1, -1, 0, 1, 1, 1, 0, -1, 0];
+let SCROLL_STEP: number[][] = [
+    [60, 44, 30, 20, 16, 12, 10, 8, 6, 4, 2],
+    [20, 15, 10, 7, 5, 4, 3, 3, 2, 2, 1]
+];
 export const enum key_state {
     KEY_STATE_UNPRESSED = 0,
     KEY_STATE_PRESSED = 1,
     KEY_STATE_HELD = 2,
     KEY_STATE_AXIS = 3,
 }
+
+import KEY_STATE_UNPRESSED = key_state.KEY_STATE_UNPRESSED;
+import KEY_STATE_PRESSED = key_state.KEY_STATE_PRESSED;
+import KEY_STATE_HELD = key_state.KEY_STATE_HELD;
+import KEY_STATE_AXIS = key_state.KEY_STATE_AXIS;
+
 export class key {
     public state: key_state = null;
     public value: number = 0;
@@ -249,12 +201,12 @@ function get_arrow_key_value(arrow: key) {
     }
     return 0;
 }
-function get_normalized_arrow_key_value(arrow: key) {
+function get_normalized_arrow_key_value(arrow: key): number {
     let value: number = get_arrow_key_value(arrow);
     if (value == SCROLL_KEY_PRESSED) {
-        return 1.0f;
+        return 1.0;
     } else {
-        return fminf(arrow.value / SCROLL_KEY_MAX_VALUE, 1.0f);
+        return Math.min(arrow.value / SCROLL_KEY_MAX_VALUE, 1.0);
     }
 }
 function is_arrow_active(arrow: key) {
@@ -314,7 +266,7 @@ function should_scroll() {
     let diff: time_millis = current_time - data.last_time;
     let scroll_delay: number = get_scroll_speed_factor();
     let further_delay: number = data.constant_input ?
-        20 - (int)(fmaxf(data.speed.modifier_x, data.speed.modifier_y) * 20) : 0;
+        20 - Math.floor(Math.max(data.speed.modifier_x, data.speed.modifier_y) * 20) : 0;
     if (scroll_delay < 10) {
         if (diff >= 12 * (scroll_delay + further_delay) + 2) {
             data.last_time = current_time;
@@ -374,21 +326,24 @@ function set_scroll_speed_from_drag() {
     let delta_x: number = 0;
     let delta_y: number = 0;
     if (!data.drag.is_touch) {
-        system_mouse_get_relative_state(delta_x, delta_y);
+        let relative_state: pixel_offset = new pixel_offset();
+        system_mouse_get_relative_state(relative_state);
+        delta_x = relative_state.x;
+        delta_y = relative_state.y;
     } else {
         let t: touch = touch_get_earliest();
         delta_x = -t.frame_movement.x;
         delta_y = -t.frame_movement.y;
     }
-    data.drag.delta.x += delta_x
-    data.drag.delta.y += delta_y
+    data.drag.delta.x += delta_x;
+    data.drag.delta.y += delta_y;
     if ((delta_x != 0 || delta_y != 0)) {
         if (!data.drag.is_touch) {
             system_mouse_set_relative_mode(1);
         }
         if (!data.drag.has_started) {
-            data.drag.has_started = abs(data.drag.delta.x) > SCROLL_DRAG_MIN_DELTA
-                || abs(data.drag.delta.y) > SCROLL_DRAG_MIN_DELTA;
+            data.drag.has_started = Math.abs(data.drag.delta.x) > SCROLL_DRAG_MIN_DELTA
+                || Math.abs(data.drag.delta.y) > SCROLL_DRAG_MIN_DELTA;
         }
     }
     if (data.drag.has_started) {
@@ -419,11 +374,12 @@ export function scroll_drag_end() {
     speed_set_target(data.speed.y, 0, SCROLL_DRAG_DECAY_TIME, 1);
     return has_scrolled;
 }
-function set_arrow_input(arrow: key, opposite_arrow: key, modifier: number) {
+function set_arrow_input(arrow: key, opposite_arrow: key, modifier: number): number {
     if (get_arrow_key_value(arrow) && (!opposite_arrow || !is_arrow_active(opposite_arrow))) {
         if (arrow.state == KEY_STATE_AXIS) {
             data.constant_input = 1;
-            * modifier = get_normalized_arrow_key_value(arrow);
+            data.speed.modifier_x = modifier;
+            data.speed.modifier_y = modifier;
         }
         return 1;
     }
@@ -447,37 +403,37 @@ function get_direction(m: mouse) {
     let x: number = m.x;
     let y: number = m.y;
     data.constant_input = 0;
-    data.speed.modifier_x = 0.0f;
-    data.speed.modifier_y = 0.0f;
+    data.speed.modifier_x = 0.0;
+    data.speed.modifier_y = 0.0;
     if (data.limits.active) {
         border = TOUCH_BORDER;
         width = data.limits.width;
         height = data.limits.height;
-        x -= data.limits.x
-        y -= data.limits.y
+        x -= data.limits.x;
+        y -= data.limits.y;
         data.constant_input = 1;
     }
     if (((!m.is_touch && !config_get(CONFIG_UI_DISABLE_MOUSE_EDGE_SCROLLING)) || data.limits.active) &&
         (x >= 0 && x <= width && y >= 0 && y <= height)) {
         if (x < border) {
             left = 1;
-            data.speed.modifier_x = 1 - x / (float) border;
+            data.speed.modifier_x = 1 - x / border;
         } else if (x >= width - border) {
             right = 1;
-            data.speed.modifier_x = 1 - (width - x) / (float) border;
+            data.speed.modifier_x = 1 - (width - x) / border;
         }
         if (y < border) {
             top = 1;
-            data.speed.modifier_y = 1 - y / (float) border;
+            data.speed.modifier_y = 1 - y / border;
         } else if (y >= height - border) {
             bottom = 1;
-            data.speed.modifier_y = 1 - (height - y) / (float) border;
+            data.speed.modifier_y = 1 - (height - y) / border;
         }
     }
-    left |= set_arrow_input(data.arrow_key.left, 0, data.speed.modifier_x)
-    right |= set_arrow_input(data.arrow_key.right, data.arrow_key.left, data.speed.modifier_x)
-    top |= set_arrow_input(data.arrow_key.up, 0, data.speed.modifier_y)
-    bottom |= set_arrow_input(data.arrow_key.down, data.arrow_key.up, data.speed.modifier_y)
+    left = set_arrow_input(data.arrow_key.left, 0, data.speed.modifier_x);
+    right = set_arrow_input(data.arrow_key.right, data.arrow_key.left, data.speed.modifier_x);
+    top = set_arrow_input(data.arrow_key.up, 0, data.speed.modifier_y);
+    bottom = set_arrow_input(data.arrow_key.down, data.arrow_key.up, data.speed.modifier_y);
     if (data.constant_input) {
         if (!data.speed.modifier_x) {
             data.speed.modifier_x = data.speed.modifier_y;
@@ -497,16 +453,15 @@ function get_alignment_delta(direction: speed_direction, camera_max_offset: numb
         case SPEED_DIRECTION_STOPPED:
             calc_direction =
                 (camera_offset >= camera_max_offset / 2) ? SPEED_DIRECTION_POSITIVE : SPEED_DIRECTION_NEGATIVE;
-            direction = SPEED_DIRECTION_POSITIVE;
-            break
+            break;
         case SPEED_DIRECTION_NEGATIVE:
             calc_direction =
                 (camera_offset >= camera_max_offset * 0.666667) ? SPEED_DIRECTION_POSITIVE : SPEED_DIRECTION_NEGATIVE;
-            break
+            break;
         default:
             calc_direction =
-                (camera_offset >= camera_max_offset / 3) ? SPEED_DIRECTION_POSITIVE : SPEED_DIRECTION_NEGATIVE
-            break
+                (camera_offset >= camera_max_offset / 3) ? SPEED_DIRECTION_POSITIVE : SPEED_DIRECTION_NEGATIVE;
+            break;
     }
     return (calc_direction == SPEED_DIRECTION_POSITIVE) ?
         (camera_max_offset - camera_offset) : (camera_offset * -direction);
@@ -559,8 +514,8 @@ function set_scroll_speed_from_input(m: mouse, type: scroll_type) {
             speed_set_target(data.speed.y, max_speed_y, SCROLL_REGULAR_DECAY_TIME, 1);
         }
     } else {
-        speed_set_target(data.speed.x, (int)(max_speed_x * data.speed.modifier_x), SPEED_CHANGE_IMMEDIATE, 1);
-        speed_set_target(data.speed.y, (int)(max_speed_y * data.speed.modifier_y), SPEED_CHANGE_IMMEDIATE, 1);
+        speed_set_target(data.speed.x, Math.floor(max_speed_x * data.speed.modifier_x), SPEED_CHANGE_IMMEDIATE, 1);
+        speed_set_target(data.speed.y, Math.floor(max_speed_y * data.speed.modifier_y), SPEED_CHANGE_IMMEDIATE, 1);
     }
     return 1;
 }

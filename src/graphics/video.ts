@@ -44,6 +44,7 @@ import { sound_device_use_default_music_player } from 'sound/device';
 import { sound_music_update } from 'sound/music';
 import { sound_music_stop } from 'sound/music';
 import { sound_speech_stop } from 'sound/speech';
+import { Ref } from '../../ext/crt';
 class video {
     public width: number = 0;
     public height: number = 0;
@@ -95,8 +96,8 @@ function close_smk() {
         data.s = 0;
     }
 }
-function load_smk(filename: char) {
-    let path: char = dir_get_file(filename, MAY_BE_LOCALIZED);
+function load_smk(filename: string) {
+    let path: string = dir_get_file(filename, MAY_BE_LOCALIZED);
     if (!path) {
         return 0;
     }
@@ -142,7 +143,7 @@ function end_video() {
         sound_music_update(1);
     }
 }
-export function video_start(filename: char) {
+export function video_start(filename: string) {
     data.is_playing = 0;
     data.is_ended = 0;
     if (load_smk(filename)) {
@@ -154,9 +155,9 @@ export function video_start(filename: char) {
         return 0;
     }
 }
-export function video_size(width: number, height: number) {
-    * width = data.video.width;
-    * height = data.video.y_scale == SMACKER_Y_SCALE_NONE ? data.video.height : 2 * data.video.height;
+export function video_size(width: Ref<number>, height: Ref<number>) {
+    width.v = data.video.width;
+    height.v = data.video.y_scale == SMACKER_Y_SCALE_NONE ? data.video.height : 2 * data.video.height;
 }
 export function video_init(restart_music: number) {
     data.video.start_render_millis = time_get_millis();

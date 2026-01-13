@@ -8,6 +8,7 @@ import { city_buildings_has_hippodrome, city_buildings_has_senate } from 'city/b
 import { city_finance_out_of_money } from 'city/finance';
 import { city_view_foreach_tile_in_range, city_view_get_selected_tile_pixels, city_view_orientation } from 'city/view';
 import { config_get, config_key } from 'core/config';
+import { direction_type } from 'core/direction';
 import { image, image_get, image_group } from 'core/image';
 import { group_terrain } from 'core/image_group';
 import { formation_get_num_legions_cached, MAX_LEGIONS } from 'figure/formation';
@@ -30,7 +31,6 @@ import { map_water_determine_orientation_size2, map_water_determine_orientation_
 import { scenario_climate, scenario_property_climate } from 'scenario/property';
 import { city_draw_bridge_tile } from 'widget/city_bridge';
 import { Ref } from '../../ext/crt';
-import { direction_type } from 'core/direction';
 const BUILDING_NONE = building_type.BUILDING_NONE;
 const BUILDING_ROAD = building_type.BUILDING_ROAD;
 const BUILDING_DRAGGABLE_RESERVOIR = building_type.BUILDING_DRAGGABLE_RESERVOIR;
@@ -376,17 +376,17 @@ function draw_draggable_reservoir(tile: map_tile, x: number, y: number) {
     let blocked: boolean = false;
     if (building_construction_in_progress()) {
         if (!building_construction_cost()) {
-            blocked = 1;
+            blocked = true;
         }
     } else {
         if (map_building_is_reservoir(map_x, map_y)) {
-            blocked = 0;
+            blocked = false;
         } else if (!map_tiles_are_clear(map_x, map_y, 3, TERRAIN_ALL)) {
-            blocked = 1;
+            blocked = true;
         }
     }
     if (city_finance_out_of_money()) {
-        blocked = 1;
+        blocked = true;
     }
     let draw_later: boolean = false;
     let x_start: Ref<number> = new Ref(0);
@@ -664,12 +664,12 @@ function draw_hippodrome(tile: map_tile, x: number, y: number) {
     let grid_offset1: number = tile.grid_offset;
     let grid_offset2: number = grid_offset1 + map_grid_delta(5, 0);
     let grid_offset3: number = grid_offset1 + map_grid_delta(10, 0);
-    let blocked_tiles1: number[] = new Array(num_tiles).fill(0);
-    let blocked_tiles2: number[] = new Array(num_tiles).fill(0);
-    let blocked_tiles3: number[] = new Array(num_tiles).fill(0);
-    blocked += is_blocked_for_building(grid_offset1, num_tiles, blocked_tiles1);
-    blocked += is_blocked_for_building(grid_offset2, num_tiles, blocked_tiles2);
-    blocked += is_blocked_for_building(grid_offset3, num_tiles, blocked_tiles3);
+    let blocked_tiles1: boolean[] = new Array(num_tiles).fill(false);
+    let blocked_tiles2: boolean[] = new Array(num_tiles).fill(false);
+    let blocked_tiles3: boolean[] = new Array(num_tiles).fill(false);
+    blocked = blocked || is_blocked_for_building(grid_offset1, num_tiles, blocked_tiles1);
+    blocked = blocked || is_blocked_for_building(grid_offset2, num_tiles, blocked_tiles2);
+    blocked = blocked || is_blocked_for_building(grid_offset3, num_tiles, blocked_tiles3);
     let x_part1: number = x;
     let y_part1: number = y;
     let x_part2: number = x_part1 + HIPPODROME_X_VIEW_OFFSETS[orientation_index];

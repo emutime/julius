@@ -136,7 +136,7 @@ export class smacker_t {
         args.length >= 19 && (this.current_frame = args[18]);
     }
 }
-let BIT_MASKS: number[] = new Array().fill({
+let BIT_MASKS: number[] = [
     0x00,
     0x01,
     0x03,
@@ -146,8 +146,8 @@ let BIT_MASKS: number[] = new Array().fill({
     0x3f,
     0x7f,
     0xff,
-});
-let PALETTE_MAP: number[] = new Array(64).fill({
+];
+let PALETTE_MAP: number[] = [
     0x00, 0x04, 0x08, 0x0C, 0x10, 0x14, 0x18, 0x1C,
     0x20, 0x24, 0x28, 0x2C, 0x30, 0x34, 0x38, 0x3C,
     0x41, 0x45, 0x49, 0x4D, 0x51, 0x55, 0x59, 0x5D,
@@ -156,8 +156,8 @@ let PALETTE_MAP: number[] = new Array(64).fill({
     0xA2, 0xA6, 0xAA, 0xAE, 0xB2, 0xB6, 0xBA, 0xBE,
     0xC3, 0xC7, 0xCB, 0xCF, 0xD3, 0xD7, 0xDB, 0xDF,
     0xE3, 0xE7, 0xEB, 0xEF, 0xF3, 0xF7, 0xFB, 0xFF
-});
-let CHAIN_SIZE: number[] = new Array(64).fill({
+];
+let CHAIN_SIZE: number[] = [
     1, 2, 3, 4, 5, 6, 7, 8,
     9, 10, 11, 12, 13, 14, 15, 16,
     17, 18, 19, 20, 21, 22, 23, 24,
@@ -166,7 +166,7 @@ let CHAIN_SIZE: number[] = new Array(64).fill({
     41, 42, 43, 44, 45, 46, 47, 48,
     49, 50, 51, 52, 53, 54, 55, 56,
     57, 58, 59, 128, 256, 512, 1024, 2048
-});
+];
 function clear_malloc(s: number): any {
     // Stub: should allocate and zero-initialize memory
     return null;
@@ -650,8 +650,8 @@ function decode_palette(s: smacker, data: number, length: number) {
     let color_index: number = 0;
     while (index < length && color_index < MAX_PALETTE) {
         if (data[index] & 0x80) {
-                // Copy from same position in previous palette
-                let num_entries: number = 1 + (data[index] & 0x7f);
+            // Copy from same position in previous palette
+            let num_entries: number = 1 + (data[index] & 0x7f);
             if (num_entries + color_index > MAX_PALETTE) {
                 log_error("SMK: invalid palette data", 0, 0);
                 return 0;
@@ -660,9 +660,9 @@ function decode_palette(s: smacker, data: number, length: number) {
             color_index += num_entries;
             index++;
         } else if (data[index] & 0x40) {
-                // Copy from 'offset' position in previous palette
-                let num_entries: number = 1 + (data[index] & 0x3f);
-                let offset: number = data[index + 1];
+            // Copy from 'offset' position in previous palette
+            let num_entries: number = 1 + (data[index] & 0x3f);
+            let offset: number = data[index + 1];
             if (num_entries + color_index > MAX_PALETTE || num_entries + offset > MAX_PALETTE) {
                 log_error("SMK: invalid palette data", 0, 0);
                 return 0;

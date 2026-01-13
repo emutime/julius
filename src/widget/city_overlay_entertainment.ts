@@ -1,5 +1,11 @@
-import { NO_COLUMN } from 'widget/city_overlay';
+import { building, building_get } from 'building/building';
 import { building_type } from 'building/type';
+import { figure_action } from 'figure/action';
+import { figure } from 'figure/figure';
+import { figure_type } from 'figure/type';
+import { overlay } from 'game/state';
+import { tooltip_context } from 'graphics/tooltip';
+import { city_overlay, column_type, NO_COLUMN } from 'widget/city_overlay';
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
 import BUILDING_THEATER = building_type.BUILDING_THEATER;
 import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;
@@ -8,35 +14,14 @@ import BUILDING_GLADIATOR_SCHOOL = building_type.BUILDING_GLADIATOR_SCHOOL;
 import BUILDING_LION_HOUSE = building_type.BUILDING_LION_HOUSE;
 import BUILDING_ACTOR_COLONY = building_type.BUILDING_ACTOR_COLONY;
 import BUILDING_CHARIOT_MAKER = building_type.BUILDING_CHARIOT_MAKER;
-import { building_type } from 'building/type';;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
+;
 import FIGURE_ACTION_94_ENTERTAINER_ROAMING = figure_action.FIGURE_ACTION_94_ENTERTAINER_ROAMING;
 import FIGURE_ACTION_95_ENTERTAINER_RETURNING = figure_action.FIGURE_ACTION_95_ENTERTAINER_RETURNING;
-import { figure_type } from 'figure/type';
 import FIGURE_ACTOR = figure_type.FIGURE_ACTOR;
 import FIGURE_GLADIATOR = figure_type.FIGURE_GLADIATOR;
 import FIGURE_LION_TAMER = figure_type.FIGURE_LION_TAMER;
 import FIGURE_CHARIOTEER = figure_type.FIGURE_CHARIOTEER;
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { column_type } from 'widget/city_overlay';
 import COLUMN_TYPE_ACCESS = column_type.COLUMN_TYPE_ACCESS;
-import { city_overlay } from 'widget/city_overlay';
-import { overlay } from 'game/state';
 import OVERLAY_ENTERTAINMENT = overlay.OVERLAY_ENTERTAINMENT;
 import OVERLAY_THEATER = overlay.OVERLAY_THEATER;
 import OVERLAY_AMPHITHEATER = overlay.OVERLAY_AMPHITHEATER;
@@ -183,7 +168,7 @@ function get_tooltip_hippodrome(c: tooltip_context, b: building) {
     }
 }
 export function city_overlay_for_entertainment() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_ENTERTAINMENT,
         COLUMN_TYPE_ACCESS,
         show_building_entertainment,
@@ -193,11 +178,11 @@ export function city_overlay_for_entertainment() {
         get_tooltip_entertainment,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_theater() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_THEATER,
         COLUMN_TYPE_ACCESS,
         show_building_theater,
@@ -207,11 +192,11 @@ export function city_overlay_for_theater() {
         get_tooltip_theater,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_amphitheater() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_AMPHITHEATER,
         COLUMN_TYPE_ACCESS,
         show_building_amphitheater,
@@ -221,11 +206,11 @@ export function city_overlay_for_amphitheater() {
         get_tooltip_amphitheater,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_colosseum() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_COLOSSEUM,
         COLUMN_TYPE_ACCESS,
         show_building_colosseum,
@@ -235,11 +220,11 @@ export function city_overlay_for_colosseum() {
         get_tooltip_colosseum,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_hippodrome() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_HIPPODROME,
         COLUMN_TYPE_ACCESS,
         show_building_hippodrome,
@@ -249,6 +234,6 @@ export function city_overlay_for_hippodrome() {
         get_tooltip_hippodrome,
         0,
         0
-    };
+    );
     return overlay;
 }

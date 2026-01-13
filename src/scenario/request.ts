@@ -1,5 +1,23 @@
-import { MAX_REQUESTS } from 'scenario/data';
-import { scenario_request_state } from 'scenario/request';
+import { building_warehouses_remove_resource } from 'building/warehouse';
+import { city_finance_process_sundry } from 'city/finance';
+import { city_message_post, city_message_type } from 'city/message';
+import { city_population_remove_for_troop_request } from 'city/population';
+import { city_ratings_change_favor, city_ratings_reduce_favor_missed_request } from 'city/ratings';
+import { city_resource_count } from 'city/resource';
+import { random_byte, random_generate_next } from 'core/random';
+import { resource_type } from 'game/resource';
+import { game_time_month, game_time_year } from 'game/time';
+import { tutorial_adjust_request_year } from 'game/tutorial';
+import { MAX_REQUESTS, scenario_t } from 'scenario/data';
+import { Ref } from '../../ext/crt';
+export enum scenario_request_state {
+    REQUEST_STATE_NORMAL = 0,
+    REQUEST_STATE_OVERDUE = 1,
+    REQUEST_STATE_DISPATCHED = 2,
+    REQUEST_STATE_DISPATCHED_LATE = 3,
+    REQUEST_STATE_IGNORED = 4,
+    REQUEST_STATE_RECEIVED = 5
+};
 import REQUEST_STATE_NORMAL = scenario_request_state.REQUEST_STATE_NORMAL;
 import REQUEST_STATE_OVERDUE = scenario_request_state.REQUEST_STATE_OVERDUE;
 import REQUEST_STATE_DISPATCHED = scenario_request_state.REQUEST_STATE_DISPATCHED;
@@ -20,16 +38,6 @@ export class scenario_request {
         args.length >= 5 && (this.months_to_comply = args[4]);
     }
 }
-import { building_type } from 'building/type';;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { map_point } from 'map/point';
-import { building_warehouses_remove_resource } from 'building/warehouse';
-import { city_finance_process_sundry } from 'city/finance';
-import { finance_overview } from 'city/finance';
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
 import MESSAGE_CAESAR_REQUESTS_GOODS = city_message_type.MESSAGE_CAESAR_REQUESTS_GOODS;
 import MESSAGE_CAESAR_REQUESTS_MONEY = city_message_type.MESSAGE_CAESAR_REQUESTS_MONEY;
 import MESSAGE_CAESAR_REQUESTS_ARMY = city_message_type.MESSAGE_CAESAR_REQUESTS_ARMY;
@@ -39,35 +47,10 @@ import MESSAGE_REQUEST_REFUSED = city_message_type.MESSAGE_REQUEST_REFUSED;
 import MESSAGE_REQUEST_REFUSED_OVERDUE = city_message_type.MESSAGE_REQUEST_REFUSED_OVERDUE;
 import MESSAGE_REQUEST_RECEIVED_LATE = city_message_type.MESSAGE_REQUEST_RECEIVED_LATE;
 import MESSAGE_REQUEST_CAN_COMPLY = city_message_type.MESSAGE_REQUEST_CAN_COMPLY;
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_post } from 'city/message';
-import { city_population_remove_for_troop_request } from 'city/population';
-import { selected_rating } from 'city/ratings';
-import { city_ratings_change_favor } from 'city/ratings';
-import { city_ratings_reduce_favor_missed_request } from 'city/ratings';
-import { resource_trade_status } from 'city/constants';
-import { resource_type } from 'game/resource';
 import RESOURCE_WEAPONS = resource_type.RESOURCE_WEAPONS;
 import RESOURCE_DENARII = resource_type.RESOURCE_DENARII;
 import RESOURCE_TROOPS = resource_type.RESOURCE_TROOPS;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_list } from 'city/resource';
-import { city_resource_count } from 'city/resource';
-import { random_generate_next } from 'core/random';
-import { random_byte } from 'core/random';
-import { game_time_year } from 'game/time';
-import { game_time_month } from 'game/time';
-import { tutorial_availability } from 'game/tutorial';
-import { tutorial_build_buttons } from 'game/tutorial';
-import { tutorial_adjust_request_year } from 'game/tutorial';
-import { request_t } from 'scenario/data';
-import { invasion_t } from 'scenario/data';
-import { price_change_t } from 'scenario/data';
-import { demand_change_t } from 'scenario/data';
 export let scenario: scenario_t = new scenario_t();
 export function scenario_request_init() {
     for (let i: number = 0; i < MAX_REQUESTS; i++) {
@@ -81,7 +64,7 @@ export function scenario_request_init() {
 export function scenario_request_process() {
     for (let i: number = 0; i < MAX_REQUESTS; i++) {
         if (!scenario.requests[i].resource || scenario.requests[i].state > REQUEST_STATE_DISPATCHED_LATE) {
-            continue
+            continue;
         }
         let state: number = scenario.requests[i].state;
         if (state == REQUEST_STATE_DISPATCHED || state == REQUEST_STATE_DISPATCHED_LATE) {
@@ -123,11 +106,11 @@ export function scenario_request_process() {
                     city_message_post(true, MESSAGE_REQUEST_CAN_COMPLY, i, 0);
                 }
             } else {
-                let year: number = scenario.start_year;
+                let year = new Ref<number>(scenario.start_year);
                 if (!tutorial_adjust_request_year(year)) {
                     return;
                 }
-                if (game_time_year() == year + scenario.requests[i].year &&
+                if (game_time_year() == year.v + scenario.requests[i].year &&
                     game_time_month() == scenario.requests[i].month) {
                     scenario.requests[i].visible = 1;
                     if (city_resource_count(scenario.requests[i].resource) >= scenario.requests[i].amount) {
@@ -163,8 +146,8 @@ export function scenario_request_dispatch(id: number) {
         building_warehouses_remove_resource(scenario.requests[id].resource, amount);
     }
 }
-export function scenario_request_get(id: number) {
-    let request: scenario_request;
+export function scenario_request_get(id: number): scenario_request {
+    let request: scenario_request = new scenario_request();
     request.id = id;
     request.amount = scenario.requests[id].amount;
     request.resource = scenario.requests[id].resource;
@@ -172,7 +155,7 @@ export function scenario_request_get(id: number) {
     request.months_to_comply = scenario.requests[id].months_to_comply;
     return request;
 }
-export function scenario_request_foreach_visible(start_index: number, callback: void () {
+export function scenario_request_foreach_visible(start_index: number, callback: (index: number, request: scenario_request) => void): number {
     let index: number = start_index;
     for (let i: number = 0; i < MAX_REQUESTS; i++) {
         if (scenario.requests[i].resource && scenario.requests[i].visible) {
@@ -182,7 +165,7 @@ export function scenario_request_foreach_visible(start_index: number, callback: 
     }
     return index;
 }
-export function scenario_request_get_visible(index: number) {
+export function scenario_request_get_visible(index: number): scenario_request {
     for (let i: number = 0; i < MAX_REQUESTS; i++) {
         if (scenario.requests[i].resource && scenario.requests[i].visible &&
             scenario.requests[i].state <= 1) {
@@ -192,5 +175,5 @@ export function scenario_request_get_visible(index: number) {
             index--;
         }
     }
-    return 0;
+    return new scenario_request();
 }

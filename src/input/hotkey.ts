@@ -1,12 +1,20 @@
 
-;
-import { key_type } from 'input/keys';
+import { building_type } from 'building/type';
+import { advisor_type } from 'city/constants';
+import { hotkey_action, hotkey_mapping } from 'core/hotkey_config';
+import { setting_fullscreen } from 'game/settings';
+import { overlay } from 'game/state';
+import { system_center, system_exit, system_resize, system_set_fullscreen } from 'game/system';
+import { graphics_save_screenshot } from 'graphics/screenshot';
+import { video_stop } from 'graphics/video';
+import { window_id, window_is } from 'graphics/window';
+import { key_modifier_type, key_type } from 'input/keys';
+import { scroll_arrow_down, scroll_arrow_left, scroll_arrow_right, scroll_arrow_up } from 'input/scroll';
+import { window_hotkey_editor_key_pressed, window_hotkey_editor_key_released } from 'window/hotkey_editor';
+import { popup_dialog_type, window_popup_dialog_show } from 'window/popup_dialog';
 import KEY_TYPE_NONE = key_type.KEY_TYPE_NONE;
 import KEY_TYPE_ENTER = key_type.KEY_TYPE_ENTER;
 import KEY_TYPE_ESCAPE = key_type.KEY_TYPE_ESCAPE;
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
 import HOTKEY_ARROW_UP = hotkey_action.HOTKEY_ARROW_UP;
 import HOTKEY_ARROW_DOWN = hotkey_action.HOTKEY_ARROW_DOWN;
 import HOTKEY_ARROW_LEFT = hotkey_action.HOTKEY_ARROW_LEFT;
@@ -70,8 +78,6 @@ import HOTKEY_RESIZE_TO_1024 = hotkey_action.HOTKEY_RESIZE_TO_1024;
 import HOTKEY_SAVE_SCREENSHOT = hotkey_action.HOTKEY_SAVE_SCREENSHOT;
 import HOTKEY_SAVE_CITY_SCREENSHOT = hotkey_action.HOTKEY_SAVE_CITY_SCREENSHOT;
 import HOTKEY_BUILD_CLONE = hotkey_action.HOTKEY_BUILD_CLONE;
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
 export class hotkeys {
     public enter_pressed: number = 0;
     public escape_pressed: number = 0;
@@ -112,7 +118,6 @@ export class hotkeys {
         args.length >= 18 && (this.clone_building = args[17]);
     }
 }
-import { building_type } from 'building/type';
 import BUILDING_ROAD = building_type.BUILDING_ROAD;
 import BUILDING_WALL = building_type.BUILDING_WALL;
 import BUILDING_DRAGGABLE_RESERVOIR = building_type.BUILDING_DRAGGABLE_RESERVOIR;
@@ -129,7 +134,6 @@ import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
 import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
 import BUILDING_ENGINEERS_POST = building_type.BUILDING_ENGINEERS_POST;
 import BUILDING_FOUNTAIN = building_type.BUILDING_FOUNTAIN;
-import { advisor_type } from 'city/constants';
 import ADVISOR_LABOR = advisor_type.ADVISOR_LABOR;
 import ADVISOR_MILITARY = advisor_type.ADVISOR_MILITARY;
 import ADVISOR_IMPERIAL = advisor_type.ADVISOR_IMPERIAL;
@@ -142,71 +146,13 @@ import ADVISOR_ENTERTAINMENT = advisor_type.ADVISOR_ENTERTAINMENT;
 import ADVISOR_RELIGION = advisor_type.ADVISOR_RELIGION;
 import ADVISOR_FINANCIAL = advisor_type.ADVISOR_FINANCIAL;
 import ADVISOR_CHIEF = advisor_type.ADVISOR_CHIEF;
-import { set_tooltips } from 'game/settings';
-import { set_difficulty } from 'game/settings';
-import { set_sound_type } from 'game/settings';
-import { set_sound } from 'game/settings';
-import { setting_fullscreen } from 'game/settings';
-import { overlay } from 'game/state';
 import OVERLAY_WATER = overlay.OVERLAY_WATER;
 import OVERLAY_FIRE = overlay.OVERLAY_FIRE;
 import OVERLAY_DAMAGE = overlay.OVERLAY_DAMAGE;
 import OVERLAY_CRIME = overlay.OVERLAY_CRIME;
 import OVERLAY_PROBLEMS = overlay.OVERLAY_PROBLEMS;
-import { color_t } from 'graphics/color';
-import { system_resize } from 'game/system';
-import { system_center } from 'game/system';
-import { system_set_fullscreen } from 'game/system';
-import { system_exit } from 'game/system';
-import { graphics_save_screenshot } from 'graphics/screenshot';
-import { video_stop } from 'graphics/video';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { window_id } from 'graphics/window';
 import WINDOW_HOTKEY_EDITOR = window_id.WINDOW_HOTKEY_EDITOR;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_is } from 'graphics/window';
-import { buffer } from 'core/buffer';
-import { view_tile } from 'city/view';
-import { pixel_offset } from 'city/view';
-import { map_callback } from 'city/view';
-import { scroll_type } from 'input/scroll';
-import { scroll_arrow_left } from 'input/scroll';
-import { scroll_arrow_right } from 'input/scroll';
-import { scroll_arrow_up } from 'input/scroll';
-import { scroll_arrow_down } from 'input/scroll';
-import { window_hotkey_editor_key_pressed } from 'window/hotkey_editor';
-import { window_hotkey_editor_key_released } from 'window/hotkey_editor';
-import { popup_dialog_type } from 'window/popup_dialog';
 import POPUP_DIALOG_QUIT = popup_dialog_type.POPUP_DIALOG_QUIT;
-import { popup_dialog_type } from 'window/popup_dialog';
-import { window_popup_dialog_show } from 'window/popup_dialog';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stddef';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 export class hotkey_definition {
     public action: number = 0;
     public value: number = 0;
@@ -222,7 +168,7 @@ export class hotkey_definition {
     }
 }
 export class arrow_definition {
-    public action: void ( = null;
+    public action: (value: number) => void = null;
     public key: key_type = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.action = args[0]);
@@ -246,9 +192,9 @@ export class global_hotkeys {
 export class unnamed39_8 {
     public global_hotkey_state: global_hotkeys = null;
     public hotkey_state: hotkeys = null;
-    public definitions: hotkey_definition = null;
+    public definitions: hotkey_definition[] = [];
     public num_definitions: number = 0;
-    public arrows: arrow_definition = null;
+    public arrows: arrow_definition[] = [];
     public num_arrows: number = 0;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.global_hotkey_state = args[0]);
@@ -517,7 +463,7 @@ function add_arrow(mapping: hotkey_mapping) {
             arrow.action = scroll_arrow_right;
             break
         default:
-            arrow.action = 0
+            arrow.action = null;
             break
     }
     if (arrow.action) {
@@ -525,15 +471,19 @@ function add_arrow(mapping: hotkey_mapping) {
     }
 }
 function allocate_mapping_memory(total_definitions: number, total_arrows: number) {
-    free(data.definitions);
-    free(data.arrows);
+    data.definitions = [];
+    data.arrows = [];
     data.num_definitions = 0;
     data.num_arrows = 0;
-    data.definitions = malloc(sizeof(hotkey_definition) * total_definitions);
-    data.arrows = malloc(sizeof(arrow_definition) * total_arrows);
+    for (let i = 0; i < total_definitions; i++) {
+        data.definitions.push(new hotkey_definition());
+    }
+    for (let i = 0; i < total_arrows; i++) {
+        data.arrows.push(new arrow_definition());
+    }
     if (!data.definitions || !data.arrows) {
-        free(data.definitions);
-        free(data.arrows);
+        data.definitions = [];
+        data.arrows = [];
         return 0;
     }
     return 1;
@@ -578,22 +528,47 @@ export function hotkey_state() {
     return data.hotkey_state;
 }
 export function hotkey_reset_state() {
-    memset(data.hotkey_state, 0);
-    memset(data.global_hotkey_state, 0);
+    if (data.hotkey_state) {
+        data.hotkey_state.enter_pressed = 0;
+        data.hotkey_state.escape_pressed = 0;
+        data.hotkey_state.cycle_legion = 0;
+        data.hotkey_state.decrease_game_speed = 0;
+        data.hotkey_state.increase_game_speed = 0;
+        data.hotkey_state.rotate_map_left = 0;
+        data.hotkey_state.rotate_map_right = 0;
+        data.hotkey_state.show_advisor = 0;
+        data.hotkey_state.show_overlay = 0;
+        data.hotkey_state.toggle_overlay = 0;
+        data.hotkey_state.toggle_pause = 0;
+        data.hotkey_state.toggle_editor_battle_info = 0;
+        data.hotkey_state.set_bookmark = 0;
+        data.hotkey_state.go_to_bookmark = 0;
+        data.hotkey_state.load_file = 0;
+        data.hotkey_state.save_file = 0;
+        data.hotkey_state.building = 0;
+        data.hotkey_state.clone_building = 0;
+    }
+    if (data.global_hotkey_state) {
+        data.global_hotkey_state.center_screen = 0;
+        data.global_hotkey_state.toggle_fullscreen = 0;
+        data.global_hotkey_state.resize_to = 0;
+        data.global_hotkey_state.save_screenshot = 0;
+        data.global_hotkey_state.save_city_screenshot = 0;
+    }
 }
 export function hotkey_key_pressed(key: key_type, modifiers: key_modifier_type, repeat: number) {
     if (window_is(WINDOW_HOTKEY_EDITOR)) {
         window_hotkey_editor_key_pressed(key, modifiers);
         return;
     }
-    if (key == KEY_TYPE_NONE) {
+    if (key == 0) {
         return;
     }
     let found_action: number = 0;
     for (let i: number = 0; i < data.num_definitions; i++) {
         let def: hotkey_definition = data.definitions[i];
         if (def.key == key && def.modifiers == modifiers && (!repeat || def.repeatable)) {
-            * (def.action) = def.value;
+            def.action = def.value;
             found_action = 1;
         }
     }
@@ -659,7 +634,7 @@ export function hotkey_handle_global_keys() {
     }
 }
 export function hotkey_set_value_for_action(action: hotkey_action, value: number) {
-    let def: hotkey_definition;
+    let def: hotkey_definition = new hotkey_definition();
     set_definition_for_action(action, def);
-    * (def.action) = value ? def.value : 0;
+    def.action = value ? def.value : 0;
 }

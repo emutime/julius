@@ -1,8 +1,16 @@
-import { COLOR_INSET_DARK } from 'graphics/color';
-import { COLOR_INSET_LIGHT } from 'graphics/color';
-;
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
+import { system_create_framebuffer } from 'game/system';
+import { COLOR_INSET_DARK, COLOR_INSET_LIGHT, color_t } from 'graphics/color';
+import { screen_dialog_offset_x, screen_dialog_offset_y } from 'graphics/screen';
+import { memcpy, memset } from '../../ext/crt';
+export const enum clip_code {
+    CLIP_NONE,
+    CLIP_LEFT,
+    CLIP_RIGHT,
+    CLIP_TOP,
+    CLIP_BOTTOM,
+    CLIP_BOTH,
+    CLIP_INVISIBLE
+};
 import CLIP_NONE = clip_code.CLIP_NONE;
 import CLIP_LEFT = clip_code.CLIP_LEFT;
 import CLIP_RIGHT = clip_code.CLIP_RIGHT;
@@ -32,24 +40,6 @@ export class clip_info {
         args.length >= 9 && (this.is_visible = args[8]);
     }
 }
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { system_create_framebuffer } from 'game/system';
-import { screen_dialog_offset_x } from 'graphics/screen';
-import { screen_dialog_offset_y } from 'graphics/screen';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stddef';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 export class unnamed9_8 {
     public pixels: color_t = null;
     public width: number = 0;
@@ -85,7 +75,7 @@ export class unnamed22_8 {
 let translation: unnamed22_8 = new unnamed22_8();
 let clip: clip_info;
 export function graphics_init_canvas(width: number, height: number) {
-    canvas.pixels = system_create_framebuffer(width, height);
+    canvas.pixels = system_create_framebuffer(width, height).v;
     memset(canvas.pixels, 0);
     canvas.width = width;
     canvas.height = height;
@@ -206,8 +196,7 @@ export function graphics_save_to_buffer(x: number, y: number, width: number, hei
     let min_dy: number = current_clip.clipped_pixels_top;
     let max_dy: number = height - current_clip.clipped_pixels_bottom;
     for (let dy: number = min_dy; dy < max_dy; dy++) {
-        memcpy(buffer[dy * width], graphics_get_pixel(min_x, y + dy),
-            sizeof(color_t) * current_clip.visible_pixels_x);
+        memcpy(buffer[dy * width], graphics_get_pixel(min_x, y + dy), current_clip.visible_pixels_x);
     }
 }
 export function graphics_draw_from_buffer(x: number, y: number, width: number, height: number, buffer: color_t) {
@@ -219,8 +208,7 @@ export function graphics_draw_from_buffer(x: number, y: number, width: number, h
     let min_dy: number = current_clip.clipped_pixels_top;
     let max_dy: number = height - current_clip.clipped_pixels_bottom;
     for (let dy: number = min_dy; dy < max_dy; dy++) {
-        memcpy(graphics_get_pixel(min_x, y + dy), buffer[dy * width],
-            sizeof(color_t) * current_clip.visible_pixels_x);
+        memcpy(graphics_get_pixel(min_x, y + dy), buffer[dy * width], current_clip.visible_pixels_x);
     }
 }
 export function graphics_get_pixel(x: number, y: number) {
@@ -240,7 +228,7 @@ export function graphics_draw_vertical_line(x: number, y1: number, y2: number, c
     let pixel: color_t = graphics_get_pixel(x, y_min);
     let end_pixel: color_t = pixel + ((y_max - y_min) * canvas.width);
     while (pixel <= end_pixel) {
-            * pixel = color;
+        pixel = color;
         pixel += canvas.width;
     }
 }
@@ -255,7 +243,7 @@ export function graphics_draw_horizontal_line(x1: number, x2: number, y: number,
     let pixel: color_t = graphics_get_pixel(x_min, y);
     let end_pixel: color_t = pixel + (x_max - x_min);
     while (pixel <= end_pixel) {
-            * pixel = color;
+        pixel = color;
         ++pixel;
     }
 }
@@ -284,12 +272,12 @@ export function graphics_shade_rect(x: number, y: number, width: number, height:
     for (let yy: number = y + cur_clip.clipped_pixels_top; yy < y + height - cur_clip.clipped_pixels_bottom; yy++) {
         for (let xx: number = x + cur_clip.clipped_pixels_left; xx < x + width - cur_clip.clipped_pixels_right; xx++) {
             let pixel: color_t = graphics_get_pixel(xx, yy);
-            let r: number = (* pixel & 0xff0000) >> 16;
-            let g: number = (* pixel & 0xff00) >> 8;
-            let b: number = (* pixel & 0xff);
+            let r: number = (pixel & 0xff0000) >> 16;
+            let g: number = (pixel & 0xff00) >> 8;
+            let b: number = (pixel & 0xff);
             let grey: number = (r + g + b) / 3 >> darkness;
-            let new_pixel: color_t = (color_t)(grey << 16 | grey << 8 | grey);
-            * pixel = new_pixel;
+            let new_pixel: color_t = (grey << 16 | grey << 8 | grey);
+            pixel = new_pixel;
         }
     }
 }

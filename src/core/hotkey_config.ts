@@ -1,6 +1,10 @@
 export const MAX_MAPPINGS = 2;
 export const MAX_LINE = 100;
-import { key_type } from 'input/keys';
+import { file_close, file_open } from 'core/file';
+import { log_error, log_info } from 'core/log';
+import { system_keyboard_key_for_symbol } from 'game/system';
+import { hotkey_install_mapping } from 'input/hotkey';
+import { key_modifier_type, key_type } from 'input/keys';
 import KEY_TYPE_NONE = key_type.KEY_TYPE_NONE;
 import KEY_TYPE_A = key_type.KEY_TYPE_A;
 import KEY_TYPE_C = key_type.KEY_TYPE_C;
@@ -56,15 +60,75 @@ import KEY_TYPE_KP_7 = key_type.KEY_TYPE_KP_7;
 import KEY_TYPE_KP_8 = key_type.KEY_TYPE_KP_8;
 import KEY_TYPE_KP_9 = key_type.KEY_TYPE_KP_9;
 import KEY_TYPE_KP_0 = key_type.KEY_TYPE_KP_0;
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
 import KEY_MOD_NONE = key_modifier_type.KEY_MOD_NONE;
 import KEY_MOD_CTRL = key_modifier_type.KEY_MOD_CTRL;
 import KEY_MOD_ALT = key_modifier_type.KEY_MOD_ALT;
-import { key_modifier_type } from 'input/keys';
-import { key_combination_name } from 'input/keys';
-import { key_combination_from_name } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
+export const enum hotkey_action {
+    HOTKEY_ARROW_UP,
+    HOTKEY_ARROW_DOWN,
+    HOTKEY_ARROW_LEFT,
+    HOTKEY_ARROW_RIGHT,
+    HOTKEY_TOGGLE_PAUSE,
+    HOTKEY_TOGGLE_OVERLAY,
+    HOTKEY_CYCLE_LEGION,
+    HOTKEY_INCREASE_GAME_SPEED,
+    HOTKEY_DECREASE_GAME_SPEED,
+    HOTKEY_ROTATE_MAP_LEFT,
+    HOTKEY_ROTATE_MAP_RIGHT,
+    HOTKEY_BUILD_CLEAR_LAND,
+    HOTKEY_BUILD_VACANT_HOUSE,
+    HOTKEY_BUILD_ROAD,
+    HOTKEY_BUILD_PLAZA,
+    HOTKEY_BUILD_GARDENS,
+    HOTKEY_BUILD_PREFECTURE,
+    HOTKEY_BUILD_ENGINEERS_POST,
+    HOTKEY_BUILD_DOCTOR,
+    HOTKEY_BUILD_GRANARY,
+    HOTKEY_BUILD_WAREHOUSE,
+    HOTKEY_BUILD_MARKET,
+    HOTKEY_BUILD_WALL,
+    HOTKEY_BUILD_GATEHOUSE,
+    HOTKEY_BUILD_RESERVOIR,
+    HOTKEY_BUILD_AQUEDUCT,
+    HOTKEY_BUILD_FOUNTAIN,
+    HOTKEY_SHOW_ADVISOR_LABOR,
+    HOTKEY_SHOW_ADVISOR_MILITARY,
+    HOTKEY_SHOW_ADVISOR_IMPERIAL,
+    HOTKEY_SHOW_ADVISOR_RATINGS,
+    HOTKEY_SHOW_ADVISOR_TRADE,
+    HOTKEY_SHOW_ADVISOR_POPULATION,
+    HOTKEY_SHOW_ADVISOR_HEALTH,
+    HOTKEY_SHOW_ADVISOR_EDUCATION,
+    HOTKEY_SHOW_ADVISOR_ENTERTAINMENT,
+    HOTKEY_SHOW_ADVISOR_RELIGION,
+    HOTKEY_SHOW_ADVISOR_FINANCIAL,
+    HOTKEY_SHOW_ADVISOR_CHIEF,
+    HOTKEY_SHOW_OVERLAY_WATER,
+    HOTKEY_SHOW_OVERLAY_FIRE,
+    HOTKEY_SHOW_OVERLAY_DAMAGE,
+    HOTKEY_SHOW_OVERLAY_CRIME,
+    HOTKEY_SHOW_OVERLAY_PROBLEMS,
+    HOTKEY_EDITOR_TOGGLE_BATTLE_INFO,
+    HOTKEY_LOAD_FILE,
+    HOTKEY_SAVE_FILE,
+    HOTKEY_GO_TO_BOOKMARK_1,
+    HOTKEY_GO_TO_BOOKMARK_2,
+    HOTKEY_GO_TO_BOOKMARK_3,
+    HOTKEY_GO_TO_BOOKMARK_4,
+    HOTKEY_SET_BOOKMARK_1,
+    HOTKEY_SET_BOOKMARK_2,
+    HOTKEY_SET_BOOKMARK_3,
+    HOTKEY_SET_BOOKMARK_4,
+    HOTKEY_CENTER_WINDOW,
+    HOTKEY_TOGGLE_FULLSCREEN,
+    HOTKEY_RESIZE_TO_640,
+    HOTKEY_RESIZE_TO_800,
+    HOTKEY_RESIZE_TO_1024,
+    HOTKEY_SAVE_SCREENSHOT,
+    HOTKEY_SAVE_CITY_SCREENSHOT,
+    HOTKEY_BUILD_CLONE,
+    HOTKEY_MAX_ITEMS
+};
 import HOTKEY_ARROW_UP = hotkey_action.HOTKEY_ARROW_UP;
 import HOTKEY_ARROW_DOWN = hotkey_action.HOTKEY_ARROW_DOWN;
 import HOTKEY_ARROW_LEFT = hotkey_action.HOTKEY_ARROW_LEFT;
@@ -122,15 +186,6 @@ export class hotkey_mapping {
         args.length >= 3 && (this.action = args[2]);
     }
 }
-import { dir_listing } from 'core/dir';
-import { file_open } from 'core/file';
-import { file_close } from 'core/file';
-import { log_info } from 'core/log';
-import { log_error } from 'core/log';
-import { color_t } from 'graphics/color';
-import { system_keyboard_key_for_symbol } from 'game/system';
-import { hotkeys } from 'input/hotkey';
-import { hotkey_install_mapping } from 'input/hotkey';
 let INI_FILENAME: string = "julius-hotkeys.ini";
 let ini_keys: string[] = [
     "arrow_up",

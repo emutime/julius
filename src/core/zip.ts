@@ -100,13 +100,13 @@ export class pk_copy_length_offset {
         args.length >= 2 && (this.offset = args[1]);
     }
 }
-let pk_copy_offset_bits: number[] = new Array(64).fill({
+let pk_copy_offset_bits: number[] = [
     2, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 6, 6,
     6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
     7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
     8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-});
-let pk_copy_offset_code: number[] = new Array(64).fill({
+];
+let pk_copy_offset_code: number[] = [
     0x03, 0x0D, 0x05, 0x19, 0x09, 0x11, 0x01, 0x3E,
     0x1E, 0x2E, 0x0E, 0x36, 0x16, 0x26, 0x06, 0x3A,
     0x1A, 0x2A, 0x0A, 0x32, 0x12, 0x22, 0x42, 0x02,
@@ -115,28 +115,30 @@ let pk_copy_offset_code: number[] = new Array(64).fill({
     0x78, 0x38, 0x58, 0x18, 0x68, 0x28, 0x48, 0x08,
     0xF0, 0x70, 0xB0, 0x30, 0xD0, 0x50, 0x90, 0x10,
     0xE0, 0x60, 0xA0, 0x20, 0xC0, 0x40, 0x80, 0x00,
-});
-let pk_copy_length_base_bits: number[] = new Array(16).fill({
+];
+let pk_copy_length_base_bits: number[] = [
     3, 2, 3, 3, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 7, 7,
-});
-let pk_copy_length_base_value: number[] = new Array(16).fill({
+];
+let pk_copy_length_base_value: number[] = [
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x0A, 0x0E, 0x16, 0x26, 0x46, 0x86, 0x106,
-});
-let pk_copy_length_base_code: number[] = new Array(16).fill({
+];
+let pk_copy_length_base_code: number[] = [
     0x05, 0x03, 0x01, 0x06, 0x0A, 0x02, 0x0C, 0x14,
     0x04, 0x18, 0x08, 0x30, 0x10, 0x20, 0x40, 0x00,
-});
-let pk_copy_length_extra_bits: number[] = new Array(16).fill({
+];
+let pk_copy_length_extra_bits: number[] = [
     0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8,
-});
-function pk_memcpy(dst: number, src: number, length: number) {
+];
+function pk_memcpy(dst: number[], src: number[], length: number) {
     for (let i: number = 0; i < length; i++) {
         dst[i] = src[i];
     }
 }
-function pk_memset(buffer: void, fill_byte: number, length: number) {
-    memset(buffer, 0);
+function pk_memset(buffer: number[], fill_byte: number, length: number) {
+    for (let i: number = 0; i < length; i++) {
+        buffer[i] = fill_byte;
+    }
 }
 function pk_implode_fill_input_buffer(buf: pk_comp_buffer, bytes_to_read: number) {
     let used: number = 0;
@@ -153,7 +155,9 @@ function pk_implode_flush_full_buffer(buf: pk_comp_buffer) {
     let new_first_byte: number = buf.output_data[2048];
     let last_byte: number = buf.output_data[buf.output_ptr];
     buf.output_ptr -= 2048
-    memset(buf.output_data, 0);
+    for (let i: number = 0; i < 2050; i++) {
+        buf.output_data[i] = 0;
+    }
     if (buf.output_ptr) {
         buf.output_data[0] = new_first_byte;
     }
@@ -164,11 +168,11 @@ function pk_implode_flush_full_buffer(buf: pk_comp_buffer) {
 function pk_implode_write_bits(buf: pk_comp_buffer, num_bits: number, value: number) {
     if (num_bits > 8) {
         num_bits -= 8
-        pk_implode_write_bits(buf, 8u, value);
+        pk_implode_write_bits(buf, 8, value);
         value >>= 8
     }
     let current_bits_used: number = buf.current_output_bits_used;
-    let shifted_value: number = (uint8_t)(value << buf.current_output_bits_used);
+    let shifted_value: number = (value << buf.current_output_bits_used) & 0xff;
     buf.output_data[buf.output_ptr] |= shifted_value
     buf.current_output_bits_used += num_bits
     if (buf.current_output_bits_used == 8) {
@@ -176,7 +180,7 @@ function pk_implode_write_bits(buf: pk_comp_buffer, num_bits: number, value: num
         buf.current_output_bits_used = 0;
     } else if (buf.current_output_bits_used > 8) {
         buf.output_ptr++;
-        buf.output_data[buf.output_ptr] = (uint8_t)(value >> (8 - current_bits_used));
+        buf.output_data[buf.output_ptr] = (value >> (8 - current_bits_used)) & 0xff;
         buf.current_output_bits_used -= 8
     }
     if (buf.output_ptr >= 2048) {
@@ -196,45 +200,45 @@ function pk_implode_write_copy_length_offset(buf: pk_comp_buffer, copy: pk_copy_
     }
 }
 function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, copy: pk_copy_length_offset) {
-    let input_ptr: number = buf.input_data[input_index];
-    let hash_value: number = 4 * input_ptr[0] + 5 * input_ptr[1];
+    let input_ptr: number[] = buf.input_data;
+    let hash_value: number = 4 * input_ptr[input_index] + 5 * input_ptr[input_index + 1];
     let analyze_offset_ptr: number = buf.analyze_offset_table[hash_value];
-    let hash_analyze_index: number = * analyze_offset_ptr;
+    let hash_analyze_index: number = analyze_offset_ptr;
     let min_match_index: number = input_index - buf.dictionary_size + 1;
     let analyze_index_ptr: number = buf.analyze_index[hash_analyze_index];
-    if (* analyze_index_ptr < min_match_index) {
+    if (analyze_index_ptr < min_match_index) {
         do {
             analyze_index_ptr++;
             hash_analyze_index++;
-        } while (* analyze_index_ptr < min_match_index)
-        * analyze_offset_ptr = hash_analyze_index;
+        } while (buf.analyze_index[hash_analyze_index] < min_match_index)
+        buf.analyze_offset_table[hash_value] = hash_analyze_index;
     }
     let max_matched_bytes: number = 1;
-    let prev_input_ptr: number = input_ptr - 1;
+    let prev_input_ptr: number = input_index - 1;
     let hash_analyze_index_ptr: number = buf.analyze_index[hash_analyze_index];
-    let start_match: number = buf.input_data[* hash_analyze_index_ptr];
+    let start_match: number = buf.analyze_index[hash_analyze_index_ptr];
     if (prev_input_ptr <= start_match) {
         copy.length = 0;
         return;
     }
-    let input_ptr_copy: number = input_ptr;
+    let input_ptr_copy: number = input_index;
     while (1) {
-        if (start_match[max_matched_bytes - 1] == input_ptr_copy[max_matched_bytes - 1]
-            && * start_match == * input_ptr_copy) {
-            uint8_t * start_match_plus_one = start_match + 1;
-            uint8_t * input_ptr_copy_plus_one = input_ptr_copy + 1;
-                uint16_t matched_bytes = 2;
+        if (input_ptr[start_match + max_matched_bytes - 1] == input_ptr[input_ptr_copy + max_matched_bytes - 1]
+            && input_ptr[start_match] == input_ptr[input_ptr_copy]) {
+            let start_match_plus_one: number = start_match + 1;
+            let input_ptr_copy_plus_one: number = input_ptr_copy + 1;
+            let matched_bytes: number = 2;
             do {
                 start_match_plus_one++;
                 input_ptr_copy_plus_one++;
-                if (* start_match_plus_one != * input_ptr_copy_plus_one) {
+                if (input_ptr[start_match_plus_one] != input_ptr[input_ptr_copy_plus_one]) {
                     break;
                 }
                 matched_bytes++;
             } while (matched_bytes < 516);
-            input_ptr_copy = input_ptr;
+            input_ptr_copy = input_index;
             if (matched_bytes >= max_matched_bytes) {
-                copy.offset = (uint16_t)(input_ptr - start_match_plus_one - 1 + matched_bytes);
+                copy.offset = input_ptr_copy - start_match_plus_one - 1 + matched_bytes;
                 max_matched_bytes = matched_bytes;
                 if (matched_bytes > 10) {
                     break;
@@ -243,9 +247,9 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
         }
         hash_analyze_index_ptr++;
         hash_analyze_index++;
-        start_match = buf.input_data[* hash_analyze_index_ptr];
+        start_match = buf.analyze_index[hash_analyze_index_ptr];
         if (prev_input_ptr <= start_match) {
-            copy.length = (uint16_t)(max_matched_bytes < 2 ? 0 : max_matched_bytes);
+            copy.length = max_matched_bytes < 2 ? 0 : max_matched_bytes;
             return;
         }
     }
@@ -254,7 +258,7 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
         copy.offset--;
         return;
     }
-    if (buf.input_data[buf.analyze_index[hash_analyze_index + 1]] >= prev_input_ptr) {
+    if (buf.analyze_index[hash_analyze_index + 1] >= prev_input_ptr) {
         copy.length = max_matched_bytes;
         return;
     }
@@ -263,7 +267,7 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
     buf.long_matcher[0] = -1;
     buf.long_matcher[1] = 0;
     do {
-        if (input_ptr[long_index] != input_ptr[long_offset]) {
+        if (input_ptr[input_ptr + long_index] != input_ptr[input_ptr + long_offset]) {
             long_offset = buf.long_matcher[long_offset];
             if (long_offset != -1) {
                 continue;
@@ -274,43 +278,43 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
         buf.long_matcher[long_index] = long_offset;
     } while (long_index < max_matched_bytes)
     let matched_bytes: number = max_matched_bytes;
-    let match_ptr: number = buf.input_data[max_matched_bytes] + buf.analyze_index[hash_analyze_index];
+    let match_ptr: number = max_matched_bytes + buf.analyze_index[hash_analyze_index];
     while (1) {
         matched_bytes = buf.long_matcher[matched_bytes];
         if (matched_bytes == -1) {
             matched_bytes = 0;
         }
         hash_analyze_index_ptr = buf.analyze_index[hash_analyze_index];
-        uint8_t * better_match_ptr;
+        let better_match_ptr: number;
         do {
             hash_analyze_index_ptr++;
             hash_analyze_index++;
-            better_match_ptr = buf.input_data[* hash_analyze_index_ptr];
+            better_match_ptr = buf.analyze_index[hash_analyze_index_ptr];
             if (better_match_ptr >= prev_input_ptr) {
                 copy.length = max_matched_bytes;
                 return;
             }
-        } while (better_match_ptr[matched_bytes] < match_ptr);
-        if (input_ptr[max_matched_bytes - 2] != better_match_ptr[max_matched_bytes - 2]) {
+        } while (input_ptr[better_match_ptr + matched_bytes] < input_ptr[match_ptr]);
+        if (input_ptr[input_ptr + max_matched_bytes - 2] != input_ptr[better_match_ptr + max_matched_bytes - 2]) {
             while (1) {
                 hash_analyze_index++;
-                better_match_ptr = buf.input_data[buf.analyze_index[hash_analyze_index]];
+                better_match_ptr = buf.analyze_index[hash_analyze_index];
                 if (better_match_ptr >= prev_input_ptr) {
                     copy.length = max_matched_bytes;
                     return;
                 }
-                if (better_match_ptr[max_matched_bytes - 2] == input_ptr[max_matched_bytes - 2]
-                    && * better_match_ptr == * input_ptr) {
+                if (input_ptr[better_match_ptr + max_matched_bytes - 2] == input_ptr[input_ptr + max_matched_bytes - 2]
+                    && input_ptr[better_match_ptr] == input_ptr[input_ptr]) {
                     matched_bytes = 2;
                     match_ptr = better_match_ptr + 2;
                     break;
                 }
             }
-        } else if (better_match_ptr[matched_bytes] != match_ptr) {
+        } else if (input_ptr[better_match_ptr + matched_bytes] != input_ptr[match_ptr]) {
             matched_bytes = 0;
-            match_ptr = buf.input_data[* hash_analyze_index_ptr];
+            match_ptr = buf.analyze_index[hash_analyze_index_ptr];
         }
-        while (input_ptr[matched_bytes] == * match_ptr) {
+        while (input_ptr[input_ptr + matched_bytes] == input_ptr[match_ptr]) {
             matched_bytes++;
             if (matched_bytes >= 516) {
                 break;
@@ -318,7 +322,7 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
             match_ptr++;
         }
         if (matched_bytes >= max_matched_bytes) {
-            copy.offset = (uint16_t)(input_ptr - better_match_ptr - 1);
+            copy.offset = input_ptr_copy - better_match_ptr - 1;
             if (matched_bytes > max_matched_bytes) {
                 max_matched_bytes = matched_bytes;
                 if (matched_bytes == 516) {
@@ -326,7 +330,7 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
                     return;
                 }
                 do {
-                    if (input_ptr[long_index] != input_ptr[long_offset]) {
+                    if (input_ptr[input_ptr + long_index] != input_ptr[input_ptr + long_offset]) {
                         long_offset = buf.long_matcher[long_offset];
                         if (long_offset != -1) {
                             continue;
@@ -340,8 +344,8 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
         }
     }
 }
-function pk_implode_next_copy_is_better(buf: pk_comp_buffer, offset: number, current_copy: struct pk_copy_length_offset) {
-    let next_copy: pk_copy_length_offset;
+function pk_implode_next_copy_is_better(buf: pk_comp_buffer, offset: number, current_copy: pk_copy_length_offset): number {
+    let next_copy: pk_copy_length_offset = new pk_copy_length_offset();
     pk_implode_determine_copy(buf, offset + 1, next_copy);
     if (current_copy.length >= next_copy.length) {
         return 0;
@@ -352,19 +356,21 @@ function pk_implode_next_copy_is_better(buf: pk_comp_buffer, offset: number, cur
     return 1;
 }
 function pk_implode_analyze_input(buf: pk_comp_buffer, input_start: number, input_end: number) {
-    memset(buf.analyze_offset_table, 0);
+    for (let i: number = 0; i < 2304; i++) {
+        buf.analyze_offset_table[i] = 0;
+    }
     for (let index: number = input_start; index < input_end; index++) {
         buf.analyze_offset_table[4 * buf.input_data[index] + 5 * buf.input_data[index + 1]]++;
     }
     let running_total: number = 0;
     for (let i: number = 0; i < 2304; i++) {
         running_total += buf.analyze_offset_table[i]
-        buf.analyze_offset_table[i] = (uint16_t) running_total;
+        buf.analyze_offset_table[i] = running_total;
     }
     for (let index: number = input_end - 1; index >= input_start; index--) {
         let hash_value: number = 4 * buf.input_data[index] + 5 * buf.input_data[index + 1];
         let value: number = --buf.analyze_offset_table[hash_value];
-        buf.analyze_index[value] = (uint16_t) index;
+        buf.analyze_index[value] = index;
     }
 }
 function pk_implode_data(buf: pk_comp_buffer) {
@@ -468,7 +474,7 @@ function pk_implode(input_func: pk_input_func, output_func: pk_output_func, buf:
     }
     for (let i: number = 0; i < 256; i++) {
         buf.codeword_bits[i] = 9;
-        buf.codeword_values[i] = (uint16_t)(i << 1);
+        buf.codeword_values[i] = (i << 1) & 0xffff;
     }
     let code_index: number = 256;
     for (let copy: number = 0; copy < 16; copy++) {
@@ -477,31 +483,31 @@ function pk_implode(input_func: pk_input_func, output_func: pk_output_func, buf:
         let base_code: number = pk_copy_length_base_code[copy];
         let max: number = 1 << extra_bits;
         for (let i: number = 0; i < max; i++) {
-            buf.codeword_bits[code_index] = (uint8_t)(1 + base_bits + extra_bits);
-            buf.codeword_values[code_index] = (uint16_t)(1 | (base_code << 1) | (i << (base_bits + 1)));
+            buf.codeword_bits[code_index] = (1 + base_bits + extra_bits) & 0xff;
+            buf.codeword_values[code_index] = (1 | (base_code << 1) | (i << (base_bits + 1))) & 0xffff;
             code_index++;
         }
     }
     pk_implode_data(buf);
     return PK_SUCCESS;
 }
-function pk_explode_construct_jump_table(size: number, bits: number, codes: number, jump: number) {
+function pk_explode_construct_jump_table(size: number, bits: number[], codes: number[], jump: number[]) {
     for (let i: number = size - 1; i >= 0; i--) {
         let bit: number = bits[i];
         let code: number = codes[i];
         do {
-            jump[code] = (uint8_t) i;
+            jump[code] = i & 0xff;
             code += 1 << bit;
         } while (code < 0x100)
     }
 }
-function pk_explode_set_bits_used(buf: pk_decomp_buffer, num_bits: number) {
+function pk_explode_set_bits_used(buf: pk_decomp_buffer, num_bits: number): number {
     if (buf.current_input_bits_available >= num_bits) {
         buf.current_input_bits_available -= num_bits
-        buf.current_input_byte = (uint16_t)(buf.current_input_byte >> num_bits);
+        buf.current_input_byte = buf.current_input_byte >> num_bits;
         return 0;
     }
-    buf.current_input_byte = (uint16_t)(buf.current_input_byte >> buf.current_input_bits_available);
+    buf.current_input_byte = buf.current_input_byte >> buf.current_input_bits_available;
     if (buf.input_buffer_ptr == buf.input_buffer_end) {
         buf.input_buffer_ptr = 2048;
         buf.input_buffer_end = buf.input_func(buf.input_buffer, buf.input_buffer_ptr, buf.token);
@@ -510,8 +516,8 @@ function pk_explode_set_bits_used(buf: pk_decomp_buffer, num_bits: number) {
         }
         buf.input_buffer_ptr = 0;
     }
-    buf.current_input_byte |= (uint16_t)(buf.input_buffer[buf.input_buffer_ptr++] << 8)
-    buf.current_input_byte = (uint16_t)(buf.current_input_byte >> (num_bits - buf.current_input_bits_available));
+    buf.current_input_byte |= (buf.input_buffer[buf.input_buffer_ptr++] << 8)
+    buf.current_input_byte = buf.current_input_byte >> (num_bits - buf.current_input_bits_available);
     buf.current_input_bits_available += 8 - num_bits
     return 0;
 }
@@ -572,35 +578,35 @@ function pk_explode_data(buf: pk_decomp_buffer) {
             break;
         }
         if (token >= 256) {
-                // copy offset
-                let length: number = token - 254;
-                let offset: number = pk_explode_get_copy_offset(buf, length);
+            // copy offset
+            let length: number = token - 254;
+            let offset: number = pk_explode_get_copy_offset(buf, length);
             if (!offset) {
                 token = PK_ERROR_VALUE;
                 break;
             }
-            uint8_t * src = buf.output_buffer[buf.output_buffer_ptr - offset];
-            uint8_t * dst = buf.output_buffer[buf.output_buffer_ptr];
+            let src: number = buf.output_buffer_ptr - offset;
+            let dst: number = buf.output_buffer_ptr;
             buf.output_buffer_ptr += length;
             do {
-                    * dst = * src;
-                src++;
-                dst++;
+                buf.output_buffer[dst++] = buf.output_buffer[src++];
             } while (--length > 0);
         } else {
             // literal byte
-            buf.output_buffer[buf.output_buffer_ptr++] = (uint8_t) token;
+            buf.output_buffer[buf.output_buffer_ptr++] = token & 0xff;
         }
         if (buf.output_buffer_ptr >= 8192) {
             // Flush buffer
-            buf.output_func(buf.output_buffer[4096], 4096, buf.token);
-            pk_memcpy(buf.output_buffer, buf.output_buffer[4096], buf.output_buffer_ptr - 4096);
+            buf.output_func(buf.output_buffer.slice(4096, 8192), 4096, buf.token);
+            for (let i: number = 0; i < buf.output_buffer_ptr - 4096; i++) {
+                buf.output_buffer[i] = buf.output_buffer[4096 + i];
+            }
             buf.output_buffer_ptr -= 4096;
         }
     }
     let remaining_bytes: number = buf.output_buffer_ptr - 4096;
     if (remaining_bytes > 0) {
-        buf.output_func(buf.output_buffer[4096], remaining_bytes, buf.token);
+        buf.output_func(buf.output_buffer.slice(4096, 4096 + remaining_bytes), remaining_bytes, buf.token);
     }
     return token;
 }
@@ -636,7 +642,7 @@ function pk_explode(input_func: pk_input_func, output_func: pk_output_func, buf:
     }
     return PK_SUCCESS;
 }
-function zip_input_func(buffer: number, length: number, token: pk_token) {
+function zip_input_func(buffer: number[], length: number, token: pk_token): number {
     if (token.stop) {
         return 0;
     }
@@ -646,11 +652,13 @@ function zip_input_func(buffer: number, length: number, token: pk_token) {
     if (token.input_length - token.input_ptr < length) {
         length = token.input_length - token.input_ptr;
     }
-    memcpy(buffer, token.input_data[token.input_ptr], (size_t) length);
+    for (let i: number = 0; i < length; i++) {
+        buffer[i] = token.input_data[token.input_ptr + i];
+    }
     token.input_ptr += length
     return length;
 }
-function zip_output_func(buffer: number, length: number, token: pk_token) {
+function zip_output_func(buffer: number[], length: number, token: pk_token): void {
     if (token.stop) {
         return;
     }
@@ -660,56 +668,52 @@ function zip_output_func(buffer: number, length: number, token: pk_token) {
         return;
     }
     if (token.output_length - token.output_ptr >= length) {
-        memcpy(token.output_data[token.output_ptr], buffer, (size_t) length);
+        for (let i: number = 0; i < length; i++) {
+            token.output_data[token.output_ptr + i] = buffer[i];
+        }
         token.output_ptr += length
     } else {
         log_error("COMP1 Corrupt.", 0, 0);
         token.stop = 1;
     }
 }
-export function zip_compress(input_buffer: void, input_length: number, output_buffer: void, output_length: number) {
-    let token: pk_token;
+export function zip_compress(input_buffer: number[], input_length: number, output_buffer: number[], output_length: number): number {
+    let token: pk_token = new pk_token();
     let buf: pk_comp_buffer = new pk_comp_buffer();
     if (!buf) {
         return 0;
     }
-    memset(buf, 0);
-    memset(token, 0);
-    token.input_data = (const uint8_t *) input_buffer;
+    token.input_data = input_buffer;
     token.input_length = input_length;
-    token.output_data = (uint8_t *) output_buffer;
-    token.output_length = * output_length;
+    token.output_data = output_buffer;
+    token.output_length = output_length;
     let ok: number = 1;
     let pk_error: number = pk_implode(zip_input_func, zip_output_func, buf, token, 4096);
     if (pk_error || token.stop) {
         log_error("COMP Error occurred while compressing.", 0, 0);
         ok = 0;
     } else {
-        * output_length = token.output_ptr;
+        output_length = token.output_ptr;
     }
-    free(buf);
     return ok;
 }
-export function zip_decompress(input_buffer: void, input_length: number, output_buffer: void, output_length: number) {
-    let token: pk_token;
-    let buf: pk_decomp_buffer = (struct pk_decomp_buffer *) malloc(sizeof(struct pk_decomp_buffer));
+export function zip_decompress(input_buffer: number[], input_length: number, output_buffer: number[], output_length: number): number {
+    let token: pk_token = new pk_token();
+    let buf: pk_decomp_buffer = new pk_decomp_buffer();
     if (!buf) {
         return 0;
     }
-    memset(buf, 0);
-    memset(token, 0);
-    token.input_data = (const uint8_t *) input_buffer;
+    token.input_data = input_buffer;
     token.input_length = input_length;
-    token.output_data = (uint8_t *) output_buffer;
-    token.output_length = * output_length;
+    token.output_data = output_buffer;
+    token.output_length = output_length;
     let ok: number = 1;
     let pk_error: number = pk_explode(zip_input_func, zip_output_func, buf, token);
     if (pk_error || token.stop) {
         log_error("COMP Error uncompressing.", 0, 0);
         ok = 0;
     } else {
-        * output_length = token.output_ptr;
+        output_length = token.output_ptr;
     }
-    free(buf);
     return ok;
 }
