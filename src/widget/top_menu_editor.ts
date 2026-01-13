@@ -1,5 +1,4 @@
 export const INDEX_OPTIONS = 1;
-;
 import { image_group } from 'core/image';
 import { group_terrain } from 'core/image_group';
 import { game_file_editor_create_scenario } from 'game/file_editor';

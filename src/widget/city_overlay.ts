@@ -2,7 +2,8 @@
 import { building } from 'building/building';
 import { figure } from 'figure/figure';
 import { tooltip_type } from 'graphics/tooltip';
-;
+export const NO_COLUMN = -1;
+
 export const enum column_type {
     COLUMN_TYPE_RISK,
     COLUMN_TYPE_ACCESS,

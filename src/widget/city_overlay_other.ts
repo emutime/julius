@@ -1,6 +1,27 @@
-import { NO_COLUMN } from 'widget/city_overlay';
-import { COLOR_MASK_RED } from 'graphics/color';
+import { building, building_get, building_main } from 'building/building';
+import { model_get_house } from 'building/model';
 import { building_type } from 'building/type';
+import { god_type } from 'city/constants';
+import { city_finance_tax_percentage } from 'city/finance';
+import { calc_adjust_with_percentage, calc_percentage } from 'core/calc';
+import { config_get, config_key } from 'core/config';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { figure } from 'figure/figure';
+import { figure_type } from 'figure/type';
+import { inventory_type, resource_is_food } from 'game/resource';
+import { overlay } from 'game/state';
+import { COLOR_MASK_RED, color_t } from 'graphics/color';
+import { image_draw_isometric_footprint_from_draw_tile, image_draw_isometric_top_from_draw_tile } from 'graphics/image';
+import { tooltip_context } from 'graphics/tooltip';
+import { map_building_at } from 'map/building';
+import { map_desirability_get } from 'map/desirability';
+import { map_image_at } from 'map/image';
+import { map_property_is_deleted, map_property_is_draw_tile, map_property_multi_tile_size } from 'map/property';
+import { map_random_get } from 'map/random';
+import { map_terrain_get, map_terrain_is, terrain } from 'map/terrain';
+import { city_overlay, column_type, NO_COLUMN } from 'widget/city_overlay';
+import { city_with_overlay_draw_building_footprint, city_with_overlay_draw_building_top } from './city_with_overlay';
 import BUILDING_SMALL_TEMPLE_CERES = building_type.BUILDING_SMALL_TEMPLE_CERES;
 import BUILDING_SMALL_TEMPLE_NEPTUNE = building_type.BUILDING_SMALL_TEMPLE_NEPTUNE;
 import BUILDING_SMALL_TEMPLE_MERCURY = building_type.BUILDING_SMALL_TEMPLE_MERCURY;
@@ -20,14 +41,7 @@ import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
 import BUILDING_FOUNTAIN = building_type.BUILDING_FOUNTAIN;
 import BUILDING_WELL = building_type.BUILDING_WELL;
 import BUILDING_ORACLE = building_type.BUILDING_ORACLE;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_main } from 'building/building';
-import { direction_type } from 'core/direction';
-import { figure_type } from 'figure/type';
+;
 import FIGURE_CART_PUSHER = figure_type.FIGURE_CART_PUSHER;
 import FIGURE_TAX_COLLECTOR = figure_type.FIGURE_TAX_COLLECTOR;
 import FIGURE_FISHING_BOAT = figure_type.FIGURE_FISHING_BOAT;
@@ -35,76 +49,24 @@ import FIGURE_MARKET_TRADER = figure_type.FIGURE_MARKET_TRADER;
 import FIGURE_PRIEST = figure_type.FIGURE_PRIEST;
 import FIGURE_MARKET_BUYER = figure_type.FIGURE_MARKET_BUYER;
 import FIGURE_DELIVERY_BOY = figure_type.FIGURE_DELIVERY_BOY;
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { column_type } from 'widget/city_overlay';
 import COLUMN_TYPE_RISK = column_type.COLUMN_TYPE_RISK;
 import COLUMN_TYPE_ACCESS = column_type.COLUMN_TYPE_ACCESS;
-import { city_overlay } from 'widget/city_overlay';
-import { city_with_overlay_draw_building_footprint } from 'widget/city_overlay';
-import { city_with_overlay_draw_building_top } from 'widget/city_overlay';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_house } from 'building/model';
-import { god_type } from 'city/constants';
 import GOD_CERES = god_type.GOD_CERES;
 import GOD_NEPTUNE = god_type.GOD_NEPTUNE;
 import GOD_MERCURY = god_type.GOD_MERCURY;
 import GOD_MARS = god_type.GOD_MARS;
 import GOD_VENUS = god_type.GOD_VENUS;
-import { city_finance_tax_percentage } from 'city/finance';
-import { finance_overview } from 'city/finance';
-import { calc_adjust_with_percentage } from 'core/calc';
-import { calc_percentage } from 'core/calc';
-import { config_key } from 'core/config';
 import CONFIG_UI_VISUAL_FEEDBACK_ON_DELETE = config_key.CONFIG_UI_VISUAL_FEEDBACK_ON_DELETE;
-import { config_key } from 'core/config';
-import { config_string_key } from 'core/config';
-import { config_get } from 'core/config';
-import { resource_type } from 'game/resource';
-import { inventory_type } from 'game/resource';
 import INVENTORY_MIN_FOOD = inventory_type.INVENTORY_MIN_FOOD;
 import INVENTORY_MAX_FOOD = inventory_type.INVENTORY_MAX_FOOD;
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_is_food } from 'game/resource';
-import { overlay } from 'game/state';
 import OVERLAY_WATER = overlay.OVERLAY_WATER;
 import OVERLAY_RELIGION = overlay.OVERLAY_RELIGION;
 import OVERLAY_TAX_INCOME = overlay.OVERLAY_TAX_INCOME;
 import OVERLAY_FOOD_STOCKS = overlay.OVERLAY_FOOD_STOCKS;
 import OVERLAY_DESIRABILITY = overlay.OVERLAY_DESIRABILITY;
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_TERRAIN_GRASS_1 = group_terrain.GROUP_TERRAIN_GRASS_1;
 import GROUP_TERRAIN_OVERLAY = group_terrain.GROUP_TERRAIN_OVERLAY;
 import GROUP_TERRAIN_DESIRABILITY = group_terrain.GROUP_TERRAIN_DESIRABILITY;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw_isometric_footprint_from_draw_tile } from 'graphics/image';
-import { image_draw_isometric_top_from_draw_tile } from 'graphics/image';
-import { map_building_at } from 'map/building';
-import { map_desirability_get } from 'map/desirability';
-import { map_image_at } from 'map/image';
-import { map_property_is_draw_tile } from 'map/property';
-import { map_property_multi_tile_size } from 'map/property';
-import { map_property_is_deleted } from 'map/property';
-import { map_random_get } from 'map/random';
-import { terrain } from 'map/terrain';
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_ROCK = terrain.TERRAIN_ROCK;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
@@ -120,8 +82,6 @@ import TERRAIN_RUBBLE = terrain.TERRAIN_RUBBLE;
 import TERRAIN_FOUNTAIN_RANGE = terrain.TERRAIN_FOUNTAIN_RANGE;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_is } from 'map/terrain';
-import { map_terrain_get } from 'map/terrain';
 function show_building_religion(b: building) {
     return
     b.type == BUILDING_ORACLE || b.type == BUILDING_SMALL_TEMPLE_CERES ||
@@ -292,7 +252,7 @@ function get_tooltip_desirability(c: tooltip_context, grid_offset: number) {
     }
 }
 export function city_overlay_for_religion() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_RELIGION,
         COLUMN_TYPE_ACCESS,
         show_building_religion,
@@ -302,11 +262,11 @@ export function city_overlay_for_religion() {
         get_tooltip_religion,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_food_stocks() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_FOOD_STOCKS,
         COLUMN_TYPE_RISK,
         show_building_food_stocks,
@@ -316,11 +276,11 @@ export function city_overlay_for_food_stocks() {
         get_tooltip_food_stocks,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_tax_income() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_TAX_INCOME,
         COLUMN_TYPE_ACCESS,
         show_building_tax_income,
@@ -330,7 +290,7 @@ export function city_overlay_for_tax_income() {
         get_tooltip_tax_income,
         0,
         0
-    };
+    );
     return overlay;
 }
 function has_deleted_building(grid_offset: number) {
@@ -342,8 +302,7 @@ function has_deleted_building(grid_offset: number) {
     return b.id && (b.is_deleted || map_property_is_deleted(b.grid_offset));
 }
 function terrain_on_water_overlay() {
-    return
-    TERRAIN_TREE | TERRAIN_ROCK | TERRAIN_WATER | TERRAIN_SHRUB |
+    return TERRAIN_TREE | TERRAIN_ROCK | TERRAIN_WATER | TERRAIN_SHRUB |
         TERRAIN_GARDEN | TERRAIN_ROAD | TERRAIN_AQUEDUCT | TERRAIN_ELEVATION |
         TERRAIN_ACCESS_RAMP | TERRAIN_RUBBLE;
 }
@@ -418,7 +377,7 @@ function draw_top_water(x: number, y: number, grid_offset: number) {
     }
 }
 export function city_overlay_for_water() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_WATER,
         COLUMN_TYPE_ACCESS,
         show_building_water,
@@ -428,12 +387,11 @@ export function city_overlay_for_water() {
         0,
         draw_footprint_water,
         draw_top_water
-    };
+    );
     return overlay;
 }
 function terrain_on_desirability_overlay() {
-    return
-    TERRAIN_TREE | TERRAIN_ROCK | TERRAIN_WATER |
+    return TERRAIN_TREE | TERRAIN_ROCK | TERRAIN_WATER |
         TERRAIN_SHRUB | TERRAIN_GARDEN | TERRAIN_ROAD |
         TERRAIN_ELEVATION | TERRAIN_ACCESS_RAMP | TERRAIN_RUBBLE;
 }
@@ -500,7 +458,7 @@ function draw_top_desirability(x: number, y: number, grid_offset: number) {
     }
 }
 export function city_overlay_for_desirability() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_DESIRABILITY,
         COLUMN_TYPE_ACCESS,
         show_building_desirability,
@@ -510,6 +468,6 @@ export function city_overlay_for_desirability() {
         0,
         draw_footprint_desirability,
         draw_top_desirability
-    };
+    );
     return overlay;
 }

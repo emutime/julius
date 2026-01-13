@@ -1,6 +1,22 @@
-import { NO_COLUMN } from 'widget/city_overlay';
-import { COLOR_MASK_RED } from 'graphics/color';
+import { building, building_get } from 'building/building';
+import { building_is_workshop } from 'building/industry';
 import { building_type } from 'building/type';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { figure_action } from 'figure/action';
+import { figure, figure_get } from 'figure/figure';
+import { figure_type } from 'figure/type';
+import { overlay } from 'game/state';
+import { COLOR_MASK_RED, color_t } from 'graphics/color';
+import { image_draw_isometric_footprint_from_draw_tile, image_draw_isometric_top_from_draw_tile } from 'graphics/image';
+import { tooltip_context } from 'graphics/tooltip';
+import { map_building_at } from 'map/building';
+import { map_image_at } from 'map/image';
+import { map_property_is_deleted, map_property_is_draw_tile, map_property_is_native_land, map_property_multi_tile_size } from 'map/property';
+import { map_random_get } from 'map/random';
+import { map_terrain_is, terrain } from 'map/terrain';
+import { city_overlay, column_type, NO_COLUMN } from 'widget/city_overlay';
+import { city_with_overlay_draw_building_footprint, city_with_overlay_draw_building_top } from './city_with_overlay';
 import BUILDING_BATHHOUSE = building_type.BUILDING_BATHHOUSE;
 import BUILDING_PREFECTURE = building_type.BUILDING_PREFECTURE;
 import BUILDING_MISSION_POST = building_type.BUILDING_MISSION_POST;
@@ -11,14 +27,7 @@ import BUILDING_FOUNTAIN = building_type.BUILDING_FOUNTAIN;
 import BUILDING_BURNING_RUIN = building_type.BUILDING_BURNING_RUIN;
 import BUILDING_WHEAT_FARM = building_type.BUILDING_WHEAT_FARM;
 import BUILDING_CLAY_PIT = building_type.BUILDING_CLAY_PIT;
-import { building_type } from 'building/type';;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_20_CARTPUSHER_INITIAL = figure_action.FIGURE_ACTION_20_CARTPUSHER_INITIAL;
-import { figure_type } from 'figure/type';
 import FIGURE_CART_PUSHER = figure_type.FIGURE_CART_PUSHER;
 import FIGURE_LABOR_SEEKER = figure_type.FIGURE_LABOR_SEEKER;
 import FIGURE_ENGINEER = figure_type.FIGURE_ENGINEER;
@@ -28,52 +37,14 @@ import FIGURE_CRIMINAL = figure_type.FIGURE_CRIMINAL;
 import FIGURE_RIOTER = figure_type.FIGURE_RIOTER;
 import FIGURE_INDIGENOUS_NATIVE = figure_type.FIGURE_INDIGENOUS_NATIVE;
 import FIGURE_MISSIONARY = figure_type.FIGURE_MISSIONARY;
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { column_type } from 'widget/city_overlay';
 import COLUMN_TYPE_RISK = column_type.COLUMN_TYPE_RISK;
-import { city_overlay } from 'widget/city_overlay';
-import { city_with_overlay_draw_building_footprint } from 'widget/city_overlay';
-import { city_with_overlay_draw_building_top } from 'widget/city_overlay';
-import { map_point } from 'map/point';
-import { building_is_workshop } from 'building/industry';
-import { overlay } from 'game/state';
 import OVERLAY_FIRE = overlay.OVERLAY_FIRE;
 import OVERLAY_DAMAGE = overlay.OVERLAY_DAMAGE;
 import OVERLAY_CRIME = overlay.OVERLAY_CRIME;
 import OVERLAY_NATIVE = overlay.OVERLAY_NATIVE;
 import OVERLAY_PROBLEMS = overlay.OVERLAY_PROBLEMS;
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_TERRAIN_GRASS_1 = group_terrain.GROUP_TERRAIN_GRASS_1;
 import GROUP_TERRAIN_DESIRABILITY = group_terrain.GROUP_TERRAIN_DESIRABILITY;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw_isometric_footprint_from_draw_tile } from 'graphics/image';
-import { image_draw_isometric_top_from_draw_tile } from 'graphics/image';
-import { map_building_at } from 'map/building';
-import { map_image_at } from 'map/image';
-import { map_property_is_draw_tile } from 'map/property';
-import { map_property_is_native_land } from 'map/property';
-import { map_property_multi_tile_size } from 'map/property';
-import { map_property_is_deleted } from 'map/property';
-import { map_random_get } from 'map/random';
-import { terrain } from 'map/terrain';
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_ROCK = terrain.TERRAIN_ROCK;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
@@ -86,7 +57,6 @@ import TERRAIN_ACCESS_RAMP = terrain.TERRAIN_ACCESS_RAMP;
 import TERRAIN_RUBBLE = terrain.TERRAIN_RUBBLE;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_is } from 'map/terrain';
 function is_problem_cartpusher(figure_id: number) {
     if (figure_id) {
         let fig: figure = figure_get(figure_id);
@@ -223,7 +193,7 @@ function get_tooltip_crime(c: tooltip_context, b: building) {
     }
 }
 export function city_overlay_for_fire() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_FIRE,
         COLUMN_TYPE_RISK,
         show_building_fire_crime,
@@ -233,11 +203,11 @@ export function city_overlay_for_fire() {
         get_tooltip_fire,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_damage() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_DAMAGE,
         COLUMN_TYPE_RISK,
         show_building_damage,
@@ -247,11 +217,11 @@ export function city_overlay_for_damage() {
         get_tooltip_damage,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_crime() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_CRIME,
         COLUMN_TYPE_RISK,
         show_building_fire_crime,
@@ -261,11 +231,11 @@ export function city_overlay_for_crime() {
         get_tooltip_crime,
         0,
         0
-    };
+    );
     return overlay;
 }
 export function city_overlay_for_problems() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_PROBLEMS,
         COLUMN_TYPE_RISK,
         show_building_problems,
@@ -275,12 +245,11 @@ export function city_overlay_for_problems() {
         0,
         0,
         0
-    };
+    );
     return overlay;
 }
 function terrain_on_native_overlay() {
-    return
-    TERRAIN_TREE | TERRAIN_ROCK | TERRAIN_WATER | TERRAIN_SHRUB |
+    return TERRAIN_TREE | TERRAIN_ROCK | TERRAIN_WATER | TERRAIN_SHRUB |
         TERRAIN_GARDEN | TERRAIN_ELEVATION | TERRAIN_ACCESS_RAMP | TERRAIN_RUBBLE;
 }
 function draw_footprint_native(x: number, y: number, grid_offset: number) {
@@ -323,7 +292,7 @@ function draw_top_native(x: number, y: number, grid_offset: number) {
     }
 }
 export function city_overlay_for_native() {
-    let overlay: city_overlay = {
+    let overlay: city_overlay = new city_overlay(
         OVERLAY_NATIVE,
         COLUMN_TYPE_RISK,
         show_building_native,
@@ -333,6 +302,6 @@ export function city_overlay_for_native() {
         0,
         draw_footprint_native,
         draw_top_native
-    };
+    );
     return overlay;
 }

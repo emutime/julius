@@ -1,6 +1,5 @@
 import { BLOCK_SIZE } from 'graphics/panel';
 export const MAX_LINKS = 50;
-;
 import { color_t } from 'graphics/color';
 import { language_type } from 'core/locale';
 import { locale_paragraph_indent } from 'core/locale';
@@ -44,10 +43,10 @@ import { window_id } from 'graphics/window';
 import { window_type } from 'graphics/window';
 import { window_invalidate } from 'graphics/window';
 let scrollbar: scrollbar_type = {
-    .has_y_margin = 1,
-    .on_scroll_callback = on_scroll
+    has_y_margin: 1,
+    on_scroll_callback: on_scroll
 };
-export class unnamed23_8 {
+export class TextLink {
     public message_id: number = 0;
     public x_min: number = 0;
     public y_min: number = 0;
@@ -61,11 +60,11 @@ export class unnamed23_8 {
         args.length >= 5 && (this.y_max = args[4]);
     }
 }
-let links: unnamed23_8[] = new Array(MAX_LINKS);
+let links: TextLink[] = new Array(MAX_LINKS).fill(null).map(() => new TextLink());
 let tmp_line: number[] = new Array(200);
-export class unnamed33_8 {
-    public normal_font: font_definition = null;
-    public link_font: font_definition = null;
+export class RichTextData {
+    public normal_font: font_definition | null = null;
+    public link_font: font_definition | null = null;
     public line_height: number = 0;
     public paragraph_indent: number = 0;
     public x_text: number = 0;
@@ -91,8 +90,8 @@ export class unnamed33_8 {
         args.length >= 12 && (this.num_links = args[11]);
     }
 }
-let data: unnamed33_8 = new unnamed33_8();
-export function rich_text_init(text: number, x_text: number, y_text: number, width_blocks: number, height_blocks: number, adjust_width_on_no_scroll: number) {
+let data: RichTextData = new RichTextData();
+export function rich_text_init(text: Uint8Array, x_text: number, y_text: number, width_blocks: number, height_blocks: number, adjust_width_on_no_scroll: number): number {
     data.x_text = x_text;
     data.y_text = y_text;
     if (!data.num_lines) {
@@ -108,25 +107,25 @@ export function rich_text_init(text: number, x_text: number, y_text: number, wid
         scrollbar.elements_in_view = data.text_height_lines;
         scrollbar_init(scrollbar, scrollbar.scroll_position, data.num_lines);
         if (data.num_lines <= data.text_height_lines && adjust_width_on_no_scroll) {
-            data.text_width_blocks += 2
+            data.text_width_blocks += 2;
         }
         scrollbar.scrollable_width = BLOCK_SIZE * data.text_width_blocks;
         window_invalidate();
     }
     return data.text_width_blocks;
 }
-export function rich_text_set_fonts(normal_font: font_t, link_font: font_t, line_spacing: number) {
+export function rich_text_set_fonts(normal_font: font_t, link_font: font_t, line_spacing: number): void {
     data.normal_font = font_definition_for(normal_font);
     data.link_font = font_definition_for(link_font);
     data.line_height = data.normal_font.line_height + line_spacing;
     data.paragraph_indent = locale_paragraph_indent();
 }
-export function rich_text_reset(scroll_position: number) {
+export function rich_text_reset(scroll_position: number): void {
     scrollbar_reset(scrollbar, scroll_position);
     data.num_lines = 0;
     rich_text_clear_links();
 }
-export function rich_text_clear_links() {
+export function rich_text_clear_links(): void {
     for (let i: number = 0; i < MAX_LINKS; i++) {
         links[i].message_id = 0;
         links[i].x_min = 0;
@@ -136,7 +135,7 @@ export function rich_text_clear_links() {
     }
     data.num_links = 0;
 }
-export function rich_text_get_clicked_link(m: mouse) {
+export function rich_text_get_clicked_link(m: mouse): number {
     if (m.left.went_up) {
         for (let i: number = 0; i < data.num_links; i++) {
             if (m.x >= links[i].x_min && m.x <= links[i].x_max &&
@@ -147,7 +146,7 @@ export function rich_text_get_clicked_link(m: mouse) {
     }
     return -1;
 }
-function add_link(message_id: number, x_start: number, x_end: number, y: number) {
+function add_link(message_id: number, x_start: number, x_end: number, y: number): void {
     if (data.num_links < MAX_LINKS) {
         links[data.num_links].message_id = message_id;
         links[data.num_links].x_min = x_start - 2;
@@ -157,49 +156,49 @@ function add_link(message_id: number, x_start: number, x_end: number, y: number)
         data.num_links++;
     }
 }
-function get_word_width(str: number, in_link: number, num_chars: number) {
+function get_word_width(str: Uint8Array, strIndex: number, in_link: number, num_chars: number[]): number {
     let width: number = 0;
     let guard: number = 0;
     let word_char_seen: number = 0;
     let start_link: number = 0;
-    * num_chars = 0;
-    while (* str && ++guard < 2000) {
-        if (* str == '@') {
-            str++;
+    num_chars[0] = 0;
+    while (str[strIndex] !== 0 && ++guard < 2000) {
+        if (str[strIndex] === 64) { // '@'
+            strIndex++;
             if (!word_char_seen) {
-                if (* str == 'P' || * str == 'L') {
-                        * num_chars += 2;
+                if (str[strIndex] === 80 || str[strIndex] === 76) { // 'P' or 'L'
+                    num_chars[0] += 2;
                     width = 0;
                     break;
-                } else if (* str == 'G') {
-                        // skip graphic
-                        * num_chars += 2;
-                    while (* str >= '0' && * str <= '9') {
-                        str++;
-                        (* num_chars)++;
+                } else if (str[strIndex] === 71) { // 'G'
+                    // skip graphic
+                    num_chars[0] += 2;
+                    while (str[strIndex] >= 48 && str[strIndex] <= 57) { // '0' to '9'
+                        strIndex++;
+                        num_chars[0]++;
                     }
                     width = 0;
                     break;
                 } else {
-                    (* num_chars)++;
-                    while (* str >= '0' && * str <= '9') {
-                        str++;
-                        (* num_chars)++;
+                    num_chars[0]++;
+                    while (str[strIndex] >= 48 && str[strIndex] <= 57) { // '0' to '9'
+                        strIndex++;
+                        num_chars[0]++;
                     }
                     in_link = 1;
                     start_link = 1;
                 }
             }
         }
-            int num_bytes = 1;
-        if (* str == ' ') {
+        let num_bytes: number = 1;
+        if (str[strIndex] === 32) { // ' '
             if (word_char_seen) {
                 break;
             }
             width += 4;
-        } else if (* str > ' ') {
-                // normal char
-                int letter_id = font_letter_id(data.normal_font, str, num_bytes);
+        } else if (str[strIndex] > 32) {
+            // normal char
+            let letter_id: number = font_letter_id(data.normal_font!, str, strIndex, num_bytes);
             if (letter_id >= 0) {
                 width += 1 + image_letter(letter_id).width;
             }
@@ -211,62 +210,66 @@ function get_word_width(str: number, in_link: number, num_chars: number) {
                     start_link = 0;
                 }
                 if (!in_link) {
-                        * num_chars += num_bytes;
+                    num_chars[0] += num_bytes;
                     break;
                 }
             }
         }
-        str += num_bytes;
-            * num_chars += num_bytes;
+        strIndex += num_bytes;
+        num_chars[0] += num_bytes;
     }
     return width;
 }
-function draw_line(str: number, x: number, y: number, color: color_t, measure_only: number) {
+function draw_line(str: Uint8Array, x: number, y: number, color: color_t, measure_only: number): void {
     let start_link: number = 0;
     let num_link_chars: number = 0;
-    while (* str) {
-        if (* str == '@') {
-                int message_id = string_to_int(++str);
-            while (* str >= '0' && * str <= '9') {
-                str++;
+    let strIndex: number = 0;
+    while (str[strIndex] !== 0) {
+        if (str[strIndex] === 64) { // '@'
+            strIndex++;
+            let message_id: number = string_to_int(str, strIndex);
+            while (str[strIndex] >= 48 && str[strIndex] <= 57) { // '0' to '9'
+                strIndex++;
             }
-                int width = get_word_width(str, 1, num_link_chars);
+            let num_link_chars_arr: number[] = [num_link_chars];
+            let width: number = get_word_width(str, strIndex, 1, num_link_chars_arr);
+            num_link_chars = num_link_chars_arr[0];
             add_link(message_id, x, x + width, y);
             start_link = 1;
         }
-        if (* str >= ' ') {
-            const font_definition * def = data.normal_font;
+        if (str[strIndex] >= 32) { // ' '
+            let def: font_definition | null = data.normal_font;
             if (num_link_chars > 0) {
                 def = data.link_font;
             }
-    
-                int num_bytes = 1;
-                int letter_id = font_letter_id(def, str, num_bytes);
+
+            let num_bytes: number = 1;
+            let letter_id: number = font_letter_id(def!, str, strIndex, num_bytes);
             if (letter_id < 0) {
-                x += def.space_width;
+                x += def!.space_width;
             } else {
                 if (num_bytes > 1 && start_link) {
                     // add space before links in multibyte charsets
-                    x += def.space_width;
+                    x += def!.space_width;
                     start_link = 0;
                 }
-                const image * img = image_letter(letter_id);
+                const img: image = image_letter(letter_id);
                 if (!measure_only) {
-                        int height = def.image_y_offset(* str, img.height, def.line_height);
-                    image_draw_letter(def.font, letter_id, x, y - height, color);
+                    let height: number = def!.image_y_offset(str[strIndex], img.height, def!.line_height);
+                    image_draw_letter(def!.font, letter_id, x, y - height, color);
                 }
-                x += img.width + def.letter_spacing;
+                x += img.width + def!.letter_spacing;
             }
             if (num_link_chars > 0) {
                 num_link_chars -= num_bytes;
             }
-            str += num_bytes;
+            strIndex += num_bytes;
         } else {
-            str++;
+            strIndex++;
         }
     }
 }
-function draw_text(text: Uint8Array, x_offset: number, y_offset: number, box_width: number, height_lines: number, color: color_t, measure_only: number) {
+function draw_text(text: Uint8Array, x_offset: number, y_offset: number, box_width: number, height_lines: number, color: color_t, measure_only: number): number {
     let image_height_lines: number = 0;
     let image_id: number = 0;
     let lines_before_image: number = 0;
@@ -276,16 +279,18 @@ function draw_text(text: Uint8Array, x_offset: number, y_offset: number, box_wid
     let guard: number = 0;
     let line: number = 0;
     let num_lines: number = 0;
+    let textIndex: number = 0;
     while (has_more_characters || image_height_lines) {
         if (++guard >= 1000) {
             break;
         }
         // clear line
-        for (int i = 0; i < 200; i++) {
+        for (let i: number = 0; i < 200; i++) {
             tmp_line[i] = 0;
         }
-            int line_index = 0;
-            int current_width, x_line_offset;
+        let line_index: number = 0;
+        let current_width: number;
+        let x_line_offset: number;
         current_width = x_line_offset = paragraph ? data.paragraph_indent : 0;
         paragraph = 0;
         while ((has_more_characters || image_height_lines) && current_width < box_width) {
@@ -293,35 +298,36 @@ function draw_text(text: Uint8Array, x_offset: number, y_offset: number, box_wid
                 image_height_lines--;
                 break;
             }
-                int word_num_chars;
-            current_width += get_word_width(text, 0, word_num_chars);
+            let word_num_chars_arr: number[] = [0];
+            current_width += get_word_width(text, textIndex, 0, word_num_chars_arr);
+            let word_num_chars: number = word_num_chars_arr[0];
             if (current_width >= box_width) {
-                if (current_width == 0) {
+                if (current_width === 0) {
                     has_more_characters = 0;
                 }
             } else {
-                for (int i = 0; i < word_num_chars; i++) {
-                        char c = * text++;
-                    if (c == '@') {
-                        if (* text == 'P') {
+                for (let i: number = 0; i < word_num_chars; i++) {
+                    let c: number = text[textIndex++];
+                    if (c === 64) { // '@'
+                        if (text[textIndex] === 80) { // 'P'
                             paragraph = 1;
-                            text++;
+                            textIndex++;
                             current_width = box_width;
                             break;
-                        } else if (* text == 'L') {
-                            text++;
+                        } else if (text[textIndex] === 76) { // 'L'
+                            textIndex++;
                             current_width = box_width;
                             break;
-                        } else if (* text == 'G') {
+                        } else if (text[textIndex] === 71) { // 'G'
                             if (line_index) {
                                 num_lines++;
                             }
-                            text++; // skip 'G'
+                            textIndex++; // skip 'G'
                             current_width = box_width;
-                            image_id = string_to_int(text);
-                            c = * text++;
-                            while (c >= '0' && c <= '9') {
-                                c = * text++;
+                            image_id = string_to_int(text, textIndex);
+                            c = text[textIndex++];
+                            while (c >= 48 && c <= 57) { // '0' to '9'
+                                c = text[textIndex++];
                             }
                             image_id += image_group(GROUP_MESSAGE_IMAGES) - 1;
                             image_height_lines = image_get(image_id).height / data.line_height + 2;
@@ -331,17 +337,17 @@ function draw_text(text: Uint8Array, x_offset: number, y_offset: number, box_wid
                             break;
                         }
                     }
-                    if (line_index || c != ' ') { // no space at start of line
+                    if (line_index || c !== 32) { // no space at start of line
                         tmp_line[line_index++] = c;
                     }
                 }
-                if (!* text) {
+                if (!text[textIndex]) {
                     has_more_characters = 0;
                 }
             }
         }
-    
-            int outside_viewport = 0;
+
+        let outside_viewport: number = 0;
         if (!measure_only) {
             if (line < scrollbar.scroll_position || line >= scrollbar.scroll_position + height_lines) {
                 outside_viewport = 1;
@@ -355,9 +361,9 @@ function draw_text(text: Uint8Array, x_offset: number, y_offset: number, box_wid
                 if (lines_before_image) {
                     lines_before_image--;
                 } else {
-                    const image * img = image_get(image_id);
+                    const img: image = image_get(image_id);
                     image_height_lines = img.height / data.line_height + 2;
-                        int image_offset_x = x_offset + (box_width - img.width) / 2 - 4;
+                    let image_offset_x: number = x_offset + (box_width - img.width) / 2 - 4;
                     if (line < height_lines + scrollbar.scroll_position) {
                         if (line >= scrollbar.scroll_position) {
                             image_draw(image_id, image_offset_x, y + 8);
@@ -378,22 +384,22 @@ function draw_text(text: Uint8Array, x_offset: number, y_offset: number, box_wid
     }
     return num_lines;
 }
-export function rich_text_draw(text: Uint8Array, x_offset: number, y_offset: number, box_width: number, height_lines: number, measure_only: number) {
+export function rich_text_draw(text: Uint8Array, x_offset: number, y_offset: number, box_width: number, height_lines: number, measure_only: number): number {
     return draw_text(text, x_offset, y_offset, box_width, height_lines, 0, measure_only);
 }
-export function rich_text_draw_colored(text: Uint8Array, x_offset: number, y_offset: number, box_width: number, height_lines: number, color: color_t) {
+export function rich_text_draw_colored(text: Uint8Array, x_offset: number, y_offset: number, box_width: number, height_lines: number, color: color_t): number {
     return draw_text(text, x_offset, y_offset, box_width, height_lines, color, 0);
 }
-export function rich_text_draw_scrollbar() {
+export function rich_text_draw_scrollbar(): void {
     scrollbar_draw(scrollbar);
 }
-export function rich_text_handle_mouse(m: mouse) {
+export function rich_text_handle_mouse(m: mouse): number {
     return scrollbar_handle_mouse(scrollbar, m);
 }
-function on_scroll() {
+function on_scroll(): void {
     rich_text_clear_links();
     window_invalidate();
 }
-export function rich_text_scroll_position() {
+export function rich_text_scroll_position(): number {
     return scrollbar.scroll_position;
 }

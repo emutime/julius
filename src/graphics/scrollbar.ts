@@ -74,14 +74,14 @@ export const enum touch_drag {
     TOUCH_DRAG_PENDING = 1,
     TOUCH_DRAG_IN_PROGRESS = 2,
 }
-let image_button_scroll_up: image_button = {
+let image_button_scroll_up: image_button = new image_button(
     0, 0, SCROLL_BUTTON_WIDTH, SCROLL_BUTTON_HEIGHT, IB_SCROLL,
     GROUP_OK_CANCEL_SCROLL_BUTTONS, 8, text_scroll, button_none, 0, 1, 1
-};
-let image_button_scroll_down: image_button = {
+);
+let image_button_scroll_down: image_button = new image_button(
     0, 0, SCROLL_BUTTON_WIDTH, SCROLL_BUTTON_HEIGHT, IB_SCROLL,
     GROUP_OK_CANCEL_SCROLL_BUTTONS, 12, text_scroll, button_none, 1, 1, 1
-};
+);
 let current: scrollbar_type;
 export function scrollbar_init(scrollbar: scrollbar_type, scroll_position: number, total_elements: number) {
     let max_scroll_position: number = total_elements - scrollbar.elements_in_view;

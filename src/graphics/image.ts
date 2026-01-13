@@ -8,7 +8,7 @@ export const FOOTPRINT_HEIGHT = 30;
 import { COLOR_WHITE } from 'graphics/color';
 import { COLOR_BLACK } from 'graphics/color';
 import { IMAGE_FONT_MULTIBYTE_OFFSET } from 'core/image';
-import { language_type } from 'core/locale';;
+import { language_type } from 'core/locale';
 import { encoding_type } from 'core/encoding';
 import { color_t } from 'graphics/color';
 export const enum image_type {
@@ -60,102 +60,102 @@ let FOOTPRINT_OFFSET_PER_HEIGHT: number[] = [
     0, 2, 8, 18, 32, 50, 72, 98, 128, 162, 200, 242, 288, 338, 392, 450,
     508, 562, 612, 658, 700, 738, 772, 802, 828, 850, 868, 882, 892, 898
 ];
-function draw_uncompressed(img: image, data: color_t, x_offset: number, y_offset: number, color: color_t, type: draw_type) {
+function draw_uncompressed(img: image, data: color_t[], x_offset: number, y_offset: number, color: color_t, type: draw_type): void {
     let clip: clip_info = graphics_get_clip_info(x_offset, y_offset, img.width, img.height);
     if (!clip.is_visible) {
         return;
     }
-    data += img.width * clip.clipped_pixels_top
+    let dataIndex: number = img.width * clip.clipped_pixels_top;
     for (let y: number = clip.clipped_pixels_top; y < img.height - clip.clipped_pixels_bottom; y++) {
-        data += clip.clipped_pixels_left
-        let dst: color_t = graphics_get_pixel(x_offset + clip.clipped_pixels_left, y_offset + y);
+        dataIndex += clip.clipped_pixels_left;
+        let dst: color_t[] = graphics_get_pixel(x_offset + clip.clipped_pixels_left, y_offset + y);
         let x_max: number = img.width - clip.clipped_pixels_right;
-        if (type == DRAW_TYPE_NONE) {
-            if (img.draw.type == IMAGE_TYPE_WITH_TRANSPARENCY || img.draw.is_external) {
+        if (type === draw_type.DRAW_TYPE_NONE) {
+            if (img.draw.type === image_type.IMAGE_TYPE_WITH_TRANSPARENCY || img.draw.is_external) {
                 for (let x: number = clip.clipped_pixels_left; x < x_max; x++, dst++) {
-                    if (* data != COLOR_SG2_TRANSPARENT) {
-                        * dst = * data;
+                    if (data[dataIndex] !== COLOR_SG2_TRANSPARENT) {
+                        dst[0] = data[dataIndex];
                     }
-                    data++;
+                    dataIndex++;
                 }
             } else {
                 let num_pixels: number = x_max - clip.clipped_pixels_left;
                 memcpy(dst, data, num_pixels);
-                data += num_pixels
+                dataIndex += num_pixels;
             }
-        } else if (type == DRAW_TYPE_SET) {
+        } else if (type === draw_type.DRAW_TYPE_SET) {
             for (let x: number = clip.clipped_pixels_left; x < x_max; x++, dst++) {
-                if (* data != COLOR_SG2_TRANSPARENT) {
-                    * dst = color;
+                if (data[dataIndex] !== COLOR_SG2_TRANSPARENT) {
+                    dst[0] = color;
                 }
-                data++;
+                dataIndex++;
             }
-        } else if (type == DRAW_TYPE_AND) {
+        } else if (type === draw_type.DRAW_TYPE_AND) {
             for (let x: number = clip.clipped_pixels_left; x < x_max; x++, dst++) {
-                if (* data != COLOR_SG2_TRANSPARENT) {
-                    * dst = * data & color;
+                if (data[dataIndex] !== COLOR_SG2_TRANSPARENT) {
+                    dst[0] = data[dataIndex] & color;
                 }
-                data++;
+                dataIndex++;
             }
-        } else if (type == DRAW_TYPE_BLEND) {
+        } else if (type === draw_type.DRAW_TYPE_BLEND) {
             for (let x: number = clip.clipped_pixels_left; x < x_max; x++, dst++) {
-                if (* data != COLOR_SG2_TRANSPARENT) {
-                    * dst &= color
+                if (data[dataIndex] !== COLOR_SG2_TRANSPARENT) {
+                    dst[0] &= color;
                 }
-                data++;
+                dataIndex++;
             }
-        } else if (type == DRAW_TYPE_BLEND_ALPHA) {
+        } else if (type === draw_type.DRAW_TYPE_BLEND_ALPHA) {
             for (let x: number = clip.clipped_pixels_left; x < x_max; x++, dst++) {
-                if (* data != COLOR_SG2_TRANSPARENT) {
+                if (data[dataIndex] !== COLOR_SG2_TRANSPARENT) {
                     let alpha: color_t = COMPONENT;
-                    if (alpha == 255) {
-                        * dst = color;
+                    if (alpha === 255) {
+                        dst[0] = color;
                     } else {
                         let s: color_t = color;
-                        let d: color_t = * dst;
-                        * dst = MIX_RB(s, d, alpha) | MIX_G;
+                        let d: color_t = dst[0];
+                        dst[0] = MIX_RB(s, d, alpha) | MIX_G;
                     }
                 }
-                data++;
+                dataIndex++;
             }
         }
-        data += clip.clipped_pixels_right
+        dataIndex += clip.clipped_pixels_right;
     }
 }
-function draw_compressed(img: image, data: color_t, x_offset: number, y_offset: number, height: number) {
+function draw_compressed(img: image, data: color_t[], x_offset: number, y_offset: number, height: number): void {
     let clip: clip_info = graphics_get_clip_info(x_offset, y_offset, img.width, height);
     if (!clip.is_visible) {
         return;
     }
-    let unclipped: number = clip.clip_x == CLIP_NONE;
+    let unclipped: number = clip.clip_x === CLIP_NONE;
+    let dataIndex: number = 0;
     for (let y: number = 0; y < height - clip.clipped_pixels_bottom; y++) {
         let x: number = 0;
         while (x < img.width) {
-                    color_t b = * data;
-            data++;
-            if (b == 255) {
+            let b: color_t = data[dataIndex++];
+            if (b === 255) {
                 // transparent pixels to skip
-                x += * data;
-                data++;
+                x += data[dataIndex];
+                dataIndex++;
             } else if (y < clip.clipped_pixels_top) {
-                data += b;
+                dataIndex += b;
                 x += b;
             } else {
                 // number of concrete pixels
-                const pixels: color_t[] = data;
-                data += b;
-                let dst: color_t = graphics_get_pixel(x_offset + x, y_offset + y);
+                let pixelsIndex: number = dataIndex;
+                dataIndex += b;
+                let dst: color_t[] = graphics_get_pixel(x_offset + x, y_offset + y);
                 if (unclipped) {
                     x += b;
-                    memcpy(dst, pixels, b);
+                    memcpy(dst, data, b);
                 } else {
-                    while (b) {
+                    while (b > 0) {
                         if (x >= clip.clipped_pixels_left && x < img.width - clip.clipped_pixels_right) {
-                                    * dst = * pixels;
+                            dst[0] = data[pixelsIndex];
                         }
                         dst++;
                         x++;
-                        pixels++;
+                        pixelsIndex++;
                         b--;
                     }
                 }
@@ -163,38 +163,38 @@ function draw_compressed(img: image, data: color_t, x_offset: number, y_offset: 
         }
     }
 }
-function draw_compressed_set(img: image, data: color_t, x_offset: number, y_offset: number, height: number, color: color_t) {
+function draw_compressed_set(img: image, data: color_t[], x_offset: number, y_offset: number, height: number, color: color_t): void {
     let clip: clip_info = graphics_get_clip_info(x_offset, y_offset, img.width, height);
     if (!clip.is_visible) {
         return;
     }
-    let unclipped: number = clip.clip_x == CLIP_NONE;
+    let unclipped: number = clip.clip_x === CLIP_NONE;
+    let dataIndex: number = 0;
     for (let y: number = 0; y < height - clip.clipped_pixels_bottom; y++) {
         let x: number = 0;
         while (x < img.width) {
-                    color_t b = * data;
-            data++;
-            if (b == 255) {
+            let b: color_t = data[dataIndex++];
+            if (b === 255) {
                 // transparent pixels to skip
-                x += * data;
-                data++;
+                x += data[dataIndex];
+                dataIndex++;
             } else if (y < clip.clipped_pixels_top) {
-                data += b;
+                dataIndex += b;
                 x += b;
             } else {
-                data += b;
-                color_t * dst = graphics_get_pixel(x_offset + x, y_offset + y);
+                dataIndex += b;
+                let dst: color_t[] = graphics_get_pixel(x_offset + x, y_offset + y);
                 if (unclipped) {
                     x += b;
-                    while (b) {
-                                * dst = color;
+                    while (b > 0) {
+                        dst[0] = color;
                         dst++;
                         b--;
                     }
                 } else {
-                    while (b) {
+                    while (b > 0) {
                         if (x >= clip.clipped_pixels_left && x < img.width - clip.clipped_pixels_right) {
-                                    * dst = color;
+                            dst[0] = color;
                         }
                         dst++;
                         x++;
@@ -205,45 +205,45 @@ function draw_compressed_set(img: image, data: color_t, x_offset: number, y_offs
         }
     }
 }
-function draw_compressed_and(img: image, data: color_t, x_offset: number, y_offset: number, height: number, color: color_t) {
+function draw_compressed_and(img: image, data: color_t[], x_offset: number, y_offset: number, height: number, color: color_t): void {
     let clip: clip_info = graphics_get_clip_info(x_offset, y_offset, img.width, height);
     if (!clip.is_visible) {
         return;
     }
-    let unclipped: number = clip.clip_x == CLIP_NONE;
+    let unclipped: number = clip.clip_x === CLIP_NONE;
+    let dataIndex: number = 0;
     for (let y: number = 0; y < height - clip.clipped_pixels_bottom; y++) {
         let x: number = 0;
         while (x < img.width) {
-                    color_t b = * data;
-            data++;
-            if (b == 255) {
+            let b: color_t = data[dataIndex++];
+            if (b === 255) {
                 // transparent pixels to skip
-                x += * data;
-                data++;
+                x += data[dataIndex];
+                dataIndex++;
             } else if (y < clip.clipped_pixels_top) {
-                data += b;
+                dataIndex += b;
                 x += b;
             } else {
                 // number of concrete pixels
-                const pixels: color_t[] = data;
-                data += b;
-                let dst: color_t = graphics_get_pixel(x_offset + x, y_offset + y);
+                let pixelsIndex: number = dataIndex;
+                dataIndex += b;
+                let dst: color_t[] = graphics_get_pixel(x_offset + x, y_offset + y);
                 if (unclipped) {
                     x += b;
-                    while (b) {
-                                * dst = * pixels & color;
+                    while (b > 0) {
+                        dst[0] = data[pixelsIndex] & color;
                         dst++;
-                        pixels++;
+                        pixelsIndex++;
                         b--;
                     }
                 } else {
-                    while (b) {
+                    while (b > 0) {
                         if (x >= clip.clipped_pixels_left && x < img.width - clip.clipped_pixels_right) {
-                                    * dst = * pixels & color;
+                            dst[0] = data[pixelsIndex] & color;
                         }
                         dst++;
                         x++;
-                        pixels++;
+                        pixelsIndex++;
                         b--;
                     }
                 }

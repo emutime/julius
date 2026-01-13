@@ -34,7 +34,6 @@ import { pixel_coordinate } from 'widget/city';
 import { city_draw_bridge } from 'widget/city_bridge';
 import { city_building_ghost_draw, city_building_ghost_mark_deleting } from 'widget/city_building_ghost';
 import { city_draw_figure, city_draw_selected_figure } from 'widget/city_figure';
-;
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
 import BUILDING_THEATER = building_type.BUILDING_THEATER;
 import BUILDING_HIPPODROME = building_type.BUILDING_HIPPODROME;

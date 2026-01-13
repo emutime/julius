@@ -154,12 +154,10 @@ import { tooltip_context } from 'graphics/tooltip';
 import { hotkeys } from 'input/hotkey';
 import { window_id } from 'graphics/window';
 import WINDOW_HOTKEY_CONFIG = window_id.WINDOW_HOTKEY_CONFIG;
-import { window_id } from 'graphics/window';
 import { window_type } from 'graphics/window';
 import { window_invalidate } from 'graphics/window';
 import { window_show } from 'graphics/window';
 import { window_go_back } from 'graphics/window';
-import { translation_key } from 'translation/translation';
 import TR_BUTTON_OK = translation_key.TR_BUTTON_OK;
 import TR_BUTTON_CANCEL = translation_key.TR_BUTTON_CANCEL;
 import TR_BUTTON_RESET_DEFAULTS = translation_key.TR_BUTTON_RESET_DEFAULTS;
@@ -367,7 +365,7 @@ export class unnamed165_8 {
 }
 let data: unnamed165_8 = new unnamed165_8();
 function init() {
-    scrollbar_init(scrollbar, 0, sizeof(hotkey_widgets) / sizeof(hotkey_widget));
+    scrollbar_init(scrollbar, 0, hotkey_widgets.length);
     for (let i: number = 0; i < HOTKEY_MAX_ITEMS; i++) {
         let empty: hotkey_mapping = { KEY_TYPE_NONE, KEY_MOD_NONE, i };
         let mapping: hotkey_mapping = hotkey_for_action(i, 0);

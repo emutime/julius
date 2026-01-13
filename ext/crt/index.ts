@@ -49,3 +49,7 @@ export function memset(ptr: any, value: number): void {
 export function memcpy(dst: Uint8Array, src: Uint8Array, size: number): void {
 
 }
+
+export function strtok(str: string, delim: string): string {
+    return str.split(delim)[0];
+}

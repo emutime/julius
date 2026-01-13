@@ -1,19 +1,37 @@
-export const OFFSET = 1;
-import { COLOR_MASK_RED } from 'graphics/color';
-import { NO_COLUMN } from 'widget/city_overlay';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
+import { building_animation_offset } from 'building/animation';
+import { building, building_get, building_main } from 'building/building';
+import { building_construction_record_view_position } from 'building/construction';
+import { building_is_farm } from 'building/industry';
 import { building_type } from 'building/type';
+import { city_view_foreach_map_tile, city_view_foreach_valid_map_tile, city_view_foreach_valid_map_tile_row, city_view_orientation } from 'city/view';
+import { config_get, config_key } from 'core/config';
+import { direction_type } from 'core/direction';
+import { image, image_get, image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { figure, figure_get } from 'figure/figure';
+import { resource_type } from 'game/resource';
+import { game_state_overlay, overlay } from 'game/state';
+import { COLOR_MASK_RED, color_t } from 'graphics/color';
+import { image_draw, image_draw_blend, image_draw_isometric_footprint_from_draw_tile, image_draw_isometric_top_from_draw_tile, image_draw_masked } from 'graphics/image';
+import { tooltip_context } from 'graphics/tooltip';
+import { map_is_bridge } from 'map/bridge';
+import { map_building_at } from 'map/building';
+import { map_figure_at } from 'map/figure';
+import { GRID } from 'map/grid';
+import { map_image_at } from 'map/image';
+import { map_tile } from 'map/point';
+import { edge_x, map_property_is_deleted, map_property_is_draw_tile, map_property_multi_tile_size, map_property_multi_tile_xy } from 'map/property';
+import { map_random_get } from 'map/random';
+import { map_terrain_get, map_terrain_is, terrain } from 'map/terrain';
+import { city_draw_bridge } from 'widget/city_bridge';
+import { city_building_ghost_draw, city_building_ghost_mark_deleting } from 'widget/city_building_ghost';
+import { city_draw_figure } from 'widget/city_figure';
+import { city_overlay, city_with_overlay_draw_building_footprint, city_with_overlay_draw_building_top, column_type, NO_COLUMN } from 'widget/city_overlay';
+import { city_overlay_for_academy, city_overlay_for_education, city_overlay_for_library, city_overlay_for_school } from 'widget/city_overlay_education';
+import { city_overlay_for_amphitheater, city_overlay_for_colosseum, city_overlay_for_entertainment, city_overlay_for_hippodrome, city_overlay_for_theater } from 'widget/city_overlay_entertainment';
+import { city_overlay_for_barber, city_overlay_for_bathhouse, city_overlay_for_clinic, city_overlay_for_hospital } from 'widget/city_overlay_health';
+import { city_overlay_for_desirability, city_overlay_for_food_stocks, city_overlay_for_religion, city_overlay_for_tax_income, city_overlay_for_water } from 'widget/city_overlay_other';
+import { city_overlay_for_crime, city_overlay_for_damage, city_overlay_for_fire, city_overlay_for_native, city_overlay_for_problems, city_overlay_problems_prepare_building } from 'widget/city_overlay_risks';
 import BUILDING_PREFECTURE = building_type.BUILDING_PREFECTURE;
 import BUILDING_MARKET = building_type.BUILDING_MARKET;
 import BUILDING_GRANARY = building_type.BUILDING_GRANARY;
@@ -22,31 +40,8 @@ import BUILDING_ENGINEERS_POST = building_type.BUILDING_ENGINEERS_POST;
 import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
 import BUILDING_FOUNTAIN = building_type.BUILDING_FOUNTAIN;
 import BUILDING_BURNING_RUIN = building_type.BUILDING_BURNING_RUIN;
-import { building_type } from 'building/type';;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_main } from 'building/building';
-import { building_animation_offset } from 'building/animation';
-import { building_construction_record_view_position } from 'building/construction';
-import { building_is_farm } from 'building/industry';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_orientation } from 'city/view';
-import { city_view_foreach_map_tile } from 'city/view';
-import { city_view_foreach_valid_map_tile } from 'city/view';
-import { city_view_foreach_valid_map_tile_row } from 'city/view';
-import { config_key } from 'core/config';
 import CONFIG_UI_VISUAL_FEEDBACK_ON_DELETE = config_key.CONFIG_UI_VISUAL_FEEDBACK_ON_DELETE;
-import { config_key } from 'core/config';
-import { config_string_key } from 'core/config';
-import { config_get } from 'core/config';
-import { resource_type } from 'game/resource';
 import RESOURCE_NONE = resource_type.RESOURCE_NONE;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { overlay } from 'game/state';
 import OVERLAY_WATER = overlay.OVERLAY_WATER;
 import OVERLAY_RELIGION = overlay.OVERLAY_RELIGION;
 import OVERLAY_FIRE = overlay.OVERLAY_FIRE;
@@ -70,10 +65,6 @@ import OVERLAY_FOOD_STOCKS = overlay.OVERLAY_FOOD_STOCKS;
 import OVERLAY_DESIRABILITY = overlay.OVERLAY_DESIRABILITY;
 import OVERLAY_NATIVE = overlay.OVERLAY_NATIVE;
 import OVERLAY_PROBLEMS = overlay.OVERLAY_PROBLEMS;
-import { game_state_overlay } from 'game/state';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_TERRAIN_BLACK = group_terrain.GROUP_TERRAIN_BLACK;
 import GROUP_TERRAIN_GRASS_1 = group_terrain.GROUP_TERRAIN_GRASS_1;
 import GROUP_TERRAIN_OVERLAY = group_terrain.GROUP_TERRAIN_OVERLAY;
@@ -81,33 +72,11 @@ import GROUP_TERRAIN_FLAT_TILE = group_terrain.GROUP_TERRAIN_FLAT_TILE;
 import GROUP_BUILDING_WAREHOUSE = group_terrain.GROUP_BUILDING_WAREHOUSE;
 import GROUP_BUILDING_GRANARY = group_terrain.GROUP_BUILDING_GRANARY;
 import GROUP_OVERLAY_COLUMN = group_terrain.GROUP_OVERLAY_COLUMN;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { image_get } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { image_draw_masked } from 'graphics/image';
-import { image_draw_blend } from 'graphics/image';
-import { image_draw_isometric_footprint_from_draw_tile } from 'graphics/image';
-import { image_draw_isometric_top_from_draw_tile } from 'graphics/image';
-import { map_is_bridge } from 'map/bridge';
-import { map_building_at } from 'map/building';
-import { direction_type } from 'core/direction';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
 import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
 import DIR_6_LEFT = direction_type.DIR_6_LEFT;
-import { direction_type } from 'core/direction';
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { map_figure_at } from 'map/figure';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_image_at } from 'map/image';
-import { edge_x } from 'map/property';
 import EDGE_X0Y0 = edge_x.EDGE_X0Y0;
 import EDGE_X1Y0 = edge_x.EDGE_X1Y0;
 import EDGE_X2Y0 = edge_x.EDGE_X2Y0;
@@ -115,73 +84,29 @@ import EDGE_X0Y1 = edge_x.EDGE_X0Y1;
 import EDGE_X1Y1 = edge_x.EDGE_X1Y1;
 import EDGE_X0Y2 = edge_x.EDGE_X0Y2;
 import EDGE_X2Y2 = edge_x.EDGE_X2Y2;
-import { map_property_is_draw_tile } from 'map/property';
-import { map_property_multi_tile_xy } from 'map/property';
-import { map_property_multi_tile_size } from 'map/property';
-import { map_property_is_deleted } from 'map/property';
-import { map_random_get } from 'map/random';
-import { terrain } from 'map/terrain';
 import TERRAIN_BUILDING = terrain.TERRAIN_BUILDING;
 import TERRAIN_ROAD = terrain.TERRAIN_ROAD;
 import TERRAIN_AQUEDUCT = terrain.TERRAIN_AQUEDUCT;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_is } from 'map/terrain';
-import { map_terrain_get } from 'map/terrain';
-import { city_draw_bridge } from 'widget/city_bridge';
-import { city_building_ghost_mark_deleting } from 'widget/city_building_ghost';
-import { city_building_ghost_draw } from 'widget/city_building_ghost';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { pixel_coordinate } from 'widget/city';
-import { city_draw_figure } from 'widget/city_figure';
-import { column_type } from 'widget/city_overlay';
 import COLUMN_TYPE_RISK = column_type.COLUMN_TYPE_RISK;
-import { city_overlay } from 'widget/city_overlay';
-import { city_with_overlay_draw_building_footprint } from 'widget/city_overlay';
-import { city_with_overlay_draw_building_top } from 'widget/city_overlay';
-import { city_overlay_for_education } from 'widget/city_overlay_education';
-import { city_overlay_for_school } from 'widget/city_overlay_education';
-import { city_overlay_for_library } from 'widget/city_overlay_education';
-import { city_overlay_for_academy } from 'widget/city_overlay_education';
-import { city_overlay_for_entertainment } from 'widget/city_overlay_entertainment';
-import { city_overlay_for_theater } from 'widget/city_overlay_entertainment';
-import { city_overlay_for_amphitheater } from 'widget/city_overlay_entertainment';
-import { city_overlay_for_colosseum } from 'widget/city_overlay_entertainment';
-import { city_overlay_for_hippodrome } from 'widget/city_overlay_entertainment';
-import { city_overlay_for_bathhouse } from 'widget/city_overlay_health';
-import { city_overlay_for_barber } from 'widget/city_overlay_health';
-import { city_overlay_for_clinic } from 'widget/city_overlay_health';
-import { city_overlay_for_hospital } from 'widget/city_overlay_health';
-import { city_overlay_for_religion } from 'widget/city_overlay_other';
-import { city_overlay_for_tax_income } from 'widget/city_overlay_other';
-import { city_overlay_for_food_stocks } from 'widget/city_overlay_other';
-import { city_overlay_for_water } from 'widget/city_overlay_other';
-import { city_overlay_for_desirability } from 'widget/city_overlay_other';
-import { city_overlay_problems_prepare_building } from 'widget/city_overlay_risks';
-import { city_overlay_for_fire } from 'widget/city_overlay_risks';
-import { city_overlay_for_damage } from 'widget/city_overlay_risks';
-import { city_overlay_for_crime } from 'widget/city_overlay_risks';
-import { city_overlay_for_problems } from 'widget/city_overlay_risks';
-import { city_overlay_for_native } from 'widget/city_overlay_risks';
 let overlay: city_overlay = 0;
-let ADJACENT_OFFSETS: number[] = new Array(2).fill({
-    {
-        { OFFSET(- 1, 0), OFFSET(-1, -1), OFFSET(-1, -2), OFFSET(0, -2), OFFSET(1, -2)},
-{ OFFSET(0, -1), OFFSET(1, -1), OFFSET(2, -1), OFFSET(2, 0), OFFSET(2, 1) },
-{ OFFSET(1, 0), OFFSET(1, 1), OFFSET(1, 2), OFFSET(0, 2), OFFSET(-1, 2) },
-{ OFFSET(0, 1), OFFSET(-1, 1), OFFSET(-2, 1), OFFSET(-2, 0), OFFSET(-2, -1) }
-    },
-{
-    { OFFSET(-1, 0), OFFSET(-1, -1), OFFSET(-1, -2), OFFSET(-1, -3), OFFSET(0, -3), OFFSET(1, -3), OFFSET(2, -3) },
-    { OFFSET(0, -1), OFFSET(1, -1), OFFSET(2, -1), OFFSET(3, -1), OFFSET(3, 0), OFFSET(3, 1), OFFSET(3, 2) },
-    { OFFSET(1, 0), OFFSET(1, 1), OFFSET(1, 2), OFFSET(1, 3), OFFSET(0, 3), OFFSET(-1, 3), OFFSET(-2, 3) },
-    { OFFSET(0, 1), OFFSET(-1, 1), OFFSET(-2, 1), OFFSET(-3, 1), OFFSET(-3, 0), OFFSET(-3, -1), OFFSET(-3, -2) }
-}
-});
+function OFFSET(x: number, y: number) { return x + GRID_SIZE * y };
+
+let ADJACENT_OFFSETS: number[][][] = [
+    [
+        [OFFSET(- 1, 0), OFFSET(-1, -1), OFFSET(-1, -2), OFFSET(0, -2), OFFSET(1, -2)],
+        [OFFSET(0, -1), OFFSET(1, -1), OFFSET(2, -1), OFFSET(2, 0), OFFSET(2, 1)],
+        [OFFSET(1, 0), OFFSET(1, 1), OFFSET(1, 2), OFFSET(0, 2), OFFSET(-1, 2)],
+        [OFFSET(0, 1), OFFSET(-1, 1), OFFSET(-2, 1), OFFSET(-2, 0), OFFSET(-2, -1)]
+    ],
+    [
+        [OFFSET(-1, 0), OFFSET(-1, -1), OFFSET(-1, -2), OFFSET(-1, -3), OFFSET(0, -3), OFFSET(1, -3), OFFSET(2, -3)],
+        [OFFSET(0, -1), OFFSET(1, -1), OFFSET(2, -1), OFFSET(3, -1), OFFSET(3, 0), OFFSET(3, 1), OFFSET(3, 2)],
+        [OFFSET(1, 0), OFFSET(1, 1), OFFSET(1, 2), OFFSET(1, 3), OFFSET(0, 3), OFFSET(-1, 3), OFFSET(-2, 3)],
+        [OFFSET(0, 1), OFFSET(-1, 1), OFFSET(-2, 1), OFFSET(-3, 1), OFFSET(-3, 0), OFFSET(-3, -1), OFFSET(-3, -2)]
+    ]
+];
 function get_city_overlay() {
     switch (game_state_overlay()) {
         case OVERLAY_FIRE:
