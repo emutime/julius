@@ -117,7 +117,7 @@ function handle_input(m: mouse, h: hotkeys) {
         data.focus_button = 2;
     }
     if (data.choice > 0) {
-        if (image_buttons_handle_mouse(m_dialog, 580, 410, image_button_start_mission, 1, 0)) {
+        if (image_buttons_handle_mouse(m_dialog, 580, 410, image_button_start_mission, 1, null)) {   
             return;
         }
         if (m_dialog.right.went_up || h.escape_pressed) {

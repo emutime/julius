@@ -41,14 +41,12 @@ import { window_draw_underlying_window, window_go_back, window_id, window_show, 
 import { hotkeys } from 'input/hotkey';
 import { input_go_back_requested } from 'input/input';
 import { mouse, mouse_in_dialog } from 'input/mouse';
-import { platform_file_manager_compare_filename_prefix } from 'platform/file_manager';
+import { platform_file_manager_compare_filename_prefix } from '../platform/file_manager';
 import { input_box, input_box_draw, input_box_handle_mouse, input_box_is_accepted, input_box_refresh_text, input_box_start, input_box_stop } from 'widget/input_box';
 import { window_city_show } from 'window/city';
 import { Ref } from '../../ext/crt';
 // TODO: window_editor_map_show needs to be translated from C to TypeScript
 declare function window_editor_map_show(): void;
-// TODO: platform_file_manager_compare_filename_prefix needs to be translated from C to TypeScript
-declare function platform_file_manager_compare_filename_prefix(file1: number[], file2: number[], len: number): number;
 import GROUP_OK_CANCEL_SCROLL_BUTTONS = group_terrain.GROUP_OK_CANCEL_SCROLL_BUTTONS;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
@@ -211,7 +209,7 @@ function should_scroll_to_typed_text() {
     return scroll;
 }
 function handle_input(m: mouse, h: hotkeys) {
-    data.double_click = m.left.double_click;
+    data.double_click = m.left.double_click ? 1 : 0;
     if (input_box_is_accepted(file_name_input)) {
         button_ok_cancel(1, 0);
         return;

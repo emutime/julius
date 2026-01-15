@@ -1,6 +1,6 @@
 import { image_group } from 'core/image';
 import { group_terrain } from 'core/image_group';
-import { string_copy, string_from_ascii, string_length } from 'core/string';
+import { Ref } from '../../ext/crt';
 import { editor_is_present } from 'editor/editor';
 import { game_init_editor } from 'game/game';
 import { system_exit, system_version } from 'game/system';
@@ -46,10 +46,8 @@ let buttons: generic_button[] = [
     new generic_button(192, 300, 256, 25, button_click, button_none, 6, 0),
 ];
 function draw_version_string() {
-    let version_string: number[] = "Julius v";
-    let version_prefix_length: number = string_length(version_string);
+    const version_string = "Julius v" + system_version();
     let text_y: number = screen_height() - 30;
-    string_copy(string_from_ascii(system_version()), version_string + version_prefix_length, 99);
     let text_width: number = text_get_width(version_string, FONT_SMALL_PLAIN);
     if (text_y <= 500 && (screen_width() - 640) / 2 < text_width + 18) {
         graphics_draw_rect(10, text_y, text_width + 14, 20, COLOR_BLACK);
@@ -83,9 +81,12 @@ function draw_foreground() {
 }
 function handle_input(m: mouse, h: hotkeys) {
     let m_dialog: mouse = mouse_in_dialog(m);
-    if (generic_buttons_handle_mouse(m_dialog, 0, 0, buttons, MAX_BUTTONS, focus_button_id)) {
+    const focusRef = new Ref(focus_button_id);
+    if (generic_buttons_handle_mouse(m_dialog, 0, 0, buttons, MAX_BUTTONS, focusRef)) {
+        focus_button_id = focusRef.v;
         return;
     }
+    focus_button_id = focusRef.v;
     if (h.escape_pressed) {
         hotkey_handle_escape();
     }

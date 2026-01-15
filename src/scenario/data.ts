@@ -271,7 +271,7 @@ class settings {
     public is_custom: number = 0;
     public starting_favor: number = 0;
     public starting_personal_savings: number = 0;
-    public player_name: number[] = new Array(MAX_PLAYER_NAME).fill(0);
+    public player_name: string = "";
     public campaign_player_name: number[] = new Array(MAX_PLAYER_NAME).fill(0);
     public constructor(...args: any[]) {
         args.length >= 1 && (this.campaign_rank = args[0]);
@@ -284,7 +284,7 @@ class settings {
     }
 }
 export class scenario_t {
-    public scenario_name: number[] = new Array(MAX_SCENARIO_NAME).fill(0);
+    public scenario_name: Uint8Array = new Uint8Array(MAX_SCENARIO_NAME);
     public start_year: number = 0;
     public climate: number = 0;
     public player_rank: number = 0;
@@ -292,8 +292,8 @@ export class scenario_t {
     public rescue_loan: number = 0;
     public rome_supplies_wheat: number = 0;
     public image_id: number = 0;
-    public brief_description: number[] = new Array(MAX_BRIEF_DESCRIPTION).fill(0);
-    public briefing: number[] = new Array(MAX_BRIEFING).fill(0);
+    public brief_description: Uint8Array = new Uint8Array(MAX_BRIEF_DESCRIPTION);
+    public briefing: Uint8Array = new Uint8Array(MAX_BRIEFING);
     public enemy_id: number = 0;
     public is_open_play: number = 0;
     public open_play_scenario_id: number = 0;

@@ -23,6 +23,7 @@ import { input_go_back_requested } from 'input/input';
 import { mouse, mouse_in_dialog } from 'input/mouse';
 import { scenario_building_allowed } from 'scenario/building';
 import { message_dialog, window_message_dialog_show } from 'window/message_dialog';
+import { Ref } from '../../ext/crt';
 import RESOURCE_MEAT = resource_type.RESOURCE_MEAT;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
 import RESOURCE_IMAGE_ICON = resource_image_type.RESOURCE_IMAGE_ICON;
@@ -159,25 +160,27 @@ function draw_foreground() {
 }
 function handle_input(m: mouse, h: hotkeys) {
     let m_dialog: mouse = mouse_in_dialog(m);
-    if (image_buttons_handle_mouse(m_dialog, 0, 0, resource_image_buttons, 2, 0)) {
+    if (image_buttons_handle_mouse(m_dialog, 0, 0, resource_image_buttons, 2, null)) {
         return;
     }
     if (city_resource_trade_status(data.resource) == TRADE_STATUS_EXPORT) {
-        let button: number = 0;
-        arrow_buttons_handle_mouse(m_dialog, 0, 0, resource_arrow_buttons, 2, button);
+        let button: number = arrow_buttons_handle_mouse(m_dialog, 0, 0, resource_arrow_buttons, 2, 0);
         if (button) {
             return;
         }
     }
-    if (generic_buttons_handle_mouse(m_dialog, 0, 0, resource_generic_buttons, 3, data.focus_button_id)) {
+    const focusRef = new Ref(data.focus_button_id);
+    if (generic_buttons_handle_mouse(m_dialog, 0, 0, resource_generic_buttons, 3, focusRef)) {
+        data.focus_button_id = focusRef.v;
         return;
     }
+    data.focus_button_id = focusRef.v;
     if (input_go_back_requested(m, h)) {
         window_go_back();
     }
 }
 function button_help(param1: number, param2: number) {
-    window_message_dialog_show(MESSAGE_DIALOG_INDUSTRY, 0);
+    window_message_dialog_show(MESSAGE_DIALOG_INDUSTRY, null);
 }
 function button_ok(param1: number, param2: number) {
     window_go_back();

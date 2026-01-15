@@ -15,7 +15,7 @@ import { mouse } from 'input/mouse';
 import { scenario_criteria_culture, scenario_criteria_culture_enabled, scenario_criteria_favor, scenario_criteria_favor_enabled, scenario_criteria_peace, scenario_criteria_peace_enabled, scenario_criteria_prosperity, scenario_criteria_prosperity_enabled } from 'scenario/criteria';
 import { scenario_is_open_play } from 'scenario/property';
 import { window_advisors_get_advisor } from 'window/advisors';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
+import { free } from '../../ext/crt';
 export const enum tooltip_type {
     TOOLTIP_NONE = 0,
     TOOLTIP_BUTTON = 1,

@@ -12,6 +12,7 @@ import { window_draw_underlying_window, window_id, window_show, window_type } fr
 import { hotkeys } from 'input/hotkey';
 import { input_go_back_requested } from 'input/input';
 import { mouse, mouse_in_dialog } from 'input/mouse';
+import { Ref } from '../../ext/crt';
 import FONT_NORMAL_PLAIN = font_t.FONT_NORMAL_PLAIN;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
@@ -62,10 +63,13 @@ function draw_foreground() {
 }
 function handle_input(m: mouse, h: hotkeys) {
     let m_dialog: mouse = mouse_in_dialog(m);
-    if (generic_buttons_handle_mouse(m_dialog, 0, 0, buttons, 2, data.focus_button_id) ||
+    const focusRef = new Ref(data.focus_button_id);
+    if (generic_buttons_handle_mouse(m_dialog, 0, 0, buttons, 2, focusRef) ||
         arrow_buttons_handle_mouse(m_dialog, 160, 40, arrow_buttons, 4, 0)) {
+        data.focus_button_id = focusRef.v;
         return;
     }
+    data.focus_button_id = focusRef.v;
     if (input_go_back_requested(m, h)) {
         data.close_callback();
     }

@@ -11,6 +11,7 @@ import { hotkeys } from 'input/hotkey';
 import { key_combination_display_name, key_modifier_type, key_type } from 'input/keys';
 import { mouse, mouse_in_dialog } from 'input/mouse';
 import { translation_for, translation_key } from 'translation/translation';
+import { Ref } from '../../ext/crt';
 import KEY_TYPE_NONE = key_type.KEY_TYPE_NONE;
 import KEY_TYPE_ENTER = key_type.KEY_TYPE_ENTER;
 import KEY_TYPE_ESCAPE = key_type.KEY_TYPE_ESCAPE;
@@ -35,7 +36,7 @@ export class unnamed28_8 {
     public index: number = 0;
     public key: key_type = null;
     public modifiers: key_modifier_type = null;
-    public callback: () => void = null;
+    public callback: (action: hotkey_action, index: number, key: key_type, modifiers: key_modifier_type) => void = null;
     public focus_button: number = 0;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.action = args[0]);
@@ -47,7 +48,7 @@ export class unnamed28_8 {
     }
 }
 let data: unnamed28_8 = new unnamed28_8();
-function init(action: hotkey_action, index: number, callback: () => void) {
+function init(action: hotkey_action, index: number, callback: (action: hotkey_action, index: number, key: key_type, modifiers: key_modifier_type) => void) {
     data.action = action;
     data.index = index;
     data.callback = callback;
@@ -81,7 +82,11 @@ function draw_foreground() {
 function handle_input(m: mouse, h: hotkeys) {
     let m_dialog: mouse = mouse_in_dialog(m);
     let handled: number = 0;
-    handled |= generic_buttons_handle_mouse(m_dialog, 0, 0, bottom_buttons, NUM_BOTTOM_BUTTONS, data.focus_button)
+    const focusRef = new Ref(data.focus_button);
+    if (generic_buttons_handle_mouse(m_dialog, 0, 0, bottom_buttons, NUM_BOTTOM_BUTTONS, focusRef)) {
+        handled = 1;
+    }
+    data.focus_button = focusRef.v;
     if (!handled && m.right.went_up) {
         button_close(0, 0);
     }
@@ -109,7 +114,7 @@ export function window_hotkey_editor_key_released(key: key_type, modifiers: key_
         data.modifiers = modifiers;
     }
 }
-export function window_hotkey_editor_show(action: hotkey_action, index: number, callback: () => void) {
+export function window_hotkey_editor_show(action: hotkey_action, index: number, callback: (action: hotkey_action, index: number, key: key_type, modifiers: key_modifier_type) => void) {
     let window: window_type = new window_type(
         WINDOW_HOTKEY_EDITOR,
         draw_background,

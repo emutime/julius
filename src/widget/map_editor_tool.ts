@@ -78,8 +78,8 @@ function draw_building_image(image_id: number, x: number, y: number) {
 function draw_building(tile: map_tile, x_view: number, y_view: number, type: building_type) {
     let props: building_properties = building_properties_for_type(type);
     let num_tiles: number = props.size * props.size;
-    let blocked_tiles: number[];
-    let blocked: number = !editor_tool_can_place_building(tile, num_tiles, blocked_tiles);
+    let blocked_tiles: boolean[];
+    let blocked: boolean = !editor_tool_can_place_building(tile, num_tiles, blocked_tiles);
     if (blocked) {
         draw_partially_blocked(x_view, y_view, num_tiles, blocked_tiles);
     } else if (editor_tool_is_in_use()) {
@@ -130,9 +130,9 @@ function draw_brush(tile: map_tile, x: number, y: number) {
     editor_tool_foreach_brush_tile(draw_brush_tile, vt);
 }
 function draw_access_ramp(tile: map_tile, x: number, y: number) {
-    let orientation: number;
+    let orientation: Ref<number> = new Ref<number>(0);
     if (editor_tool_can_place_access_ramp(tile, orientation)) {
-        let image_id: number = image_group(GROUP_TERRAIN_ACCESS_RAMP) + orientation;
+        let image_id: number = image_group(GROUP_TERRAIN_ACCESS_RAMP) + orientation.v;
         draw_building_image(image_id, x, y);
     } else {
         let blocked: boolean[] = [true, true, true, true];
@@ -147,9 +147,11 @@ export function map_editor_tool_draw(tile: map_tile) {
         return;
     }
     let type: tool_type = editor_tool_type();
-    let x: number
-    let y: number;
-    city_view_get_selected_tile_pixels(x, y);
+    let x_ref: Ref<number> = new Ref<number>(0);
+    let y_ref: Ref<number> = new Ref<number>(0);
+    city_view_get_selected_tile_pixels(x_ref, y_ref);
+    let x = x_ref.v;
+    let y = y_ref.v;
     switch (type) {
         case TOOL_NATIVE_CENTER:
             draw_building(tile, x, y, BUILDING_NATIVE_MEETING);

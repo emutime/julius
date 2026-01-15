@@ -19,6 +19,7 @@ import { input_go_back_requested } from 'input/input';
 import { mouse, mouse_in_dialog } from 'input/mouse';
 import { window_advisors_draw_dialog_background, window_advisors_show } from 'window/advisors';
 import { message_dialog, window_message_dialog_show } from 'window/message_dialog';
+import { Ref } from '../../ext/crt';
 import GROUP_PANEL_WINDOWS = group_terrain.GROUP_PANEL_WINDOWS;
 import GROUP_OK_CANCEL_SCROLL_BUTTONS = group_terrain.GROUP_OK_CANCEL_SCROLL_BUTTONS;
 import GROUP_RESOURCE_ICONS = group_terrain.GROUP_RESOURCE_ICONS;
@@ -75,7 +76,7 @@ function draw_background() {
     lang_text_draw_centered(58, 25 + city_festival_selected_god(), 48, 60, 544, FONT_LARGE_BLACK);
     for (let god: number = 0; god < MAX_GODS; god++) {
         if (god == city_festival_selected_god()) {
-            button_border_draw(100 * god + 66, 92, 90, 100, 1);
+            button_border_draw(100 * god + 66, 92, 90, 100, true);
             image_draw(image_group(GROUP_PANEL_WINDOWS) + god + 21, 100 * god + 70, 96);
         } else {
             image_draw(image_group(GROUP_PANEL_WINDOWS) + god + 16, 100 * god + 70, 96);
@@ -94,8 +95,16 @@ function draw_foreground() {
 function handle_input(m: mouse, h: hotkeys) {
     let m_dialog: mouse = mouse_in_dialog(m);
     let handled: number = 0;
-    handled |= image_buttons_handle_mouse(m_dialog, 0, 0, image_buttons_bottom, 4, focus_image_button_id);
-    handled |= generic_buttons_handle_mouse(m_dialog, 0, 0, buttons_gods_size, 8, focus_button_id);
+    const focusImageRef = new Ref(focus_image_button_id);
+    const focusButtonRef = new Ref(focus_button_id);
+    if (image_buttons_handle_mouse(m_dialog, 0, 0, image_buttons_bottom, 4, focusImageRef)) {
+        handled = 1;
+    }
+    if (generic_buttons_handle_mouse(m_dialog, 0, 0, buttons_gods_size, 8, focusButtonRef)) {
+        handled = 1;
+    }
+    focus_image_button_id = focusImageRef.v;
+    focus_button_id = focusButtonRef.v;
     if (focus_image_button_id) {
         focus_button_id = 0;
     }
@@ -115,7 +124,7 @@ function button_size(size: number, param2: number) {
     }
 }
 function button_help(param1: number, param2: number) {
-    window_message_dialog_show(MESSAGE_DIALOG_ADVISOR_ENTERTAINMENT, 0);
+    window_message_dialog_show(MESSAGE_DIALOG_ADVISOR_ENTERTAINMENT, null);
 }
 function button_close(param1: number, param2: number) {
     window_advisors_show();

@@ -1,4 +1,8 @@
 import { log_error } from 'core/log';
+
+type pk_input_func = (buffer: number[], length: number, token: pk_token) => number;
+type pk_output_func = (buffer: number[], length: number, token: pk_token) => void;
+
 export const enum pk {
     PK_SUCCESS = 0,
     PK_INVALID_WINDOWSIZE = 1,
@@ -35,7 +39,7 @@ export class pk_comp_buffer {
     public copy_offset_extra_mask: number = 0;
     public current_output_bits_used: number = 0;
     public input_data: number[] = new Array(8708).fill(0);
-    public output_data: number[] = new Array(2050).fill(0);
+    public output_data: number[][] = new Array(2050).fill(0);
     public output_ptr: number = 0;
     public analyze_offset_table: number[] = new Array(2304).fill(0);
     public analyze_index: number[] = new Array(8708).fill(0);
@@ -377,7 +381,7 @@ function pk_implode_data(buf: pk_comp_buffer) {
     let eof: number = 0;
     let has_leftover_data: number = 0;
     buf.output_data[0] = 0;
-    buf.output_data[1] = (uint8_t) buf.window_size;
+    buf.output_data[1] = buf.window_size;
     buf.output_ptr = 2;
     let input_ptr: number = buf.dictionary_size + 516;
     pk_memset(buf.output_data[2], 0, 2048);

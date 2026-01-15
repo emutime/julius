@@ -488,7 +488,7 @@ function allocate_mapping_memory(total_definitions: number, total_arrows: number
     }
     return 1;
 }
-export function hotkey_install_mapping(mappings: hotkey_mapping, num_mappings: number) {
+export function hotkey_install_mapping(mappings: hotkey_mapping[], num_mappings: number) {
     let total_definitions: number = 2;
     let total_arrows: number = 0;
     for (let i: number = 0; i < num_mappings; i++) {

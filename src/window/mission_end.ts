@@ -27,6 +27,7 @@ import { intermezzo_type, window_intermezzo_show } from 'window/intermezzo';
 import { window_main_menu_show } from 'window/main_menu';
 import { window_mission_selection_show } from 'window/mission_selection';
 import { window_victory_video_show } from 'window/victory_video';
+import { Ref } from '../../ext/crt';
 import VICTORY_STATE_WON = victory_state.VICTORY_STATE_WON;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
@@ -101,7 +102,7 @@ function draw_background() {
 function draw_foreground() {
     if (city_victory_state() != VICTORY_STATE_WON) {
         graphics_in_dialog();
-        large_label_draw(80, 224, 30, focus_button_id == 1);
+        large_label_draw(80, 224, 30, focus_button_id == 1 ? 1 : 0);
         lang_text_draw_centered(62, 6, 80, 230, 480, FONT_NORMAL_GREEN);
         graphics_reset_dialog();
     }
@@ -133,8 +134,10 @@ function handle_input(m: mouse, h: hotkeys) {
             advance_to_next_mission();
         }
     } else {
+        const focusRef = new Ref(focus_button_id);
         generic_buttons_handle_mouse(mouse_in_dialog(m), 0, 0,
-            fired_buttons, 1, focus_button_id);
+            fired_buttons, 1, focusRef);
+        focus_button_id = focusRef.v;
     }
 }
 function button_fired(param1: number, param2: number) {

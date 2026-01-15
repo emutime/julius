@@ -1,10 +1,10 @@
 
-;
 import { city_message_post, city_message_type } from 'city/message';
 import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
 import { random_byte } from 'core/random';
 import { game_time_month, game_time_year } from 'game/time';
 import MESSAGE_EMPEROR_CHANGE = city_message_type.MESSAGE_EMPEROR_CHANGE;
+import { scenario_t } from './data';
 export let scenario: scenario_t = new scenario_t();
 export class unnamed10_8 {
     public game_year: number = 0;

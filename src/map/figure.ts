@@ -65,7 +65,7 @@ export function map_figure_delete(f: figure) {
     }
     f.next_figure_id_on_same_tile = 0;
 }
-export function map_figure_foreach_until(grid_offset: number, callback: (f: figure) => number) {
+export function map_figure_foreach_until(grid_offset: number, callback: (f: figure) => boolean) {
     if (figures.items[grid_offset] > 0) {
         let figure_id: number = figures.items[grid_offset];
         while (figure_id) {

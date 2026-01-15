@@ -30,6 +30,7 @@ import { scenario_player_name } from 'scenario/property';
 import { scenario_request, scenario_request_get, scenario_request_state } from 'scenario/request';
 import { window_advisors_show_advisor } from 'window/advisors';
 import { window_city_draw_all, window_city_show } from 'window/city';
+import { Ref } from '../../ext/crt';
 export const enum message_dialog {
     MESSAGE_DIALOG_ABOUT = 0,
     MESSAGE_DIALOG_HELP = 10,
@@ -142,10 +143,10 @@ class unnamed71_5 {
     }
 }
 export class unnamed70_8 {
-    public history: history = new Array(200).fill(null);
+    public history: unnamed71_5[] = Array.from({ length: 200 }, () => new unnamed71_5());
     public num_history: number = 0;
     public text_id: number = 0;
-    public background_callback: () => void = null;
+    public background_callback: (() => void) | null = null;
     public show_video: number = 0;
     public x: number = 0;
     public y: number = 0;
@@ -195,7 +196,7 @@ function set_city_message(year: number, month: number, param1: number, param2: n
     player_message.message_advisor = message_advisor;
     player_message.use_popup = use_popup;
 }
-function init(text_id: number, background_callback: () => void) {
+function init(text_id: number, background_callback: (() => void) | null) {
     scroll_drag_end();
     for (let i: number = 0; i < MAX_HISTORY; i++) {
         data.history[i].text_id = 0;
@@ -518,18 +519,21 @@ function draw_foreground() {
     graphics_reset_dialog();
 }
 function handle_input_video(m_dialog: mouse, msg: lang_message) {
-    if (image_buttons_handle_mouse(m_dialog, data.x + 16, data.y + 408, get_advisor_button(), 1, 0)) {
+    if (image_buttons_handle_mouse(m_dialog, data.x + 16, data.y + 408, get_advisor_button(), 1, null)) {
         return 1;
     }
-    if (image_buttons_handle_mouse(m_dialog, data.x + 372, data.y + 410, image_button_close, 1, 0)) {
+    if (image_buttons_handle_mouse(m_dialog, data.x + 372, data.y + 410, image_button_close, 1, null)) {
         return 1;
     }
+    const focusRef = new Ref(data.focus_button_id);
     if (is_problem_message(msg)) {
         if (image_buttons_handle_mouse(m_dialog, data.x + 48, data.y + 407,
-            image_button_go_to_problem, 1, data.focus_button_id)) {
+            image_button_go_to_problem, 1, focusRef)) {
+            data.focus_button_id = focusRef.v;
             return 1;
         }
     }
+    data.focus_button_id = focusRef.v;
     return 0;
 }
 function handle_input_normal(m_dialog: mouse, msg: lang_message) {
@@ -537,25 +541,28 @@ function handle_input_normal(m_dialog: mouse, msg: lang_message) {
         return 1;
     }
     if (msg.type == TYPE_MANUAL && image_buttons_handle_mouse(
-        m_dialog, data.x + 16, data.y + BLOCK_SIZE * msg.height_blocks - 36, image_button_back, 1, 0)) {
+        m_dialog, data.x + 16, data.y + BLOCK_SIZE * msg.height_blocks - 36, image_button_back, 1, null)) {
         return 1;
     }
     if (msg.type == TYPE_MESSAGE) {
         if (image_buttons_handle_mouse(
-            m_dialog, data.x + 16, data.y + BLOCK_SIZE * msg.height_blocks - 40, get_advisor_button(), 1, 0)) {
+            m_dialog, data.x + 16, data.y + BLOCK_SIZE * msg.height_blocks - 40, get_advisor_button(), 1, null)) {
             return 1;
         }
         if (msg.message_type == MESSAGE_TYPE_DISASTER || msg.message_type == MESSAGE_TYPE_INVASION) {
+            const focusRef = new Ref(data.focus_button_id);
             if (image_buttons_handle_mouse(m_dialog, data.x + 64, data.y_text + 36,
-                image_button_go_to_problem, 1, 0)) {
+                image_button_go_to_problem, 1, focusRef)) {
+                data.focus_button_id = focusRef.v;
                 return 1;
             }
+            data.focus_button_id = focusRef.v;
         }
     }
     if (image_buttons_handle_mouse(m_dialog,
         data.x + BLOCK_SIZE * msg.width_blocks - 38,
         data.y + BLOCK_SIZE * msg.height_blocks - 36,
-        image_button_close, 1, 0)) {
+        image_button_close, 1, null)) {
         return 1;
     }
     let text_id: number = rich_text_get_clicked_link(m_dialog);
@@ -638,7 +645,7 @@ function get_tooltip(c: tooltip_context) {
         c.text_id = 1;
     }
 }
-export function window_message_dialog_show(text_id: number, background_callback: () => void) {
+export function window_message_dialog_show(text_id: number, background_callback: (() => void) | null) {
     let window: window_type = new window_type(
         WINDOW_MESSAGE_DIALOG,
         draw_background,

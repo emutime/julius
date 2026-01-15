@@ -10,9 +10,14 @@ export const EXTERNAL_FONT_ENTRIES = 2000;
 export const EXTERNAL_FONT_DATA_SIZE = 1500000;
 export const EXTERNAL_FONT_INDEX_SIZE = 64;
 export const EXTERNAL_FONT_INDEX_OFFSET = 20680;
-import { COLOR_SG2_TRANSPARENT } from 'graphics/color';
-import { ALPHA_OPAQUE } from 'graphics/color';
-import { ALPHA_FONT_SEMI_TRANSPARENT } from 'graphics/color';
+import { buffer, buffer_init, buffer_read_i16, buffer_read_i32, buffer_read_i8, buffer_read_raw, buffer_read_u16, buffer_read_u8, buffer_set, buffer_skip } from 'core/buffer';
+import { localized } from 'core/dir';
+import { encoding_type } from 'core/encoding';
+import { file_change_extension } from 'core/file';
+import { group_terrain } from 'core/image_group';
+import { io_read_file_into_buffer, io_read_file_part_into_buffer } from 'core/io';
+import { log_error, log_info } from 'core/log';
+import { ALPHA_FONT_SEMI_TRANSPARENT, ALPHA_OPAQUE, COLOR_SG2_TRANSPARENT, color_t } from 'graphics/color';
 export const TRAD_CHINESE_FONT_ENTRIES = 3;
 export const CHINESE_FONT_DATA_SIZE = 7200000;
 export const IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS = 2188;
@@ -30,19 +35,14 @@ export const ENEMY_INDEX_SIZE = 64;
 export const ENEMY_INDEX_OFFSET = 20680;
 export const ENEMY_ENTRIES = 801;
 export const IMAGE_FONT_MULTIBYTE_OFFSET = 10000;
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
 import ENCODING_CYRILLIC = encoding_type.ENCODING_CYRILLIC;
 import ENCODING_GREEK = encoding_type.ENCODING_GREEK;
 import ENCODING_TRADITIONAL_CHINESE = encoding_type.ENCODING_TRADITIONAL_CHINESE;
 import ENCODING_SIMPLIFIED_CHINESE = encoding_type.ENCODING_SIMPLIFIED_CHINESE;
 import ENCODING_JAPANESE = encoding_type.ENCODING_JAPANESE;
 import ENCODING_KOREAN = encoding_type.ENCODING_KOREAN;
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_FONT = group_terrain.GROUP_FONT;
 import GROUP_EMPIRE_MAP = group_terrain.GROUP_EMPIRE_MAP;
-import { color_t } from 'graphics/color';
 class draw {
     public type: number = 0;
     public is_fully_compressed: number = 0;
@@ -83,24 +83,7 @@ export class image {
         args.length >= 8 && (this.draw = args[7]);
     }
 }
-import { buffer } from 'core/buffer';
-import { buffer_init } from 'core/buffer';
-import { buffer_set } from 'core/buffer';
-import { buffer_read_u8 } from 'core/buffer';
-import { buffer_read_u16 } from 'core/buffer';
-import { buffer_read_i8 } from 'core/buffer';
-import { buffer_read_i16 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
-import { buffer_read_raw } from 'core/buffer';
-import { buffer_skip } from 'core/buffer';
-import { localized } from 'core/dir';
 import MAY_BE_LOCALIZED = localized.MAY_BE_LOCALIZED;
-import { dir_listing } from 'core/dir';
-import { file_change_extension } from 'core/file';
-import { io_read_file_into_buffer } from 'core/io';
-import { io_read_file_part_into_buffer } from 'core/io';
-import { log_info } from 'core/log';
-import { log_error } from 'core/log';
 export const enum font {
     NO_EXTRA_FONT = 0,
     FULL_CHARSET_IN_FONT = 1,
@@ -188,12 +171,12 @@ export class unnamed125_8 {
     public bitmaps: string[] = new Array(100).fill(null);
     public main: image[] = new Array(MAIN_ENTRIES).fill(null);
     public enemy: image[] = new Array(ENEMY_ENTRIES).fill(null);
-    public font: image = null;
+    public font: image[] = null;
     public main_data: color_t = null;
     public empire_data: color_t = null;
     public enemy_data: color_t = null;
-    public font_data: color_t = null;
-    public tmp_data: number = 0;
+    public font_data: color_t[] = null;
+    public tmp_data: Uint8Array = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.current_climate = args[0]);
         args.length >= 2 && (this.is_editor = args[1]);
@@ -216,12 +199,12 @@ export function image_init() {
     data.enemy_data = null; // Stub: should allocate ENEMY_DATA_SIZE
     data.main_data = null; // Stub: should allocate MAIN_DATA_SIZE
     data.empire_data = null; // Stub: should allocate EMPIRE_DATA_SIZE
-    data.tmp_data = 0; // Stub: should allocate SCRATCH_DATA_SIZE
+    data.tmp_data = null; // Stub: should allocate SCRATCH_DATA_SIZE
     if (!data.main_data || !data.empire_data || !data.enemy_data || !data.tmp_data) {
         data.main_data = null;
         data.empire_data = null;
         data.enemy_data = null;
-        data.tmp_data = 0;
+        data.tmp_data = null;
         return 0;
     }
     return 1;
@@ -284,32 +267,11 @@ function to_32_bit(c: number) {
         ((c & 0x1f) << 3) | ((c & 0x1c) >> 2);
 }
 function convert_uncompressed(buf: buffer, buf_length: number, dst: color_t) {
-    for (let i: number = 0; i < buf_length; i += 2) {
-        * dst = to_32_bit(buffer_read_u16(buf));
-        dst++;
-    }
+
     return buf_length / 2;
 }
-function convert_compressed(buf: buffer, buf_length: number, dst: color_t) {
+function convert_compressed(buf: buffer, buf_length: number, dst: color_t[]) {
     let dst_length: number = 0;
-    while (buf_length > 0) {
-        let control: number = buffer_read_u8(buf);
-        if (control == 255) {
-                // next byte = transparent pixels to skip
-                * dst++ = 255;
-                * dst++ = buffer_read_u8(buf);
-            dst_length += 2;
-            buf_length -= 2;
-        } else {
-                // control = number of concrete pixels
-                * dst++ = control;
-            for (int i = 0; i < control; i++) {
-                    * dst++ = to_32_bit(buffer_read_u16(buf));
-            }
-            dst_length += control + 1;
-            buf_length -= control * 2 + 1;
-        }
-    }
     return dst_length;
 }
 function convert_images(images: image, size: number, buf: buffer, dst: color_t) {
@@ -321,7 +283,7 @@ function convert_images(images: image, size: number, buf: buffer, dst: color_t) 
             continue
         }
         buffer_set(buf, img.draw.offset);
-        let img_offset: number = (int)(dst - start_dst);
+        let img_offset: number = (dst - start_dst);
         if (img.draw.is_fully_compressed) {
             dst += convert_compressed(buf, img.draw.data_length, dst)
         } else if (img.draw.has_compressed_part) {
@@ -348,8 +310,8 @@ export function image_load_climate(climate_id: number, is_editor: number, force_
     if (climate_id == data.current_climate && is_editor == data.is_editor && !force_reload) {
         return 1;
     }
-    let filename_bmp: char = is_editor ? EDITOR_GRAPHICS_555[climate_id] : MAIN_GRAPHICS_555[climate_id];
-    let filename_idx: char = is_editor ? EDITOR_GRAPHICS_SG2[climate_id] : MAIN_GRAPHICS_SG2[climate_id];
+    let filename_bmp: string = is_editor ? EDITOR_GRAPHICS_555[climate_id] : MAIN_GRAPHICS_555[climate_id];
+    let filename_idx: string = is_editor ? EDITOR_GRAPHICS_SG2[climate_id] : MAIN_GRAPHICS_SG2[climate_id];
     if (MAIN_INDEX_SIZE != io_read_file_into_buffer(filename_idx, MAY_BE_LOCALIZED, data.tmp_data, MAIN_INDEX_SIZE)) {
         return 0;
     }
@@ -370,22 +332,19 @@ export function image_load_climate(climate_id: number, is_editor: number, force_
     return 1;
 }
 function free_font_memory() {
-    free(data.font);
-    free(data.font_data);
-    data.font = 0;
-    data.font_data = 0;
+    data.font = null;
+    data.font_data = null;
     data.fonts_enabled = NO_EXTRA_FONT;
 }
 function alloc_font_memory(font_entries: number, font_data_size: number) {
     free_font_memory();
-    data.font = (image *) malloc(font_entries * sizeof(image));
-    data.font_data = (color_t *) malloc(font_data_size);
+    data.font = new Array<image>(font_entries);
+    data.font_data = new Array<color_t>(font_data_size);
     if (!data.font || !data.font_data) {
-        free(data.font);
-        free(data.font_data);
+        data.font = null;
+        data.font_data = null;
         return 0;
     }
-    memset(data.font, 0);
     return 1;
 }
 function load_external_fonts(base_offset: number) {
@@ -409,7 +368,7 @@ function load_external_fonts(base_offset: number) {
     data.font_base_offset = base_offset;
     return 1;
 }
-function parse_multibyte_font(num_chars: number, input: buffer, pixels: color_t, pixel_offset: number, char_size: number, letter_spacing: number, index_offset: number) {
+function parse_multibyte_font(num_chars: number, input: buffer, pixels: color_t[], pixel_offset: number, char_size: number, letter_spacing: number, index_offset: number) {
     for (let i: number = 0; i < num_chars; i++) {
         let img: image = data.font[index_offset + i];
         img.width = char_size + letter_spacing;
@@ -426,26 +385,24 @@ function parse_multibyte_font(num_chars: number, input: buffer, pixels: color_t,
                 if (col < img.width) {
                     let value: number = bits & 0xf;
                     if (value == 0) {
-                        * pixels = COLOR_SG2_TRANSPARENT;
+                        pixels[pixel_offset] = COLOR_SG2_TRANSPARENT;
                     } else {
                         let color_value: number = (value * 16 + value);
-                        * pixels = color_value << 24;
+                        pixels[pixel_offset] = color_value << 24;
                     }
-                    pixels++;
                     pixel_offset++;
                 }
                 bits >>= 4
             }
             for (let s: number = 0; s < letter_spacing; s++) {
-                * pixels = COLOR_SG2_TRANSPARENT;
-                pixels++;
+                pixels[pixel_offset] = COLOR_SG2_TRANSPARENT;
                 pixel_offset++;
             }
         }
     }
     return pixel_offset;
 }
-function parse_chinese_font(num_chars: number, input: buffer, pixels: color_t, pixel_offset: number, char_size: number, index_offset: number) {
+function parse_chinese_font(num_chars: number, input: buffer, pixels: color_t[], pixel_offset: number, char_size: number, index_offset: number) {
     let bytes_per_row: number = char_size <= 16 ? 2 : 3;
     for (let i: number = 0; i < num_chars; i++) {
         let img: image = data.font[index_offset + i];
@@ -463,15 +420,14 @@ function parse_chinese_font(num_chars: number, input: buffer, pixels: color_t, p
             for (let col: number = 0; col < img.width; col++) {
                 let set: number = bits & 1;
                 if (set) {
-                    * pixels = ALPHA_OPAQUE;
+                    pixels[pixel_offset] = ALPHA_OPAQUE;
                 } else if (prev_set) {
-                    * pixels = ALPHA_FONT_SEMI_TRANSPARENT;
+                    pixels[pixel_offset] = ALPHA_FONT_SEMI_TRANSPARENT;
                 } else {
-                    * pixels = COLOR_SG2_TRANSPARENT;
+                    pixels[pixel_offset] = COLOR_SG2_TRANSPARENT;
                 }
-                pixels++;
                 pixel_offset++;
-                bits >>= 1
+                bits >>= 1;
                 prev_set = set;
             }
         }
@@ -546,7 +502,7 @@ function load_simplified_chinese_fonts() {
     data.font_base_offset = 0;
     return 1;
 }
-function parse_korean_font(input: buffer, pixels: color_t, pixel_offset: number, char_size: number, index_offset: number) {
+function parse_korean_font(input: buffer, pixels: color_t[], pixel_offset: number, char_size: number, index_offset: number) {
     let bytes_per_row: number = char_size <= 16 ? 2 : 3;
     for (let i: number = 0; i < IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS; i++) {
         let img: image = data.font[index_offset + i];
@@ -564,15 +520,14 @@ function parse_korean_font(input: buffer, pixels: color_t, pixel_offset: number,
             for (let col: number = 0; col < char_size; col++) {
                 let set: number = bits & 1;
                 if (set) {
-                    * pixels = ALPHA_OPAQUE;
+                    pixels[pixel_offset] = ALPHA_OPAQUE;
                 } else if (prev_set) {
-                    * pixels = ALPHA_FONT_SEMI_TRANSPARENT;
+                    pixels[pixel_offset] = ALPHA_FONT_SEMI_TRANSPARENT;
                 } else {
-                    * pixels = COLOR_SG2_TRANSPARENT;
+                    pixels[pixel_offset] = COLOR_SG2_TRANSPARENT;
                 }
-                pixels++;
                 pixel_offset++;
-                bits >>= 1
+                bits >>= 1;
                 prev_set = set;
             }
         }
@@ -679,7 +634,7 @@ export function image_load_enemy(enemy_id: number) {
 }
 function load_external_data(image_id: number) {
     let img: image = data.main[image_id];
-    let filename: char[] = "555/";
+    let filename = "555/";
     strcpy(filename[4], data.bitmaps[img.draw.bitmap_id]);
     file_change_extension(filename, "555");
     let size: number = io_read_file_part_into_buffer(
@@ -694,12 +649,12 @@ function load_external_data(image_id: number) {
         if (!size) {
             log_error("unable to load external image",
                 data.bitmaps[img.draw.bitmap_id], image_id);
-            return NULL;
+            return null;
         }
     }
     let buf: buffer;
     buffer_init(buf, data.tmp_data, size);
-    let dst: color_t = (color_t *) data.tmp_data[4000000];
+    let dst: color_t = data.tmp_data[4000000];
     if (img.draw.is_fully_compressed) {
         convert_compressed(buf, img.draw.data_length, dst);
     } else {

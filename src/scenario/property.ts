@@ -42,13 +42,13 @@ export function scenario_starting_personal_savings() {
 export function scenario_name() {
     return scenario.scenario_name;
 }
-export function scenario_set_name(name: number) {
+export function scenario_set_name(name: string) {
     string_copy(name, scenario.scenario_name, MAX_SCENARIO_NAME);
 }
 export function scenario_player_name() {
     return scenario.settings.player_name;
 }
-export function scenario_set_player_name(name: number) {
+export function scenario_set_player_name(name: string) {
     string_copy(name, scenario.settings.player_name, MAX_PLAYER_NAME);
 }
 export function scenario_save_campaign_player_name() {

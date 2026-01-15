@@ -1,34 +1,74 @@
-import { Ptr, PtrBuffer } from "../../ext/crt";
+import { PtrBuffer } from "../../ext/crt";
 
-export function string_equals(a: Uint8Array, b: Uint8Array) {
+function read_char_code(input: string | ArrayLike<number>, index: number): number {
+    if (typeof input === "string") {
+        return input.charCodeAt(index) || 0;
+    }
+    return input[index] ?? 0;
+}
+
+export function string_equals(a: string | ArrayLike<number>, b: string | ArrayLike<number>) {
     let i = 0;
-    while (a[i] && b[i] && a[i] == b[i]) {
+    while (read_char_code(a, i) && read_char_code(b, i) && read_char_code(a, i) == read_char_code(b, i)) {
         i++;
     }
-    if (a[i] == 0 && b[i] == 0) {
+    if (read_char_code(a, i) == 0 && read_char_code(b, i) == 0) {
         return 1;
     } else {
         return 0;
     }
 }
-export function string_copy(src: Uint8Array, dst: Uint8Array, maxlength: number) {
+export function string_copy(
+    src: string | ArrayLike<number>,
+    dst: ArrayLike<number> & { [index: number]: number },
+    maxlength: number,
+    extra_maxlength?: number
+) {
+    let dstOffset = 0;
+    let maxLen = maxlength;
+    if (extra_maxlength !== undefined) {
+        dstOffset = maxlength;
+        maxLen = extra_maxlength;
+    }
     let length: number = 0;
-    maxlength = Math.min(maxlength, src.length, dst.length);
-    while (length < maxlength && src[length]) {
-        dst[length] = src[length];
+    const srcLength = typeof src === "string" ? src.length : src.length;
+    const dstLength = typeof dst.length === "number" ? dst.length - dstOffset : maxLen;
+    maxLen = Math.min(maxLen, srcLength, dstLength);
+    while (length < maxLen && read_char_code(src, length)) {
+        dst[dstOffset + length] = read_char_code(src, length);
         length++;
     }
-    if (length == maxlength) {
+    if (length == maxLen && length > 0) {
         length--;
     }
-    dst[length] = 0;
+    if (length >= 0) {
+        dst[dstOffset + length] = 0;
+    }
 }
-export function string_length(str: Uint8Array) {
+export function string_length(str: string | ArrayLike<number>) {
     let length: number = 0;
+    if (typeof str === "string") {
+        while (str.charCodeAt(length)) {
+            length++;
+        }
+        return length;
+    }
     while (str[length]) {
         length++;
     }
     return length;
+}
+
+export function string_from_bytes(bytes: ArrayLike<number>): string {
+    let result = "";
+    for (let i = 0; i < bytes.length; i++) {
+        const code = bytes[i];
+        if (!code) {
+            break;
+        }
+        result += String.fromCharCode(code);
+    }
+    return result;
 }
 export function string_from_ascii(str: string): Uint8Array | null {
     for (let i = 0; i < str.length; i++) {
@@ -76,17 +116,30 @@ export function string_to_int(str: PtrBuffer) {
     }
     return result;
 }
-export function string_from_int(dst: number, value: number, force_plus_sign: number) {
+export function string_from_int(
+    dst: ArrayLike<number> & { [index: number]: number },
+    value_or_offset: number,
+    value_or_force: number,
+    force_plus_sign?: number
+) {
+    let offset = 0;
+    let value = value_or_offset;
+    let force = value_or_force;
+    if (force_plus_sign !== undefined) {
+        offset = value_or_offset;
+        value = value_or_force;
+        force = force_plus_sign;
+    }
     let total_chars: number = 0;
     if (value >= 0) {
-        if (force_plus_sign) {
-            dst[0] = '+';
-            dst++;
+        if (force) {
+            dst[offset] = '+'.charCodeAt(0);
+            offset++;
             total_chars = 1;
         }
     } else {
-        dst[0] = '-';
-        dst++;
+        dst[offset] = '-'.charCodeAt(0);
+        offset++;
         value = -value;
         total_chars = 1;
     }
@@ -113,9 +166,9 @@ export function string_from_int(dst: number, value: number, force_plus_sign: num
         num_digits = 0;
     }
     total_chars += num_digits;
-    dst[num_digits] = 0;
+    dst[offset + num_digits] = 0;
     while (--num_digits >= 0) {
-        dst[num_digits] = Math.floor(value % 10 + '0'.charCodeAt(0));
+        dst[offset + num_digits] = Math.floor(value % 10 + '0'.charCodeAt(0));
         value = Math.floor(value / 10);
     }
     return total_chars;

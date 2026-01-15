@@ -9,6 +9,7 @@ import { window_draw_underlying_window, window_go_back, window_id, window_show, 
 import { hotkeys } from 'input/hotkey';
 import { input_go_back_requested } from 'input/input';
 import { mouse } from 'input/mouse';
+import { Ref } from '../../ext/crt';
 export const MAX_ITEMS_PER_LIST = 20;
 import FONT_NORMAL_PLAIN = font_t.FONT_NORMAL_PLAIN;
 import WINDOW_SELECT_LIST = window_id.WINDOW_SELECT_LIST;
@@ -69,7 +70,7 @@ export class unnamed67_8 {
     public y: number = 0;
     public mode: number = 0;
     public group: number = 0;
-    public items: string[] = [];
+    public items: Array<string | ArrayLike<number>> = [];
     public num_items: number = 0;
     public callback: ((size: number) => void) | null = null;
     public focus_button_id: number = 0;
@@ -93,7 +94,7 @@ function init_group(x: number, y: number, group: number, num_items: number, call
     data.num_items = num_items;
     data.callback = callback;
 }
-function init_text(x: number, y: number, items: number, num_items: number, callback: (size: number) => void) {
+function init_text(x: number, y: number, items: Array<string | ArrayLike<number>>, num_items: number, callback: (size: number) => void) {
     data.x = x;
     data.y = y;
     data.mode = MODE_TEXT;
@@ -132,18 +133,24 @@ function draw_foreground() {
 function handle_input(m: mouse, h: hotkeys) {
     if (data.num_items > MAX_ITEMS_PER_LIST) {
         let items_first: number = items_in_first_list();
-        if (generic_buttons_handle_mouse(m, data.x, data.y, buttons_list1, items_first, data.focus_button_id)) {
+        const focusRef = new Ref(data.focus_button_id);
+        if (generic_buttons_handle_mouse(m, data.x, data.y, buttons_list1, items_first, focusRef)) {
+            data.focus_button_id = focusRef.v;
             return;
         }
-        let second_id: number = 0;
-        generic_buttons_handle_mouse(m, data.x, data.y, buttons_list2, data.num_items - items_first, second_id);
-        if (second_id > 0) {
-            data.focus_button_id = second_id + MAX_ITEMS_PER_LIST;
+        data.focus_button_id = focusRef.v;
+        const secondRef = new Ref(0);
+        generic_buttons_handle_mouse(m, data.x, data.y, buttons_list2, data.num_items - items_first, secondRef);
+        if (secondRef.v > 0) {
+            data.focus_button_id = secondRef.v + MAX_ITEMS_PER_LIST;
         }
     } else {
-        if (generic_buttons_handle_mouse(m, data.x, data.y, buttons_list1, data.num_items, data.focus_button_id)) {
+        const focusRef = new Ref(data.focus_button_id);
+        if (generic_buttons_handle_mouse(m, data.x, data.y, buttons_list1, data.num_items, focusRef)) {
+            data.focus_button_id = focusRef.v;
             return;
         }
+        data.focus_button_id = focusRef.v;
     }
     if (input_go_back_requested(m, h)) {
         window_go_back();
@@ -167,7 +174,7 @@ export function window_select_list_show(x: number, y: number, group: number, num
     init_group(x, y, group, num_items, callback);
     window_show(window);
 }
-export function window_select_list_show_text(x: number, y: number, items: number, num_items: number, callback: (size: number) => void) {
+export function window_select_list_show_text(x: number, y: number, items: Array<string | ArrayLike<number>>, num_items: number, callback: (size: number) => void) {
     let window: window_type = new window_type(
         WINDOW_SELECT_LIST,
         window_draw_underlying_window,

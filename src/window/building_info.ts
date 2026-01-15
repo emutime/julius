@@ -1,5 +1,55 @@
-import { BLOCK_SIZE } from 'graphics/panel';
+import { building_barracks_has_tower_sentry_request } from 'building/barracks';
+import { building, building_get, building_is_house, building_main } from 'building/building';
+import { building_house_determine_evolve_text, building_house_determine_worst_desirability_building } from 'building/house_evolution';
+import { model_get_building } from 'building/model';
 import { building_type } from 'building/type';
+import { building_warehouse_get_space_info } from 'building/warehouse';
+import { advisor_type } from 'city/constants';
+import { city_map_entry_flag, city_map_exit_flag } from 'city/map';
+import { city_resource_determine_available } from 'city/resource';
+import { city_view_get_viewport } from 'city/view';
+import { calc_percentage } from 'core/calc';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { figure_action } from 'figure/action';
+import { figure, figure_get, figure_is_legion } from 'figure/figure';
+import { formation, formation_get } from 'figure/formation';
+import { formation_legion_recruits_needed } from 'figure/formation_legion';
+import { figure_phrase_determine } from 'figure/phrase';
+import { figure_state, figure_type } from 'figure/type';
+import { resource_type } from 'game/resource';
+import { button_none } from 'graphics/button';
+import { ib, image_button, image_buttons_draw, image_buttons_handle_mouse } from 'graphics/image_button';
+import { BLOCK_SIZE } from 'graphics/panel';
+import { screen_height, screen_width } from 'graphics/screen';
+import { tooltip_context, tooltip_type } from 'graphics/tooltip';
+import { window_id, window_invalidate, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse, mouse_get } from 'input/mouse';
+import { map_aqueduct_at } from 'map/aqueduct';
+import { map_building_at, map_rubble_building_type } from 'map/building';
+import { map_figure_at } from 'map/figure';
+import { GRID, map_grid_delta } from 'map/grid';
+import { map_image_at } from 'map/image';
+import { map_property_is_plaza_or_earthquake } from 'map/property';
+import { map_has_road_access, map_has_road_access_granary, map_has_road_access_hippodrome } from 'map/road_access';
+import { map_sprite_bridge_at } from 'map/sprite';
+import { map_terrain_get, map_terrain_is, terrain } from 'map/terrain';
+import { window_advisors_show_advisor } from 'window/advisors';
+import { building_info_context, building_info_type, terrain_info_type, window_building_get_vertical_offset, window_building_set_possible_position } from 'window/building/common';
+import { window_building_draw_academy, window_building_draw_actor_colony, window_building_draw_amphitheater, window_building_draw_barber, window_building_draw_bathhouse, window_building_draw_chariot_maker, window_building_draw_clinic, window_building_draw_colosseum, window_building_draw_gladiator_school, window_building_draw_hippodrome, window_building_draw_hospital, window_building_draw_library, window_building_draw_lion_house, window_building_draw_oracle, window_building_draw_school, window_building_draw_temple_ceres, window_building_draw_temple_mars, window_building_draw_temple_mercury, window_building_draw_temple_neptune, window_building_draw_temple_venus, window_building_draw_theater } from 'window/building/culture';
+import { window_building_draw_dock, window_building_draw_granary, window_building_draw_granary_foreground, window_building_draw_granary_orders, window_building_draw_granary_orders_foreground, window_building_draw_market, window_building_draw_warehouse, window_building_draw_warehouse_foreground, window_building_draw_warehouse_orders, window_building_draw_warehouse_orders_foreground, window_building_get_tooltip_granary_orders, window_building_get_tooltip_warehouse_orders, window_building_handle_mouse_granary, window_building_handle_mouse_granary_orders, window_building_handle_mouse_warehouse, window_building_handle_mouse_warehouse_orders } from 'window/building/distribution';
+import { window_building_handle_mouse_figure_list } from 'window/building/figures';
+import { window_building_draw_forum, window_building_draw_governor_home, window_building_draw_senate, window_building_draw_statue, window_building_draw_triumphal_arch } from 'window/building/government';
+import { window_building_draw_house } from 'window/building/house';
+import { window_building_draw_clay_pit, window_building_draw_fruit_farm, window_building_draw_furniture_workshop, window_building_draw_iron_mine, window_building_draw_marble_quarry, window_building_draw_oil_workshop, window_building_draw_olive_farm, window_building_draw_pig_farm, window_building_draw_pottery_workshop, window_building_draw_shipyard, window_building_draw_timber_yard, window_building_draw_vegetable_farm, window_building_draw_vines_farm, window_building_draw_weapons_workshop, window_building_draw_wharf, window_building_draw_wheat_farm, window_building_draw_wine_workshop } from 'window/building/industry';
+import { window_building_draw_barracks, window_building_draw_fort, window_building_draw_gatehouse, window_building_draw_legion_info, window_building_draw_legion_info_foreground, window_building_draw_military_academy, window_building_draw_tower, window_building_get_legion_info_tooltip_text, window_building_handle_mouse_legion_info } from 'window/building/military';
+import { window_building_draw_no_people, window_building_draw_terrain } from 'window/building/terrain';
+import { window_building_draw_burning_ruin, window_building_draw_engineers_post, window_building_draw_fountain, window_building_draw_mission_post, window_building_draw_native_crops, window_building_draw_native_hut, window_building_draw_native_meeting, window_building_draw_prefect, window_building_draw_reservoir, window_building_draw_well } from 'window/building/utility';
+import { window_city_draw, window_city_draw_all, window_city_draw_panels, window_city_show } from 'window/city';
+import { message_dialog, window_message_dialog_show } from 'window/message_dialog';
+import { Ref } from '../../ext/crt';
 import BUILDING_NONE = building_type.BUILDING_NONE;
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
 import BUILDING_THEATER = building_type.BUILDING_THEATER;
@@ -76,47 +126,13 @@ import BUILDING_OIL_WORKSHOP = building_type.BUILDING_OIL_WORKSHOP;
 import BUILDING_WEAPONS_WORKSHOP = building_type.BUILDING_WEAPONS_WORKSHOP;
 import BUILDING_FURNITURE_WORKSHOP = building_type.BUILDING_FURNITURE_WORKSHOP;
 import BUILDING_POTTERY_WORKSHOP = building_type.BUILDING_POTTERY_WORKSHOP;
-import { building_type } from 'building/type';
-import { house_level } from 'building/type';;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { building_main } from 'building/building';
-import { building_is_house } from 'building/building';
-import { map_point } from 'map/point';
-import { map_tile } from 'map/point';
-import { building_barracks_has_tower_sentry_request } from 'building/barracks';
-import { building_house_determine_evolve_text } from 'building/house_evolution';
-import { building_house_determine_worst_desirability_building } from 'building/house_evolution';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_building } from 'building/model';
-import { building_warehouse_get_space_info } from 'building/warehouse';
-import { city_map_entry_flag } from 'city/map';
-import { city_map_exit_flag } from 'city/map';
-import { advisor_type } from 'city/constants';
+;
 import ADVISOR_RATINGS = advisor_type.ADVISOR_RATINGS;
-import { advisor_type } from 'city/constants';
-import { resource_trade_status } from 'city/constants';
-import { resource_type } from 'game/resource';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { resource_list } from 'city/resource';
-import { city_resource_determine_available } from 'city/resource';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_get_viewport } from 'city/view';
-import { direction_type } from 'core/direction';
-import { calc_percentage } from 'core/calc';
-import { group_terrain } from 'core/image_group';
 import GROUP_BUILDING_AQUEDUCT = group_terrain.GROUP_BUILDING_AQUEDUCT;
 import GROUP_CONTEXT_ICONS = group_terrain.GROUP_CONTEXT_ICONS;
 import GROUP_MESSAGE_ADVISOR_BUTTONS = group_terrain.GROUP_MESSAGE_ADVISOR_BUTTONS;
-import { figure_action } from 'figure/action';
 import FIGURE_ACTION_149_CORPSE = figure_action.FIGURE_ACTION_149_CORPSE;
-import { figure_type } from 'figure/type';
 import FIGURE_NONE = figure_type.FIGURE_NONE;
 import FIGURE_EXPLOSION = figure_type.FIGURE_EXPLOSION;
 import FIGURE_FORT_LEGIONARY = figure_type.FIGURE_FORT_LEGIONARY;
@@ -131,70 +147,11 @@ import FIGURE_CREATURE = figure_type.FIGURE_CREATURE;
 import FIGURE_FISH_GULLS = figure_type.FIGURE_FISH_GULLS;
 import FIGURE_SPEAR = figure_type.FIGURE_SPEAR;
 import FIGURE_HIPPODROME_HORSES = figure_type.FIGURE_HIPPODROME_HORSES;
-import { figure_type } from 'figure/type';
-import { figure_state } from 'figure/type';
 import FIGURE_STATE_DEAD = figure_state.FIGURE_STATE_DEAD;
-import { figure } from 'figure/figure';
-import { figure_get } from 'figure/figure';
-import { figure_is_legion } from 'figure/figure';
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_get } from 'figure/formation';
-import { formation_legion_recruits_needed } from 'figure/formation_legion';
-import { figure_phrase_determine } from 'figure/phrase';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_get } from 'input/mouse';
-import { ib } from 'graphics/image_button';
 import IB_NORMAL = ib.IB_NORMAL;
-import { image_button } from 'graphics/image_button';
-import { image_buttons_draw } from 'graphics/image_button';
-import { image_buttons_handle_mouse } from 'graphics/image_button';
-import { screen_width } from 'graphics/screen';
-import { screen_height } from 'graphics/screen';
-import { tooltip_type } from 'graphics/tooltip';
 import TOOLTIP_BUTTON = tooltip_type.TOOLTIP_BUTTON;
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_BUILDING_INFO = window_id.WINDOW_BUILDING_INFO;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-import { map_aqueduct_at } from 'map/aqueduct';
-import { map_building_at } from 'map/building';
-import { map_rubble_building_type } from 'map/building';
-import { map_figure_at } from 'map/figure';
-import { map_grid_delta, GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_image_at } from 'map/image';
-import { map_property_is_plaza_or_earthquake } from 'map/property';
-import { map_has_road_access } from 'map/road_access';
-import { map_has_road_access_hippodrome } from 'map/road_access';
-import { map_has_road_access_granary } from 'map/road_access';
-import { map_sprite_bridge_at } from 'map/sprite';
-import { terrain } from 'map/terrain';
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_ROCK = terrain.TERRAIN_ROCK;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
@@ -207,25 +164,13 @@ import TERRAIN_AQUEDUCT = terrain.TERRAIN_AQUEDUCT;
 import TERRAIN_RUBBLE = terrain.TERRAIN_RUBBLE;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_is } from 'map/terrain';
-import { map_terrain_get } from 'map/terrain';
-import { window_advisors_show_advisor } from 'window/advisors';
-import { window_city_draw_all } from 'window/city';
-import { window_city_draw_panels } from 'window/city';
-import { window_city_draw } from 'window/city';
-import { window_city_show } from 'window/city';
-import { message_dialog } from 'window/message_dialog';
 import MESSAGE_DIALOG_HELP = message_dialog.MESSAGE_DIALOG_HELP;
-import { window_message_dialog_show } from 'window/message_dialog';
 let MIN_Y_POSITION: number;
 let MARGIN_POSITION: number;
-import { building_info_type } from 'window/building/common';
 import BUILDING_INFO_NONE = building_info_type.BUILDING_INFO_NONE;
 import BUILDING_INFO_TERRAIN = building_info_type.BUILDING_INFO_TERRAIN;
 import BUILDING_INFO_BUILDING = building_info_type.BUILDING_INFO_BUILDING;
 import BUILDING_INFO_LEGION = building_info_type.BUILDING_INFO_LEGION;
-import { building_info_type } from 'window/building/common';
-import { terrain_info_type } from 'window/building/common';
 import TERRAIN_INFO_TREE = terrain_info_type.TERRAIN_INFO_TREE;
 import TERRAIN_INFO_ROCK = terrain_info_type.TERRAIN_INFO_ROCK;
 import TERRAIN_INFO_WATER = terrain_info_type.TERRAIN_INFO_WATER;
@@ -241,92 +186,6 @@ import TERRAIN_INFO_GARDEN = terrain_info_type.TERRAIN_INFO_GARDEN;
 import TERRAIN_INFO_PLAZA = terrain_info_type.TERRAIN_INFO_PLAZA;
 import TERRAIN_INFO_ENTRY_FLAG = terrain_info_type.TERRAIN_INFO_ENTRY_FLAG;
 import TERRAIN_INFO_EXIT_FLAG = terrain_info_type.TERRAIN_INFO_EXIT_FLAG;
-import { terrain_info_type } from 'window/building/common';
-import { building_info_context } from 'window/building/common';
-import { window_building_set_possible_position } from 'window/building/common';
-import { window_building_get_vertical_offset } from 'window/building/common';
-import { window_building_draw_clinic } from 'window/building/culture';
-import { window_building_draw_hospital } from 'window/building/culture';
-import { window_building_draw_bathhouse } from 'window/building/culture';
-import { window_building_draw_barber } from 'window/building/culture';
-import { window_building_draw_school } from 'window/building/culture';
-import { window_building_draw_academy } from 'window/building/culture';
-import { window_building_draw_library } from 'window/building/culture';
-import { window_building_draw_temple_ceres } from 'window/building/culture';
-import { window_building_draw_temple_neptune } from 'window/building/culture';
-import { window_building_draw_temple_mercury } from 'window/building/culture';
-import { window_building_draw_temple_mars } from 'window/building/culture';
-import { window_building_draw_temple_venus } from 'window/building/culture';
-import { window_building_draw_oracle } from 'window/building/culture';
-import { window_building_draw_theater } from 'window/building/culture';
-import { window_building_draw_amphitheater } from 'window/building/culture';
-import { window_building_draw_colosseum } from 'window/building/culture';
-import { window_building_draw_hippodrome } from 'window/building/culture';
-import { window_building_draw_actor_colony } from 'window/building/culture';
-import { window_building_draw_gladiator_school } from 'window/building/culture';
-import { window_building_draw_lion_house } from 'window/building/culture';
-import { window_building_draw_chariot_maker } from 'window/building/culture';
-import { window_building_draw_dock } from 'window/building/distribution';
-import { window_building_draw_market } from 'window/building/distribution';
-import { window_building_draw_granary } from 'window/building/distribution';
-import { window_building_draw_granary_foreground } from 'window/building/distribution';
-import { window_building_draw_granary_orders } from 'window/building/distribution';
-import { window_building_draw_granary_orders_foreground } from 'window/building/distribution';
-import { window_building_handle_mouse_granary } from 'window/building/distribution';
-import { window_building_handle_mouse_granary_orders } from 'window/building/distribution';
-import { window_building_get_tooltip_granary_orders } from 'window/building/distribution';
-import { window_building_draw_warehouse } from 'window/building/distribution';
-import { window_building_draw_warehouse_foreground } from 'window/building/distribution';
-import { window_building_draw_warehouse_orders } from 'window/building/distribution';
-import { window_building_draw_warehouse_orders_foreground } from 'window/building/distribution';
-import { window_building_handle_mouse_warehouse } from 'window/building/distribution';
-import { window_building_handle_mouse_warehouse_orders } from 'window/building/distribution';
-import { window_building_get_tooltip_warehouse_orders } from 'window/building/distribution';
-import { window_building_handle_mouse_figure_list } from 'window/building/figures';
-import { window_building_draw_forum } from 'window/building/government';
-import { window_building_draw_senate } from 'window/building/government';
-import { window_building_draw_governor_home } from 'window/building/government';
-import { window_building_draw_statue } from 'window/building/government';
-import { window_building_draw_triumphal_arch } from 'window/building/government';
-import { window_building_draw_house } from 'window/building/house';
-import { window_building_draw_wheat_farm } from 'window/building/industry';
-import { window_building_draw_vegetable_farm } from 'window/building/industry';
-import { window_building_draw_fruit_farm } from 'window/building/industry';
-import { window_building_draw_olive_farm } from 'window/building/industry';
-import { window_building_draw_vines_farm } from 'window/building/industry';
-import { window_building_draw_pig_farm } from 'window/building/industry';
-import { window_building_draw_marble_quarry } from 'window/building/industry';
-import { window_building_draw_iron_mine } from 'window/building/industry';
-import { window_building_draw_timber_yard } from 'window/building/industry';
-import { window_building_draw_clay_pit } from 'window/building/industry';
-import { window_building_draw_wine_workshop } from 'window/building/industry';
-import { window_building_draw_oil_workshop } from 'window/building/industry';
-import { window_building_draw_weapons_workshop } from 'window/building/industry';
-import { window_building_draw_furniture_workshop } from 'window/building/industry';
-import { window_building_draw_pottery_workshop } from 'window/building/industry';
-import { window_building_draw_shipyard } from 'window/building/industry';
-import { window_building_draw_wharf } from 'window/building/industry';
-import { window_building_draw_gatehouse } from 'window/building/military';
-import { window_building_draw_tower } from 'window/building/military';
-import { window_building_draw_barracks } from 'window/building/military';
-import { window_building_draw_military_academy } from 'window/building/military';
-import { window_building_draw_fort } from 'window/building/military';
-import { window_building_draw_legion_info } from 'window/building/military';
-import { window_building_draw_legion_info_foreground } from 'window/building/military';
-import { window_building_handle_mouse_legion_info } from 'window/building/military';
-import { window_building_get_legion_info_tooltip_text } from 'window/building/military';
-import { window_building_draw_no_people } from 'window/building/terrain';
-import { window_building_draw_terrain } from 'window/building/terrain';
-import { window_building_draw_engineers_post } from 'window/building/utility';
-import { window_building_draw_prefect } from 'window/building/utility';
-import { window_building_draw_burning_ruin } from 'window/building/utility';
-import { window_building_draw_reservoir } from 'window/building/utility';
-import { window_building_draw_fountain } from 'window/building/utility';
-import { window_building_draw_well } from 'window/building/utility';
-import { window_building_draw_mission_post } from 'window/building/utility';
-import { window_building_draw_native_hut } from 'window/building/utility';
-import { window_building_draw_native_meeting } from 'window/building/utility';
-import { window_building_draw_native_crops } from 'window/building/utility';
 let image_buttons_help_close: image_button[] = [
     new image_button(14, 0, 27, 27, IB_NORMAL, GROUP_CONTEXT_ICONS, 0, button_help, button_none, 0, 0, 1),
     new image_button(424, 3, 24, 24, IB_NORMAL, GROUP_CONTEXT_ICONS, 4, button_close, button_none, 0, 0, 1)
@@ -426,13 +285,13 @@ function get_height_id() {
     return 0;
 }
 function center_in_city(element_width_pixels: number) {
-    let x: number
-    let y: number
-    let width: number
-    let height: number;
+    let x: Ref<number> = new Ref(0);
+    let y: Ref<number> = new Ref(0);
+    let width: Ref<number> = new Ref(0);
+    let height: Ref<number> = new Ref(0);
     city_view_get_viewport(x, y, width, height);
-    let margin: number = (width - element_width_pixels) / 2;
-    return x + margin;
+    let margin: number = (width.v - element_width_pixels) / 2;
+    return x.v + margin;
 }
 function init(grid_offset: number) {
     context.can_play_sound = 1;
@@ -514,23 +373,23 @@ function init(grid_offset: number) {
         context.has_road_access = 0;
         switch (b.type) {
             case BUILDING_GRANARY:
-                if (map_has_road_access_granary(b.x, b.y, 0)) {
+                if (map_has_road_access_granary(b.x, b.y, null)) {
                     context.has_road_access = 1;
                 }
                 break
             case BUILDING_HIPPODROME:
-                if (map_has_road_access_hippodrome(b.x, b.y, 0)) {
+                if (map_has_road_access_hippodrome(b.x, b.y, null)) {
                     context.has_road_access = 1;
                 }
                 break
             case BUILDING_WAREHOUSE:
-                if (map_has_road_access(b.x, b.y, 3, 0)) {
+                if (map_has_road_access(b.x, b.y, 3, null)) {
                     context.has_road_access = 1;
                 }
                 context.warehouse_space_text = building_warehouse_get_space_info(b);
                 break
             default:
-                if (map_has_road_access(b.x, b.y, b.size, 0)) {
+                if (map_has_road_access(b.x, b.y, b.size, null)) {
                     context.has_road_access = 1;
                 }
                 break
@@ -545,88 +404,88 @@ function init(grid_offset: number) {
         map_grid_delta(0, 0), map_grid_delta(0, -1), map_grid_delta(0, 1), map_grid_delta(1, 0), map_grid_delta(-1, 0),
         map_grid_delta(-1, -1), map_grid_delta(1, -1), map_grid_delta(-1, 1), map_grid_delta(1, 1)
     ];
-for (let i: number = 0; i < 9 && context.figure.count < 7; i++) {
-    let figure_id: number = map_figure_at(grid_offset + FIGURE_OFFSETS[i]);
-    while (figure_id > 0 && context.figure.count < 7) {
-        let f: figure = figure_get(figure_id);
-        if (f.state != FIGURE_STATE_DEAD &&
-            f.action_state != FIGURE_ACTION_149_CORPSE) {
-            switch (f.type) {
-                case FIGURE_NONE:
-                case FIGURE_EXPLOSION:
-                case FIGURE_MAP_FLAG:
-                case FIGURE_FLOTSAM:
-                case FIGURE_ARROW:
-                case FIGURE_JAVELIN:
-                case FIGURE_BOLT:
-                case FIGURE_BALLISTA:
-                case FIGURE_CREATURE:
-                case FIGURE_FISH_GULLS:
-                case FIGURE_SPEAR:
-                case FIGURE_HIPPODROME_HORSES:
-                    break;
-                default:
-                    context.figure.figure_ids[context.figure.count++] = figure_id;
-                    figure_phrase_determine(f);
-                    break;
+    for (let i: number = 0; i < 9 && context.figure.count < 7; i++) {
+        let figure_id: number = map_figure_at(grid_offset + FIGURE_OFFSETS[i]);
+        while (figure_id > 0 && context.figure.count < 7) {
+            let f: figure = figure_get(figure_id);
+            if (f.state != FIGURE_STATE_DEAD &&
+                f.action_state != FIGURE_ACTION_149_CORPSE) {
+                switch (f.type) {
+                    case FIGURE_NONE:
+                    case FIGURE_EXPLOSION:
+                    case FIGURE_MAP_FLAG:
+                    case FIGURE_FLOTSAM:
+                    case FIGURE_ARROW:
+                    case FIGURE_JAVELIN:
+                    case FIGURE_BOLT:
+                    case FIGURE_BALLISTA:
+                    case FIGURE_CREATURE:
+                    case FIGURE_FISH_GULLS:
+                    case FIGURE_SPEAR:
+                    case FIGURE_HIPPODROME_HORSES:
+                        break;
+                    default:
+                        context.figure.figure_ids[context.figure.count++] = figure_id;
+                        figure_phrase_determine(f);
+                        break;
+                }
             }
+            figure_id = f.next_figure_id_on_same_tile;
         }
-        figure_id = f.next_figure_id_on_same_tile;
     }
-}
-for (let i: number = 0; i < 7; i++) {
-    let figure_id: number = context.figure.figure_ids[i];
-    if (figure_id <= 0) {
-        continue
-    }
-    let f: figure = figure_get(figure_id);
-    if (f.type == FIGURE_FORT_STANDARD || figure_is_legion(f)) {
-        context.type = BUILDING_INFO_LEGION;
-        context.formation_id = f.formation_id;
-        let m: formation = formation_get(context.formation_id);
-        if (m.figure_type != FIGURE_FORT_LEGIONARY) {
-            context.formation_types = 5;
-        } else if (m.has_military_training) {
-            context.formation_types = 4;
-        } else {
-            context.formation_types = 3;
+    for (let i: number = 0; i < 7; i++) {
+        let figure_id: number = context.figure.figure_ids[i];
+        if (figure_id <= 0) {
+            continue
         }
-        break
+        let f: figure = figure_get(figure_id);
+        if (f.type == FIGURE_FORT_STANDARD || figure_is_legion(f)) {
+            context.type = BUILDING_INFO_LEGION;
+            context.formation_id = f.formation_id;
+            let m: formation = formation_get(context.formation_id);
+            if (m.figure_type != FIGURE_FORT_LEGIONARY) {
+                context.formation_types = 5;
+            } else if (m.has_military_training) {
+                context.formation_types = 4;
+            } else {
+                context.formation_types = 3;
+            }
+            break
+        }
     }
-}
-context.width_blocks = 29;
-switch (get_height_id()) {
-    case 1:
-        context.height_blocks = 16;
-        break
-    case 2:
-        context.height_blocks = 18;
-        break
-    case 3:
-        context.height_blocks = 19;
-        break
-    case 4:
-        context.height_blocks = 14;
-        break
-    case 5:
-        context.height_blocks = 23;
-        break
-    default: context.height_blocks = 22
-        break
-}
-let s_width: number = screen_width();
-let s_height: number = screen_height();
-context.x_offset = center_in_city(BLOCK_SIZE * context.width_blocks);
-if (s_width >= 1024 && s_height >= 768) {
-    context.x_offset = mouse_get().x;
-    context.y_offset = mouse_get().y;
-    window_building_set_possible_position(context.x_offset, context.y_offset,
-        context.width_blocks, context.height_blocks);
-} else if (s_height >= 600 && mouse_get().y <= (s_height - 24) / 2 + 24) {
-    context.y_offset = s_height - BLOCK_SIZE * context.height_blocks - MARGIN_POSITION;
-} else {
-    context.y_offset = MIN_Y_POSITION;
-}
+    context.width_blocks = 29;
+    switch (get_height_id()) {
+        case 1:
+            context.height_blocks = 16;
+            break
+        case 2:
+            context.height_blocks = 18;
+            break
+        case 3:
+            context.height_blocks = 19;
+            break
+        case 4:
+            context.height_blocks = 14;
+            break
+        case 5:
+            context.height_blocks = 23;
+            break
+        default: context.height_blocks = 22
+            break
+    }
+    let s_width: number = screen_width();
+    let s_height: number = screen_height();
+    context.x_offset = center_in_city(BLOCK_SIZE * context.width_blocks);
+    if (s_width >= 1024 && s_height >= 768) {
+        context.x_offset = mouse_get().x;
+        context.y_offset = mouse_get().y;
+        window_building_set_possible_position(context.x_offset, context.y_offset,
+            context.width_blocks, context.height_blocks);
+    } else if (s_height >= 600 && mouse_get().y <= (s_height - 24) / 2 + 24) {
+        context.y_offset = s_height - BLOCK_SIZE * context.height_blocks - MARGIN_POSITION;
+    } else {
+        context.y_offset = MIN_Y_POSITION;
+    }
 }
 function draw_background() {
     window_city_draw_panels();
@@ -838,23 +697,26 @@ function handle_specific_building_info_mouse(m: mouse) {
     return 0;
 }
 function handle_input(m: mouse, h: hotkeys) {
-    let handled: number = 0;
+    let handled: boolean = false;
+    let focus_image_button_id_ref: Ref<number> = new Ref(focus_image_button_id);
     if (context.storage_show_special_orders) {
         let y_offset: number = window_building_get_vertical_offset(context, 28);
-        handled |= image_buttons_handle_mouse(m, context.x_offset, y_offset + 400,
-            image_buttons_help_close, 2, focus_image_button_id)
+        handled ||= image_buttons_handle_mouse(m, context.x_offset, y_offset + 400,
+            image_buttons_help_close, 2, focus_image_button_id_ref);
+        focus_image_button_id = focus_image_button_id_ref.v;
     } else {
-        handled |= image_buttons_handle_mouse(
+        handled ||= image_buttons_handle_mouse(
             m, context.x_offset, context.y_offset + BLOCK_SIZE * context.height_blocks - 40,
-            image_buttons_help_close, 2, focus_image_button_id)
+            image_buttons_help_close, 2, focus_image_button_id_ref);
+        focus_image_button_id = focus_image_button_id_ref.v;
     }
     if (context.can_go_to_advisor) {
-        handled |= image_buttons_handle_mouse(
+        handled ||= image_buttons_handle_mouse(
             m, context.x_offset, context.y_offset + BLOCK_SIZE * context.height_blocks - 40,
-            image_buttons_advisor, 1, 0)
+            image_buttons_advisor, 1, null)
     }
     if (!handled) {
-        handled |= handle_specific_building_info_mouse(m)
+        handled ||= handle_specific_building_info_mouse(m)
     }
     if (!handled && input_go_back_requested(m, h)) {
         window_city_show();

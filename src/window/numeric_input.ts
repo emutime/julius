@@ -12,6 +12,7 @@ import { input_go_back_requested } from 'input/input';
 import { keyboard_start_capture_numeric, keyboard_stop_capture_numeric } from 'input/keyboard';
 import { mouse } from 'input/mouse';
 import { sound_effect, sound_effect_play } from 'sound/effect';
+import { Ref } from '../../ext/crt';
 import FONT_NORMAL_PLAIN = font_t.FONT_NORMAL_PLAIN;
 import FONT_LARGE_PLAIN = font_t.FONT_LARGE_PLAIN;
 import WINDOW_NUMERIC_INPUT = window_id.WINDOW_NUMERIC_INPUT;
@@ -35,7 +36,7 @@ export class unnamed36_8 {
     public y: number = 0;
     public max_digits: number = 0;
     public max_value: number = 0;
-    public callback: (() => void) | null = null;
+    public callback: ((value: number) => void) | null = null;
     public num_digits: number = 0;
     public value: number = 0;
     public focus_button_id: number = 0;
@@ -51,7 +52,7 @@ export class unnamed36_8 {
     }
 }
 let data: unnamed36_8 = new unnamed36_8();
-function init(x: number, y: number, max_digits: number, max_value: number, callback: () => void) {
+function init(x: number, y: number, max_digits: number, max_value: number, callback: (value: number) => void) {
     data.x = x;
     data.y = y;
     data.max_digits = max_digits;
@@ -66,11 +67,11 @@ function close() {
     keyboard_stop_capture_numeric();
     window_go_back();
 }
-function draw_number_button(x: number, y: number, number: number, is_selected: number) {
+function draw_number_button(x: number, y: number, number: number, is_selected: boolean | number) {
     let color: color_t = is_selected ? COLOR_FONT_BLUE : COLOR_BLACK;
     graphics_draw_rect(x, y, 25, 25, color);
-    let number_string: number[];
-    number_string[0] = '0' + number;
+    let number_string: number[] = new Array(2).fill(0);
+    number_string[0] = '0'.charCodeAt(0) + number;
     number_string[1] = 0;
     text_draw_centered(number_string, x, y, 25, FONT_LARGE_PLAIN, color);
 }
@@ -98,9 +99,12 @@ function draw_foreground() {
         data.focus_button_id == 12 ? COLOR_FONT_BLUE : COLOR_BLACK);
 }
 function handle_input(m: mouse, h: hotkeys) {
-    if (generic_buttons_handle_mouse(m, data.x, data.y, buttons, 12, data.focus_button_id)) {
+    const focusRef = new Ref(data.focus_button_id);
+    if (generic_buttons_handle_mouse(m, data.x, data.y, buttons, 12, focusRef)) {
+        data.focus_button_id = focusRef.v;
         return;
     }
+    data.focus_button_id = focusRef.v;
     if (input_go_back_requested(m, h)) {
         close();
     }
@@ -131,7 +135,7 @@ function input_accept() {
     }
     data.callback(data.value);
 }
-export function window_numeric_input_show(x: number, y: number, max_digits: number, max_value: number, callback: () => void) {
+export function window_numeric_input_show(x: number, y: number, max_digits: number, max_value: number, callback: (value: number) => void) {
     let window: window_type = new window_type(
         WINDOW_NUMERIC_INPUT,
         window_draw_underlying_window,

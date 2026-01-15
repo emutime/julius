@@ -15,6 +15,7 @@ import { input_go_back_requested } from 'input/input';
 import { mouse } from 'input/mouse';
 import { GRID, map_grid_offset } from 'map/grid';
 import { window_city_draw, window_city_draw_panels, window_city_military_show } from 'window/city';
+import { Ref } from '../../ext/crt';
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
 import WINDOW_MILITARY_MENU = window_id.WINDOW_MILITARY_MENU;
 import GRID_SIZE = GRID.GRID_SIZE;
@@ -36,12 +37,12 @@ let menu_buttons: generic_button[] = [
     new generic_button(0, 120, 160, 24, button_menu_item, button_none, 6, 0),
 ];
 function get_sidebar_x_offset() {
-    let view_x: number
-    let view_y: number
-    let view_width: number
-    let view_height: number;
+    const view_x = new Ref(0);
+    const view_y = new Ref(0);
+    const view_width = new Ref(0);
+    const view_height = new Ref(0);
     city_view_get_viewport(view_x, view_y, view_width, view_height);
-    return view_x + view_width;
+    return view_x.v + view_width.v;
 }
 function draw_background() {
     window_city_draw_panels();
@@ -66,10 +67,13 @@ function click_outside_menu(m: mouse, x_offset: number) {
 }
 function handle_input(m: mouse, h: hotkeys) {
     let x_offset: number = get_sidebar_x_offset();
+    const focusRef = new Ref(data.focus_button_id);
     if (generic_buttons_handle_mouse(m, x_offset - MENU_X_OFFSET, MENU_Y_OFFSET,
-        menu_buttons, data.active_buttons, data.focus_button_id)) {
+        menu_buttons, data.active_buttons, focusRef)) {
+        data.focus_button_id = focusRef.v;
         return;
     }
+    data.focus_button_id = focusRef.v;
     if (input_go_back_requested(m, h)) {
         window_go_back();
         return;

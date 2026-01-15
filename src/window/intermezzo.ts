@@ -69,7 +69,7 @@ let SOUND_FILES_WON: string[] = [
     "wavs/21w.wav",
     "wavs/22w.wav",
 ];
-let SOUND_FILE_LOSE: string[] = ["wavs/lose_game.wav"];
+let SOUND_FILE_LOSE: string = "wavs/lose_game.wav";
 export class unnamed66_8 {
     public type: intermezzo_type = null;
     public callback: (() => void) | null = null;

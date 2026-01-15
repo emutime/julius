@@ -13,6 +13,7 @@ import { mouse, mouse_in_dialog } from 'input/mouse';
 import { scenario_campaign_rank, scenario_is_custom, scenario_player_name, scenario_property_player_rank } from 'scenario/property';
 import { sound_music_update } from 'sound/music';
 import { window_city_show } from 'window/city';
+import { Ref } from '../../ext/crt';
 import VICTORY_STATE_WON = victory_state.VICTORY_STATE_WON;
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
@@ -53,20 +54,20 @@ function draw_background() {
 function draw_foreground() {
     graphics_in_dialog();
     if (city_victory_state() == VICTORY_STATE_WON) {
-        large_label_draw(80, 240, 30, focus_button_id == 1);
+        large_label_draw(80, 240, 30, focus_button_id == 1 ? 1 : 0);
         if (scenario_campaign_rank() < 10 || scenario_is_custom()) {
             lang_text_draw_centered(62, 3, 80, 246, 480, FONT_NORMAL_GREEN);
         } else {
             lang_text_draw_centered(62, 27, 80, 246, 480, FONT_NORMAL_GREEN);
         }
         if (scenario_campaign_rank() >= 2 || scenario_is_custom()) {
-            large_label_draw(80, 272, 30, focus_button_id == 2);
+            large_label_draw(80, 272, 30, focus_button_id == 2 ? 1 : 0);
             lang_text_draw_centered(62, 4, 80, 278, 480, FONT_NORMAL_GREEN);
-            large_label_draw(80, 304, 30, focus_button_id == 3);
+            large_label_draw(80, 304, 30, focus_button_id == 3 ? 1 : 0);
             lang_text_draw_centered(62, 5, 80, 310, 480, FONT_NORMAL_GREEN);
         }
     } else {
-        large_label_draw(80, 224, 30, focus_button_id == 1);
+        large_label_draw(80, 224, 30, focus_button_id == 1 ? 1 : 0);
         lang_text_draw_centered(62, 6, 80, 230, 480, FONT_NORMAL_GREEN);
     }
     graphics_reset_dialog();
@@ -78,7 +79,9 @@ function handle_input(m: mouse, h: hotkeys) {
     } else {
         num_buttons = 1;
     }
-    generic_buttons_handle_mouse(mouse_in_dialog(m), 48, 128, victory_buttons, num_buttons, focus_button_id);
+    const focusRef = new Ref(focus_button_id);
+    generic_buttons_handle_mouse(mouse_in_dialog(m), 48, 128, victory_buttons, num_buttons, focusRef);
+    focus_button_id = focusRef.v;
 }
 function button_accept(param1: number, param2: number) {
     window_city_show();

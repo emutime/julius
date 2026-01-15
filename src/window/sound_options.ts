@@ -15,6 +15,7 @@ import { sound_city_set_volume } from 'sound/city';
 import { sound_effect_set_volume } from 'sound/effect';
 import { sound_music_set_volume, sound_music_stop, sound_music_update } from 'sound/music';
 import { sound_speech_set_volume, sound_speech_stop } from 'sound/speech';
+import { Ref } from '../../ext/crt';
 import SOUND_MUSIC = set_sound_type.SOUND_MUSIC;
 import SOUND_SPEECH = set_sound_type.SOUND_SPEECH;
 import SOUND_EFFECTS = set_sound_type.SOUND_EFFECTS;
@@ -99,10 +100,13 @@ function draw_foreground() {
 }
 function handle_input(m: mouse, h: hotkeys) {
     let m_dialog: mouse = mouse_in_dialog(m);
-    if (generic_buttons_handle_mouse(m_dialog, 0, 0, buttons, 6, data) ||
+    const focusRef = new Ref(data.focus_button_id);
+    if (generic_buttons_handle_mouse(m_dialog, 0, 0, buttons, 6, focusRef) ||
         arrow_buttons_handle_mouse(m_dialog, 208, 60, arrow_buttons, 8, 0)) {
+        data.focus_button_id = focusRef.v;
         return;
     }
+    data.focus_button_id = focusRef.v;
     if (input_go_back_requested(m, h)) {
         data.close_callback!();
     }

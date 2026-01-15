@@ -1,33 +1,16 @@
 
-import { language_type } from 'core/locale';;
-import { encoding_type } from 'core/encoding';
-import { encoding_is_multibyte } from 'core/encoding';
-import { encoding_from_utf8 } from 'core/encoding';
+import { encoding_from_utf8, encoding_is_multibyte } from 'core/encoding';
+import { string_copy, string_length } from 'core/string';
+import { system_keyboard_hide, system_start_text_input, system_stop_text_input } from 'game/system';
 import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { string_copy } from 'core/string';
-import { string_length } from 'core/string';
-import { color_t } from 'graphics/color';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { system_keyboard_hide } from 'game/system';
-import { system_start_text_input } from 'game/system';
-import { system_stop_text_input } from 'game/system';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
 import { text_get_max_length_for_width } from 'graphics/text';
 export class unnamed8_8 {
     public insert: number = 0;
     public capture: number = 0;
     public accepted: number = 0;
     public capture_numeric: number = 0;
-    public capture_numeric_callback: void ( = null;
-    public text: number = 0;
+    public capture_numeric_callback: (num: number) => void = null;
+    public text: ArrayLike<number> & { [index: number]: number } = null;
     public cursor_position: number = 0;
     public length: number = 0;
     public max_length: number = 0;
@@ -56,30 +39,41 @@ export class unnamed8_8 {
     }
 }
 let data: unnamed8_8 = new unnamed8_8();
-function get_char_bytes(str: number) {
-    return str[0] >= 0x80 && encoding_is_multibyte() ? 2 : 1;
+function get_char_bytes(text: ArrayLike<number>, index: number) {
+    return (text[index] ?? 0) >= 0x80 && encoding_is_multibyte() ? 2 : 1;
 }
 function get_current_char_bytes() {
-    return get_char_bytes(data.text[data.cursor_position]);
+    return get_char_bytes(data.text, data.cursor_position);
+}
+function slice_text(text: ArrayLike<number>, start: number): ArrayLike<number> {
+    if (typeof (text as any).slice === "function") {
+        return (text as any).slice(start);
+    }
+    const result: number[] = [];
+    for (let i = start; i < text.length; i++) {
+        result.push(text[i] ?? 0);
+    }
+    result.push(0);
+    return result;
 }
 function set_viewport_to_start() {
     data.viewport_start = 0;
-    data.viewport_end = text_get_max_length_for_width(data.text, data.length, data.font, data.box_width, 0);
+    data.viewport_end = text_get_max_length_for_width(data.text as any, data.length, data.font, data.box_width, 0);
 }
 function set_viewport_to_end() {
     data.viewport_end = data.length;
-    let maxlen: number = text_get_max_length_for_width(data.text, data.length, data.font, data.box_width, 1);
+    let maxlen: number = text_get_max_length_for_width(data.text as any, data.length, data.font, data.box_width, 1);
     data.viewport_start = data.length - maxlen;
 }
 function include_cursor_in_viewport() {
     let new_start: number = data.viewport_start;
-    let new_end: number = text_get_max_length_for_width(data.text, data.length - new_start, data.font, data.box_width, 0);
+    let new_end: number = text_get_max_length_for_width(data.text as any, data.length - new_start, data.font, data.box_width, 0);
     if (data.cursor_position >= new_start && data.cursor_position < new_end && new_start + new_end < data.length) {
         return;
     }
     if (data.cursor_position <= data.viewport_cursor_position) {
         let maxlen: number = text_get_max_length_for_width(
-            data.text + data.cursor_position,
+            slice_text(data.text, data.cursor_position),
             data.length - data.cursor_position,
             data.font, data.box_width, 0);
         if (data.cursor_position + maxlen < data.length) {
@@ -91,7 +85,7 @@ function include_cursor_in_viewport() {
     } else {
         let viewport_length: number = data.cursor_position + get_current_char_bytes();
         let maxlen: number = text_get_max_length_for_width(
-            data.text, viewport_length, data.font, data.box_width, 1);
+            data.text as any, viewport_length, data.font, data.box_width, 1);
         if (maxlen < viewport_length) {
             data.viewport_start = viewport_length - maxlen;
             data.viewport_end = viewport_length;
@@ -101,8 +95,8 @@ function include_cursor_in_viewport() {
     }
 }
 function update_viewport(has_changed: number) {
-    let is_within_viewport: number = data.cursor_position >= data.viewport_start &&
-        data.cursor_position < data.viewport_end;
+    let is_within_viewport: number = (data.cursor_position >= data.viewport_start &&
+        data.cursor_position < data.viewport_end) ? 1 : 0;
     if (!has_changed && is_within_viewport) {
     } else if (data.cursor_position == 0) {
         set_viewport_to_start();
@@ -113,7 +107,7 @@ function update_viewport(has_changed: number) {
     }
     data.viewport_cursor_position = data.cursor_position;
 }
-export function keyboard_start_capture(text: number, max_length: number, allow_punctuation: number, box_width: number, font: font_t) {
+export function keyboard_start_capture(text: ArrayLike<number> & { [index: number]: number }, max_length: number, allow_punctuation: number, box_width: number, font: font_t) {
     data.capture = 1;
     data.text = text;
     data.length = string_length(text);
@@ -150,14 +144,14 @@ export function keyboard_stop_capture() {
     system_keyboard_hide();
     system_stop_text_input();
 }
-export function keyboard_start_capture_numeric(callback: void () {
+export function keyboard_start_capture_numeric(callback: (num: number) => void) {
     data.capture_numeric = 1;
     data.capture_numeric_callback = callback;
     system_start_text_input();
 }
 export function keyboard_stop_capture_numeric() {
     data.capture_numeric = 0;
-    data.capture_numeric_callback = 0;
+    data.capture_numeric_callback = null;
     system_stop_text_input();
 }
 export function keyboard_input_is_accepted() {
@@ -188,16 +182,16 @@ export function keyboard_return() {
 }
 function move_left(start: number, end: number) {
     while (start < end) {
-        start[0] = start[1];
+        (start as any)[0] = (start as any)[1];
         start++;
     }
-    * start = 0;
+    (start as any)[0] = 0;
 }
 function move_right(start: number, end: number) {
-    end[1] = 0;
+    (end as any)[1] = 0;
     while (end > start) {
         end--;
-        end[1] = end[0];
+        (end as any)[1] = (end as any)[0];
     }
 }
 function move_cursor_left() {
@@ -214,7 +208,7 @@ function move_cursor_left() {
     }
 }
 function move_cursor_right() {
-    data.cursor_position += get_current_char_bytes()
+    data.cursor_position += get_current_char_bytes();
 }
 function insert_char(value: number, bytes: number) {
     if (data.length + bytes == data.max_length) {
@@ -222,17 +216,17 @@ function insert_char(value: number, bytes: number) {
     }
     for (let i: number = 0; i < bytes; i++) {
         move_right(data.text[data.cursor_position], data.text[data.length]);
-        data.text[data.cursor_position] = value[i];
+        data.text[data.cursor_position] = (value as any)[i];
         data.cursor_position++;
     }
-    data.length += bytes
+    data.length += bytes;
 }
 function remove_current_char() {
     let bytes: number = get_current_char_bytes();
     for (let i: number = 0; i < bytes; i++) {
         move_left(data.text[data.cursor_position], data.text[data.length]);
     }
-    data.length -= bytes
+    data.length -= bytes;
 }
 function add_char(value: number, bytes: number) {
     if (data.insert) {
@@ -258,7 +252,7 @@ export function keyboard_delete() {
     }
 }
 export function keyboard_insert() {
-    data.insert ^= 1
+    data.insert ^= 1;
 }
 export function keyboard_left() {
     if (data.capture) {
@@ -289,17 +283,17 @@ export function keyboard_end() {
     }
 }
 function keyboard_character(text: number) {
-    let c: number = text[0];
+    let c: number = (text as any)[0];
     let add: number = 0;
-    if (c == ' ' || c == '-') {
+    if (c == 0x20 || c == 0x2D) { // ' ' or '-'
         add = 1;
-    } else if (c >= '0' && c <= '9') {
+    } else if (c >= 0x30 && c <= 0x39) { // '0'-'9'
         add = 1;
-    } else if (c >= 'a' && c <= 'z') {
+    } else if (c >= 0x61 && c <= 0x7A) { // 'a'-'z'
         add = 1;
-    } else if (c >= 'A' && c <= 'Z') {
+    } else if (c >= 0x41 && c <= 0x5A) { // 'A'-'Z'
         add = 1;
-    } else if (c == ',' || c == '.' || c == '?' || c == '!') {
+    } else if (c == 0x2C || c == 0x2E || c == 0x3F || c == 0x21) { // ',', '.', '?', '!'
         add = data.allow_punctuation;
     } else if (c >= 0x80) {
         add = 1;
@@ -311,21 +305,21 @@ function keyboard_character(text: number) {
     }
     return bytes;
 }
-export function keyboard_text(text_utf8: char) {
+export function keyboard_text(text_utf8: string) {
     if (data.capture_numeric) {
-        let c: char = text_utf8[0];
+        let c: string = text_utf8[0];
         if (c >= '0' && c <= '9') {
-            data.capture_numeric_callback(c - '0');
+            data.capture_numeric_callback(parseInt(c));
         }
         return;
     }
     if (!data.capture) {
         return;
     }
-    let internal_char: number[];
+    let internal_char: number[] = [];
     encoding_from_utf8(text_utf8, internal_char, 100);
     let index: number = 0;
-    while (internal_char[index]) {
+    while (internal_char[index] !== undefined) {
         index += keyboard_character(internal_char[index]);
     }
 }

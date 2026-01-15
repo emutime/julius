@@ -33,9 +33,9 @@ function get_button(m: mouse, x: number, y: number, buttons: generic_button[], n
     }
     return 0;
 }
-export function generic_buttons_handle_mouse(m: mouse, x: number, y: number, buttons: generic_button[], num_buttons: number, focus_button_id: Ref<number>) {
+export function generic_buttons_handle_mouse(m: mouse, x: number, y: number, buttons: generic_button[], num_buttons: number, focus_button_id: Ref<number> | number | null): boolean {
     let button_id: number = get_button(m, x, y, buttons, num_buttons);
-    if (focus_button_id) {
+    if (focus_button_id && typeof focus_button_id !== "number") {
         focus_button_id.v = button_id;
     }
     if (!button_id) {

@@ -20,6 +20,7 @@ import { input_go_back_requested } from 'input/input';
 import { mouse, mouse_in_dialog } from 'input/mouse';
 import { window_city_draw_all, window_city_show } from 'window/city';
 import { message_dialog, window_message_dialog_show, window_message_dialog_show_city_message } from 'window/message_dialog';
+import { Ref } from '../../ext/crt';
 ;
 import GROUP_ARROW_MESSAGE_PROBLEMS = group_terrain.GROUP_ARROW_MESSAGE_PROBLEMS;
 import GROUP_CONTEXT_ICONS = group_terrain.GROUP_CONTEXT_ICONS;
@@ -146,23 +147,32 @@ function handle_input(m: mouse, h: hotkeys) {
         data.focus_button_id = 13;
         return;
     }
-    let button_id: number;
-    let handled: number = image_buttons_handle_mouse(m_dialog, 16, 32 + BLOCK_SIZE * data.height_blocks - 42,
-        image_button_help, 1, button_id);
-    if (button_id) {
+    const buttonRef = new Ref(0);
+    let handled: number = 0;
+    if (image_buttons_handle_mouse(m_dialog, 16, 32 + BLOCK_SIZE * data.height_blocks - 42,
+        image_button_help, 1, buttonRef)) {
+        handled = 1;
+    }
+    if (buttonRef.v) {
         data.focus_button_id = 11;
     }
-    handled |= image_buttons_handle_mouse(m_dialog, BLOCK_SIZE * data.width_blocks - 38,
-        32 + BLOCK_SIZE * data.height_blocks - 36, image_button_close, 1, button_id)
-    if (button_id) {
+    buttonRef.v = 0;
+    if (image_buttons_handle_mouse(m_dialog, BLOCK_SIZE * data.width_blocks - 38,
+        32 + BLOCK_SIZE * data.height_blocks - 36, image_button_close, 1, buttonRef)) {
+        handled = 1;
+    }
+    if (buttonRef.v) {
         data.focus_button_id = 12;
     }
-    handled |= generic_buttons_handle_mouse(m_dialog, data.x_text, data.y_text + 4,
-        generic_buttons_messages, MAX_MESSAGES, button_id)
-    if (!data.focus_button_id) {
-        data.focus_button_id = button_id;
+    buttonRef.v = 0;
+    if (generic_buttons_handle_mouse(m_dialog, data.x_text, data.y_text + 4,
+        generic_buttons_messages, MAX_MESSAGES, buttonRef)) {
+        handled = 1;
     }
-    if (button_id && old_button_id != button_id) {
+    if (!data.focus_button_id) {
+        data.focus_button_id = buttonRef.v;
+    }
+    if (buttonRef.v && old_button_id != buttonRef.v) {
         window_invalidate();
     }
     if (!handled && input_go_back_requested(m, h)) {

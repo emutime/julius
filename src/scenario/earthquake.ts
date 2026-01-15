@@ -1,5 +1,4 @@
 
-;
 import { building_get } from 'building/building';
 import { building_destroy_by_fire } from 'building/destruction';
 import { building_state } from 'building/type';
@@ -14,7 +13,7 @@ import { GRID, map_grid_offset } from 'map/grid';
 import { map_routing_update_land, map_routing_update_walls } from 'map/routing_terrain';
 import { map_terrain_is, map_terrain_set, terrain } from 'map/terrain';
 import { map_tiles_set_earthquake, map_tiles_update_all_gardens, map_tiles_update_all_plazas, map_tiles_update_all_roads } from 'map/tiles';
-import { event } from 'scenario/data';
+import { event, scenario_t } from 'scenario/data';
 import { earthquake } from 'scenario/types';
 import { sound_effect, sound_effect_play } from 'sound/effect';
 import BUILDING_STATE_DELETED_BY_GAME = building_state.BUILDING_STATE_DELETED_BY_GAME;
@@ -34,7 +33,7 @@ import EVENT_IN_PROGRESS = event.EVENT_IN_PROGRESS;
 import EVENT_FINISHED = event.EVENT_FINISHED;
 export let scenario: scenario_t = new scenario_t();
 import SOUND_EFFECT_EXPLOSION = sound_effect.SOUND_EFFECT_EXPLOSION;
-class unnamed26_5 {
+class expand {
     public x: number = 0;
     public y: number = 0;
     public constructor(...args: any[]) {
@@ -50,7 +49,7 @@ export class unnamed18_8 {
     public max_duration: number = 0;
     public delay: number = 0;
     public max_delay: number = 0;
-    public expand: expand = new Array(4).fill(null);
+    public expand: expand[] = new Array(4).fill(null);
     public constructor(...args: any[]) {
         args.length >= 1 && (this.game_year = args[0]);
         args.length >= 2 && (this.month = args[1]);

@@ -8,6 +8,7 @@ import { map_property_mark_deleted } from 'map/property';
 import { map_data, map_routing_update_land, map_routing_update_water } from 'map/routing_terrain';
 import { map_sprite_bridge_at, map_sprite_bridge_set, map_sprite_clear_tile } from 'map/sprite';
 import { map_terrain_add, map_terrain_count_diagonally_adjacent_with_type, map_terrain_count_directly_adjacent_with_type, map_terrain_is, map_terrain_remove, terrain } from 'map/terrain';
+import { Ref } from '../../ext/crt';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
 import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
@@ -38,14 +39,14 @@ export function map_bridge_building_length() {
 export function map_bridge_reset_building_length() {
     bridge.length = 0;
 }
-export function map_bridge_calculate_length_direction(x: number, y: number, lengthRef: { value: number }, directionRef: { value: number }) {
+export function map_bridge_calculate_length_direction(x: number, y: number, lengthRef: Ref<number>, directionRef: Ref<number>) {
     let grid_offset: number = map_grid_offset(x, y);
     bridge.end_grid_offset = 0;
     bridge.direction_grid_delta = 0;
     bridge.length = 0;
-    lengthRef.value = 0;
+    lengthRef.v = 0;
     bridge.direction = 0;
-    directionRef.value = 0;
+    directionRef.v = 0;
     if (!map_terrain_is(grid_offset, TERRAIN_WATER)) {
         return 0;
     }
@@ -70,7 +71,7 @@ export function map_bridge_calculate_length_direction(x: number, y: number, leng
     } else {
         return 0;
     }
-    directionRef.value = bridge.direction;
+    directionRef.v = bridge.direction;
     bridge.length = 1;
     for (let i: number = 0; i < 40; i++) {
         grid_offset += bridge.direction_grid_delta
@@ -84,7 +85,7 @@ export function map_bridge_calculate_length_direction(x: number, y: number, leng
             if (map_terrain_count_directly_adjacent_with_type(grid_offset, TERRAIN_WATER) != 3) {
                 bridge.end_grid_offset = 0;
             }
-            lengthRef.value = bridge.length;
+            lengthRef.v = bridge.length;
             return bridge.end_grid_offset;
         }
         if (map_terrain_is(next_offset, TERRAIN_ROAD | TERRAIN_BUILDING)) {
@@ -94,7 +95,7 @@ export function map_bridge_calculate_length_direction(x: number, y: number, leng
             break
         }
     }
-    lengthRef.value = bridge.length;
+    lengthRef.v = bridge.length;
     return 0;
 }
 function get_pillar_distance(length: number) {

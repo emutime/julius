@@ -4,7 +4,6 @@ import { empire_city_get_for_trade_route, empire_city_is_trade_route_open } from
 import { trade_route_decrease_limit, trade_route_increase_limit, trade_route_limit } from 'empire/trade_route';
 import { game_time_month, game_time_year } from 'game/time';
 import { MAX_DEMAND_CHANGES, scenario_t } from 'scenario/data';
-;
 import MESSAGE_INCREASED_TRADING = city_message_type.MESSAGE_INCREASED_TRADING;
 import MESSAGE_DECREASED_TRADING = city_message_type.MESSAGE_DECREASED_TRADING;
 import MESSAGE_TRADE_STOPPED = city_message_type.MESSAGE_TRADE_STOPPED;

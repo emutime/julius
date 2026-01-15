@@ -1,13 +1,19 @@
 export const DOUBLE_CLICK_TIME = 300;
 import { time_get_millis, time_millis } from 'core/time';
 import { screen_dialog_offset_x, screen_dialog_offset_y } from 'graphics/screen';
-import { scroll_state } from 'input/mouse';
+
+export const enum scroll_state {
+    SCROLL_NONE = 0,
+    SCROLL_UP = -1,
+    SCROLL_DOWN = 1
+};
+
 import { touch, touch_get_scroll, touch_is_scroll, touch_was_double_click } from 'input/touch';
 export class mouse_button {
-    public is_down: number = 0;
-    public went_down: number = 0;
-    public went_up: number = 0;
-    public double_click: number = 0;
+    public is_down: boolean = false;
+    public went_down: boolean = false;
+    public went_up: boolean = false;
+    public double_click: boolean = false;
     public system_change: number = 0;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.is_down = args[0]);
@@ -24,8 +30,8 @@ export class mouse {
     public scrolled: scroll_state = null;
     public left: mouse_button = null;
     public right: mouse_button = null;
-    public is_inside_window: number = 0;
-    public is_touch: number = 0;
+    public is_inside_window: boolean = false;
+    public is_touch: boolean = false;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.x = args[0]);
         args.length >= 2 && (this.y = args[1]);
@@ -42,6 +48,12 @@ export const enum system {
     SYSTEM_DOWN = 2,
     SYSTEM_DOUBLE_CLICK = 4,
 }
+
+import SYSTEM_NONE = system.SYSTEM_NONE;
+import SYSTEM_UP = system.SYSTEM_UP;
+import SYSTEM_DOWN = system.SYSTEM_DOWN;
+import SYSTEM_DOUBLE_CLICK = system.SYSTEM_DOUBLE_CLICK;
+
 let data: mouse;
 let dialog: mouse;
 let last_click: time_millis;
@@ -49,10 +61,10 @@ export function mouse_get() {
     return data;
 }
 function clear_mouse_button(button: mouse_button) {
-    button.is_down = 0;
-    button.went_down = 0;
-    button.went_up = 0;
-    button.double_click = 0;
+    button.is_down = false;
+    button.went_down = false;
+    button.went_up = false;
+    button.double_click = false;
     button.system_change = SYSTEM_NONE;
 }
 export function mouse_set_from_touch(first: touch, last: touch) {
@@ -60,7 +72,7 @@ export function mouse_set_from_touch(first: touch, last: touch) {
     data.y = first.current_point.y;
     data.scrolled = touch_get_scroll();
     data.is_inside_window = !first.has_ended;
-    data.is_touch = 1;
+    data.is_touch = true;
     data.left.system_change = SYSTEM_NONE;
     data.right.system_change = SYSTEM_NONE;
     if (touch_is_scroll()) {
@@ -76,7 +88,7 @@ export function mouse_set_from_touch(first: touch, last: touch) {
     data.right.went_up = last.has_ended;
 }
 export function mouse_remove_touch() {
-    data.is_touch = 0;
+    data.is_touch = false;
 }
 export function mouse_set_position(x: number, y: number) {
     if (x != data.x || y != data.y) {
@@ -84,29 +96,29 @@ export function mouse_set_position(x: number, y: number) {
     }
     data.x = x;
     data.y = y;
-    data.is_touch = 0;
-    data.is_inside_window = 1;
+    data.is_touch = false;
+    data.is_inside_window = true;
 }
-export function mouse_set_left_down(down: number) {
+export function mouse_set_left_down(down: boolean) {
     data.left.system_change |= down ? SYSTEM_DOWN : SYSTEM_UP
-    data.is_touch = 0;
-    data.is_inside_window = 1;
+    data.is_touch = false;
+    data.is_inside_window = true;
     if (!down) {
         let now: time_millis = time_get_millis();
-        let is_double_click: number = (last_click < now) && ((now - last_click) <= DOUBLE_CLICK_TIME);
+        let is_double_click: boolean = (last_click < now) && ((now - last_click) <= DOUBLE_CLICK_TIME);
         data.left.system_change |= is_double_click ? SYSTEM_DOUBLE_CLICK : SYSTEM_NONE
         last_click = now;
     }
 }
 export function mouse_set_right_down(down: number) {
     data.right.system_change |= down ? SYSTEM_DOWN : SYSTEM_UP
-    data.is_touch = 0;
-    data.is_inside_window = 1;
+    data.is_touch = false;
+    data.is_inside_window = true;
     last_click = 0;
 }
-export function mouse_set_inside_window(inside: number) {
+export function mouse_set_inside_window(inside: boolean) {
     data.is_inside_window = inside;
-    data.is_touch = 0;
+    data.is_touch = false;
 }
 function update_button_state(button: mouse_button) {
     button.went_down = (button.system_change & SYSTEM_DOWN) == SYSTEM_DOWN;
@@ -121,15 +133,15 @@ export function mouse_determine_button_state() {
 }
 export function mouse_set_scroll(state: scroll_state) {
     data.scrolled = state;
-    data.is_touch = 0;
-    data.is_inside_window = 1;
+    data.is_touch = false;
+    data.is_inside_window = true;
 }
 export function mouse_reset_scroll() {
     data.scrolled = SCROLL_NONE;
 }
 export function mouse_reset_up_state() {
-    data.left.went_up = 0;
-    data.right.went_up = 0;
+    data.left.went_up = false;
+    data.right.went_up = false;
 }
 export function mouse_reset_button_state() {
     last_click = 0;

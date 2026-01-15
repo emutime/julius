@@ -75,10 +75,12 @@ function fade_pressed_effect_build(buttons: image_button[], num_buttons: number)
         }
     }
 }
-export function image_buttons_draw(x: number, y: number, buttons: image_button[], num_buttons: number) {
-    fade_pressed_effect(buttons, num_buttons);
-    for (let i: number = 0; i < num_buttons; i++) {
-        let btn: image_button = buttons[i];
+export function image_buttons_draw(x: number, y: number, buttons: image_button[] | image_button, num_buttons: number) {
+    const buttonList = Array.isArray(buttons) ? buttons : [buttons];
+    const buttonCount = Array.isArray(buttons) ? num_buttons : 1;
+    fade_pressed_effect(buttonList, buttonCount);
+    for (let i: number = 0; i < buttonCount; i++) {
+        let btn: image_button = buttonList[i];
         let image_id: number = image_group(btn.image_collection) + btn.image_offset;
         if (btn.enabled) {
             if (btn.pressed) {
@@ -101,15 +103,17 @@ function should_be_pressed(btn: image_button, m: mouse) {
     }
     return 0;
 }
-export function image_buttons_handle_mouse(m: mouse, x: number, y: number, buttons: image_button[], num_buttons: number, focus_button_id: Ref<number>) {
-    fade_pressed_effect(buttons, num_buttons);
-    fade_pressed_effect_build(buttons, num_buttons);
+export function image_buttons_handle_mouse(m: mouse, x: number, y: number, buttons: image_button[] | image_button, num_buttons: number, focus_button_id: Ref<number> | null): boolean {
+    const buttonList = Array.isArray(buttons) ? buttons : [buttons];
+    const buttonCount = Array.isArray(buttons) ? num_buttons : 1;
+    fade_pressed_effect(buttonList, buttonCount);
+    fade_pressed_effect_build(buttonList, buttonCount);
     let hit_button: image_button = null;
     if (focus_button_id) {
         focus_button_id.v = 0;
     }
-    for (let i: number = 0; i < num_buttons; i++) {
-        let btn: image_button = buttons[i];
+    for (let i: number = 0; i < buttonCount; i++) {
+        let btn: image_button = buttonList[i];
         if (btn.focused) {
             btn.focused--;
         }
@@ -127,11 +131,11 @@ export function image_buttons_handle_mouse(m: mouse, x: number, y: number, butto
         }
     }
     if (!hit_button) {
-        return 0;
+        return false;
     }
     if (hit_button.button_type == IB_SCROLL) {
         if (!m.left.went_down && !m.left.is_down) {
-            return 0;
+            return false;
         }
     } else if (hit_button.button_type == IB_BUILD || hit_button.button_type == IB_NORMAL) {
         if (should_be_pressed(hit_button, m)) {
@@ -139,7 +143,7 @@ export function image_buttons_handle_mouse(m: mouse, x: number, y: number, butto
             hit_button.pressed_since = time_get_millis();
         }
         if (!m.left.went_up && !m.right.went_up) {
-            return 0;
+            return false;
         }
     }
     if (m.left.went_up) {
@@ -156,7 +160,7 @@ export function image_buttons_handle_mouse(m: mouse, x: number, y: number, butto
             hit_button.pressed_since = time_get_millis();
             hit_button.left_click_handler(hit_button.parameter1, hit_button.parameter2);
         }
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }

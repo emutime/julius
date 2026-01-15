@@ -180,6 +180,7 @@ export function scenario_invasion_init() {
         return;
     }
     let warning: invasion_warning = data.warnings[1];
+    let offset: number = 1;
     for (let i: number = 0; i < MAX_INVASIONS; i++) {
         random_generate_next();
         if (!scenario.invasions[i].type) {
@@ -208,7 +209,8 @@ export function scenario_invasion_init() {
             warning.months_to_go = 12 * scenario.invasions[i].year;
             warning.months_to_go += scenario.invasions[i].month
             warning.months_to_go -= 12 * year
-            ++warning;
+            ++offset;
+            warning = data.warnings[offset];
         }
         path_current++;
         if (path_current > path_max) {

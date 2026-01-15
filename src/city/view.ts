@@ -15,7 +15,7 @@ export class pixel_offset {
         args.length >= 2 && (this.y = args[1]);
     }
 }
-type view_tile = pixel_offset;
+export type view_tile = pixel_offset;
 
 import { direction_type } from 'core/direction';
 import { GRID, map_grid_add_delta, map_grid_delta, map_grid_height, map_grid_width } from 'map/grid';

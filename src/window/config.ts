@@ -3,20 +3,44 @@ export const ITEM_HEIGHT = 24;
 export const NUM_VISIBLE_ITEMS = 15;
 export const CHECKBOX_WIDTH = 560;
 export const MAX_WIDGETS = 26;
-import { CONFIG_STRING_VALUE_MAX } from 'core/config';
+import { calc_bound } from 'core/calc';
+import { config_get, config_get_default_string_value, config_get_default_value, config_get_string, config_key, config_save, config_set, config_set_string, config_string_key, CONFIG_STRING_VALUE_MAX } from 'core/config';
+import { dir_find_all_subdirectories, dir_listing } from 'core/dir';
+import { encoding_from_utf8 } from 'core/encoding';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { lang_dir_is_valid } from 'core/lang';
+import { string_copy, string_from_ascii, string_from_int } from 'core/string';
+import { game_reload_language } from 'game/game';
+import { system_can_scale_display, system_init_cursors, system_is_fullscreen_only, system_scale_display } from 'game/system';
+import { button_border_draw, button_none } from 'graphics/button';
+import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_clear_screen, graphics_in_dialog, graphics_reset_dialog } from 'graphics/graphics';
+import { image_draw, image_draw_fullscreen_background } from 'graphics/image';
+import { BLOCK_SIZE, inner_panel_draw, outer_panel_draw } from 'graphics/panel';
+import { screen_dialog_offset_x, screen_dialog_offset_y } from 'graphics/screen';
+import { scrollbar_draw, scrollbar_handle_mouse, scrollbar_init, scrollbar_type } from 'graphics/scrollbar';
+import { text_draw, text_draw_centered, text_draw_ellipsized } from 'graphics/text';
+import { window_id, window_invalidate, window_request_refresh, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { translation_for, translation_key } from 'translation/translation';
+import { window_hotkey_config_show } from 'window/hotkey_config';
+import { window_main_menu_show } from 'window/main_menu';
+import { window_plain_message_dialog_show } from 'window/plain_message_dialog';
+import { window_select_list_show_text } from 'window/select_list';
+import { memcpy, Ref, strcmp, strncpy } from '../../ext/crt';
 export const MAX_LANGUAGE_DIRS = 20;
 export const CHECKBOX_TEXT_WIDTH = 560;
 export const CHECKBOX_CHECK_SIZE = 20;
 export const NUMERICAL_SLIDER_X = 50;
-import { BLOCK_SIZE } from 'graphics/panel';
 export const NUMERICAL_SLIDER_PADDING = 2;
 export const NUMERICAL_DOT_SIZE = 20;
 export const NUMERICAL_RANGE_X = 20;
 export const NUM_BOTTOM_BUTTONS = 4;
 export const CHECKBOX_HEIGHT = 20;
-import { direction_type } from 'core/direction';;
-import { calc_bound } from 'core/calc';
-import { config_key } from 'core/config';
+;
 import CONFIG_GP_FIX_IMMIGRATION_BUG = config_key.CONFIG_GP_FIX_IMMIGRATION_BUG;
 import CONFIG_GP_FIX_100_YEAR_GHOSTS = config_key.CONFIG_GP_FIX_100_YEAR_GHOSTS;
 import CONFIG_SCREEN_DISPLAY_SCALE = config_key.CONFIG_SCREEN_DISPLAY_SCALE;
@@ -33,94 +57,13 @@ import CONFIG_UI_SHOW_CONSTRUCTION_SIZE = config_key.CONFIG_UI_SHOW_CONSTRUCTION
 import CONFIG_UI_HIGHLIGHT_LEGIONS = config_key.CONFIG_UI_HIGHLIGHT_LEGIONS;
 import CONFIG_UI_SHOW_MILITARY_SIDEBAR = config_key.CONFIG_UI_SHOW_MILITARY_SIDEBAR;
 import CONFIG_MAX_ENTRIES = config_key.CONFIG_MAX_ENTRIES;
-import { config_key } from 'core/config';
-import { config_string_key } from 'core/config';
 import CONFIG_STRING_UI_LANGUAGE_DIR = config_string_key.CONFIG_STRING_UI_LANGUAGE_DIR;
 import CONFIG_STRING_MAX_ENTRIES = config_string_key.CONFIG_STRING_MAX_ENTRIES;
-import { config_string_key } from 'core/config';
-import { config_get } from 'core/config';
-import { config_set } from 'core/config';
-import { config_get_string } from 'core/config';
-import { config_set_string } from 'core/config';
-import { config_get_default_value } from 'core/config';
-import { config_get_default_string_value } from 'core/config';
-import { config_save } from 'core/config';
-import { dir_listing } from 'core/dir';
-import { dir_find_all_subdirectories } from 'core/dir';
-import { group_terrain } from 'core/image_group';
 import GROUP_PANEL_BUTTON = group_terrain.GROUP_PANEL_BUTTON;
 import GROUP_CONFIG = group_terrain.GROUP_CONFIG;
-import { lang_type } from 'core/lang';
-import { lang_message_type } from 'core/lang';
-import { lang_message } from 'core/lang';
-import { lang_dir_is_valid } from 'core/lang';
-import { string_copy } from 'core/string';
-import { string_from_ascii } from 'core/string';
-import { string_from_int } from 'core/string';
-import { game_reload_language } from 'game/game';
-import { color_t } from 'graphics/color';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { system_is_fullscreen_only } from 'game/system';
-import { system_scale_display } from 'game/system';
-import { system_can_scale_display } from 'game/system';
-import { system_init_cursors } from 'game/system';
-import { button_none } from 'graphics/button';
-import { button_border_draw } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { graphics_clear_screen } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { encoding_from_utf8 } from 'core/encoding';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { image_draw_fullscreen_background } from 'graphics/image';
-import { outer_panel_draw } from 'graphics/panel';
-import { inner_panel_draw } from 'graphics/panel';
-import { screen_dialog_offset_x } from 'graphics/screen';
-import { screen_dialog_offset_y } from 'graphics/screen';
-import { scrollbar_type } from 'graphics/scrollbar';
-import { scrollbar_init } from 'graphics/scrollbar';
-import { scrollbar_draw } from 'graphics/scrollbar';
-import { scrollbar_handle_mouse } from 'graphics/scrollbar';
-import { text_draw } from 'graphics/text';
-import { text_draw_centered } from 'graphics/text';
-import { text_draw_ellipsized } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_CONFIG = window_id.WINDOW_CONFIG;
-import { window_id } from 'graphics/window';
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-import { window_request_refresh } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { window_hotkey_config_show } from 'window/hotkey_config';
-import { window_main_menu_show } from 'window/main_menu';
-import { translation_key } from 'translation/translation';
 import TR_INVALID_LANGUAGE_TITLE = translation_key.TR_INVALID_LANGUAGE_TITLE;
 import TR_INVALID_LANGUAGE_MESSAGE = translation_key.TR_INVALID_LANGUAGE_MESSAGE;
 import TR_BUTTON_OK = translation_key.TR_BUTTON_OK;
@@ -147,24 +90,6 @@ import TR_CONFIG_HIGHLIGHT_LEGIONS = translation_key.TR_CONFIG_HIGHLIGHT_LEGIONS
 import TR_CONFIG_SHOW_MILITARY_SIDEBAR = translation_key.TR_CONFIG_SHOW_MILITARY_SIDEBAR;
 import TR_CONFIG_FIX_IMMIGRATION_BUG = translation_key.TR_CONFIG_FIX_IMMIGRATION_BUG;
 import TR_CONFIG_FIX_100_YEAR_GHOSTS = translation_key.TR_CONFIG_FIX_100_YEAR_GHOSTS;
-import { translation_key } from 'translation/translation';
-import { translation_string } from 'translation/translation';
-import { translation_for } from 'translation/translation';
-import { window_plain_message_dialog_show } from 'window/plain_message_dialog';
-import { window_select_list_show_text } from 'window/select_list';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strcmp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-import { strcmp } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 let scrollbar: scrollbar_type = new scrollbar_type(580, ITEM_Y_OFFSET, ITEM_HEIGHT * NUM_VISIBLE_ITEMS, CHECKBOX_WIDTH, NUM_VISIBLE_ITEMS, on_scroll, 0, 4);
 export const enum type {
     TYPE_NONE,
@@ -194,7 +119,6 @@ export const enum range {
 }
 import RANGE_DISPLAY_SCALE = range.RANGE_DISPLAY_SCALE;
 import RANGE_CURSOR_SCALE = range.RANGE_CURSOR_SCALE;
-import { Ref } from '../../ext/crt';
 
 export class numerical_range_widget {
     public width_blocks: number = 0;
@@ -295,8 +219,8 @@ export class unnamed147_8 {
     public config_values: config_values = new Array(CONFIG_MAX_ENTRIES).fill(null);
     public config_string_values: config_string_values = new Array(CONFIG_STRING_VALUE_MAX).fill(null);
     public language_options_data: number[] = new Array(MAX_LANGUAGE_DIRS).fill(0);
-    public language_options: number[] = new Array(MAX_LANGUAGE_DIRS).fill(0);
-    public language_options_utf8: char[] = new Array(MAX_LANGUAGE_DIRS).fill(null);
+    public language_options: string[] = new Array(MAX_LANGUAGE_DIRS).fill('');
+    public language_options_utf8: string[] = new Array(MAX_LANGUAGE_DIRS).fill('');
     public num_language_options: number = 0;
     public selected_language_option: number = 0;
     public active_numerical_range: number = 0;
@@ -383,7 +307,7 @@ function init() {
         }
     }
     enable_all_widgets();
-    if (!system_can_scale_display(0, 0)) {
+    if (!system_can_scale_display(null, null)) {
         disable_widget(TYPE_NUMERICAL_DESC, RANGE_DISPLAY_SCALE);
         disable_widget(TYPE_NUMERICAL_RANGE, RANGE_DISPLAY_SCALE);
     }
@@ -407,7 +331,7 @@ function numerical_range_draw(w: numerical_range_widget, x: number, y: number, v
     text_draw(value_text, x, y + 6, FONT_NORMAL_BLACK, 0);
     inner_panel_draw(x + NUMERICAL_SLIDER_X, y + 4, w.width_blocks, 1);
     let width: number = w.width_blocks * BLOCK_SIZE - NUMERICAL_SLIDER_PADDING * 2 - NUMERICAL_DOT_SIZE;
-    let scroll_position: number = (* w.value - w.min) * width / (w.max - w.min);
+    let scroll_position: number = (w.value - w.min) * width / (w.max - w.min);
     image_draw(image_group(GROUP_PANEL_BUTTON) + 37,
         x + NUMERICAL_SLIDER_X + NUMERICAL_SLIDER_PADDING + scroll_position, y + 2);
 }
@@ -499,37 +423,37 @@ function is_checkbox(m: mouse, x: number, y: number) {
     }
     return 0;
 }
-function checkbox_handle_mouse(m: mouse, x: number, y: number, value_key: number, focus: Ref<number>) {
+function checkbox_handle_mouse(m: mouse, x: number, y: number, value_key: number, focus: Ref<boolean>) {
     if (!is_checkbox(m, x, y)) {
-        return 0;
+        return false;
     }
-    focus.v = 1;
+    focus.v = true;
     if (m.left.went_up) {
         toggle_switch(value_key);
-        return 1;
+        return true;
     } else {
-        return 0;
+        return false;
     }
 }
 function is_numerical_range(m: mouse, x: number, y: number, width: number) {
     if (x + NUMERICAL_SLIDER_X <= m.x && x + width + NUMERICAL_SLIDER_X >= m.x &&
         y <= m.y && y + 16 > m.y) {
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 function numerical_range_handle_mouse(m: mouse, x: number, y: number, numerical_range_id: number) {
     let w: numerical_range_widget = scale_ranges[numerical_range_id - 1];
     if (data.active_numerical_range) {
         if (data.active_numerical_range != numerical_range_id) {
-            return 0;
+            return false;
         }
         if (!m.left.is_down) {
             data.active_numerical_range = 0;
-            return 0;
+            return false;
         }
     } else if (!m.left.went_down || !is_numerical_range(m, x, y, w.width_blocks * BLOCK_SIZE)) {
-        return 0;
+        return false;
     }
     let slider_width: number = w.width_blocks * BLOCK_SIZE - NUMERICAL_SLIDER_PADDING * 2 - NUMERICAL_DOT_SIZE;
     let pixels_per_pct: number = slider_width / (w.max - w.min);
@@ -539,12 +463,12 @@ function numerical_range_handle_mouse(m: mouse, x: number, y: number, numerical_
     let right_step_value: number = calc_bound(left_step_value + w.step, w.min, w.max);
     let closest_step_value: number = (exact_value - left_step_value) < (right_step_value - exact_value) ?
         left_step_value : right_step_value;
-    if (closest_step_value != * w.value) {
-        * w.value = closest_step_value;
+    if (closest_step_value != w.value) {
+        w.value = closest_step_value;
         window_request_refresh();
     }
     data.active_numerical_range = numerical_range_id;
-    return 1;
+    return true;
 }
 function handle_input(m: mouse, h: hotkeys) {
     let m_dialog: mouse = mouse_in_dialog(m);
@@ -555,29 +479,29 @@ function handle_input(m: mouse, h: hotkeys) {
     if (scrollbar_handle_mouse(scrollbar, m_dialog)) {
         return;
     }
-    let handled: number = 0;
+    let handled: boolean = false;
     data.focus_button = 0;
     for (let i: number = 0; i < NUM_VISIBLE_ITEMS && i < data.num_widgets; i++) {
         let w: config_widget = data.widgets[i + scrollbar.scroll_position];
         let y: number = ITEM_Y_OFFSET + ITEM_HEIGHT * i;
         if (w.type == TYPE_CHECKBOX) {
-            let focus: number = 0;
-            handled |= checkbox_handle_mouse(m_dialog, 20, y, w.subtype, focus)
+            let focus: boolean = false;
+            handled ||= checkbox_handle_mouse(m_dialog, 20, y, w.subtype, focus);
             if (focus) {
                 data.focus_button = i + 1;
             }
         } else if (w.type == TYPE_SELECT) {
             let btn: generic_button = select_buttons[w.subtype];
             let focus: number = 0;
-            handled |= generic_buttons_handle_mouse(m_dialog, 0, y, btn, 1, focus)
+            handled ||= generic_buttons_handle_mouse(m_dialog, 0, y, btn, 1, focus)
             if (focus) {
                 data.focus_button = i + 1;
             }
         } else if (w.type == TYPE_NUMERICAL_RANGE) {
-            handled |= numerical_range_handle_mouse(m_dialog, NUMERICAL_RANGE_X, y, w.subtype + 1)
+            handled ||= numerical_range_handle_mouse(m_dialog, NUMERICAL_RANGE_X, y, w.subtype + 1)
         }
     }
-    handled |= generic_buttons_handle_mouse(m_dialog, 0, 0,
+    handled ||= generic_buttons_handle_mouse(m_dialog, 0, 0,
         bottom_buttons, NUM_BOTTOM_BUTTONS, data.bottom_focus_button)
     if (!handled && (m.right.went_up || h.escape_pressed)) {
         window_main_menu_show(0);

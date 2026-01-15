@@ -131,19 +131,19 @@ export function editor_tool_can_place_access_ramp(tile: map_tile, orientation_in
     }
     return 0;
 }
-export function editor_tool_can_place_building(tile: map_tile, num_tiles: number, blocked_tiles: { value: number[] }) {
+export function editor_tool_can_place_building(tile: map_tile, num_tiles: number, blocked_tiles: boolean[]) {
     let blocked: number = 0;
     for (let i: number = 0; i < num_tiles; i++) {
         let tile_offset: number = tile.grid_offset + TILE_GRID_OFFSETS[i];
         let forbidden_terrain: number = map_terrain_get(tile_offset) & TERRAIN_NOT_CLEAR;
         if (forbidden_terrain || map_has_figure_at(tile_offset)) {
             blocked = 1;
-            if (blocked_tiles.value) {
-                blocked_tiles.value[i] = 1;
+            if (blocked_tiles) {
+                blocked_tiles[i] = true;
             }
         } else {
-            if (blocked_tiles.value) {
-                blocked_tiles.value[i] = 0;
+            if (blocked_tiles) {
+                blocked_tiles[i] = false;
             }
         }
     }

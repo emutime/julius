@@ -57,7 +57,7 @@ function draw_foreground() {
 function handle_input(m: mouse, h: hotkeys) {
     let m_dialog: mouse = mouse_in_dialog(m);
     if (input_box_handle_mouse(m_dialog, player_name_input) ||
-        image_buttons_handle_mouse(m_dialog, 159, 249, image_buttons, 2, 0)) {
+        image_buttons_handle_mouse(m_dialog, 159, 249, image_buttons, 2, null)) {
         return;
     }
     if (input_box_is_accepted(player_name_input)) {

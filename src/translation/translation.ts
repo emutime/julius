@@ -1,8 +1,9 @@
 export const BUFFER_SIZE = 100000;
 import { language_type } from 'core/locale';
 import { log_info } from 'core/log';
-import { memset, Ref } from '../../ext/crt';
+import { memset, Ref, textDecodeUTF8 } from '../../ext/crt';
 import { translation_english } from './english';
+import { translation_simplified_chinese } from './simplified_chinese';
 export const  enum translation_key {
     TR_NO_PATCH_TITLE,
     TR_NO_PATCH_MESSAGE,
@@ -119,7 +120,6 @@ import LANGUAGE_CZECH = language_type.LANGUAGE_CZECH;
 import LANGUAGE_GREEK = language_type.LANGUAGE_GREEK;
 ;
 import TRANSLATION_MAX_KEY = translation_key.TRANSLATION_MAX_KEY;
-import { translation_simplified_chinese } from './simplified_chinese';
 export class translation_string {
     public key: translation_key = null;
     public string: string = null;
@@ -129,7 +129,7 @@ export class translation_string {
     }
 }
 export class unnamed11_8 {
-    public strings: number[] = new Array(TRANSLATION_MAX_KEY).fill(0);
+    public strings: Uint8Array<ArrayBuffer>[] = new Array(TRANSLATION_MAX_KEY).fill(0);
     public buffer: number[] = new Array(BUFFER_SIZE).fill(0);
     public buf_index: number = 0;
     public constructor(...args: any[]) {
@@ -216,5 +216,5 @@ export function translation_load(language: language_type) {
     set_strings(default_strings.v, num_default_strings.v, true);
 }
 export function translation_for(key: translation_key) {
-    return data.strings[key];
+    return textDecodeUTF8(data.strings[key]);
 }

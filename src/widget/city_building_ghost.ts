@@ -559,9 +559,11 @@ function draw_bathhouse(tile: map_tile, x: number, y: number) {
     }
 }
 function draw_bridge(tile: map_tile, x: number, y: number, type: building_type) {
-    let length: number = 0;
-    let direction: number = 0;
-    let end_grid_offset: number = map_bridge_calculate_length_direction(tile.x, tile.y, length, direction);
+    let length_ref: Ref<number> = new Ref(0);
+    let direction_ref: Ref<number> = new Ref(0);
+    let end_grid_offset: number = map_bridge_calculate_length_direction(tile.x, tile.y, length_ref, direction_ref);
+    let length: number = length_ref.v;
+    let direction: number = direction_ref.v;
     let dir: number = direction - city_view_orientation();
     if (dir < 0) {
         dir += 8;
@@ -705,8 +707,8 @@ function draw_hippodrome(tile: map_tile, x: number, y: number) {
     }
 }
 function draw_shipyard_wharf(tile: map_tile, x: number, y: number, type: building_type) {
-    let dir_absolute: number = 0;
-    let dir_relative: number = 0;
+    let dir_absolute: Ref<number> = new Ref(0);
+    let dir_relative: Ref<number> = new Ref(0);
     let blocked: number = map_water_determine_orientation_size2(tile.x, tile.y, 1, dir_absolute, dir_relative);
     if (city_finance_out_of_money()) {
         blocked = 999;
@@ -717,14 +719,14 @@ function draw_shipyard_wharf(tile: map_tile, x: number, y: number, type: buildin
         }
     } else {
         let props: building_properties = building_properties_for_type(type);
-        let image_id: number = image_group(props.image_group) + props.image_offset + dir_relative;
+        let image_id: number = image_group(props.image_group) + props.image_offset + dir_relative.v;
         draw_building(image_id, x, y);
     }
 }
 function draw_dock(tile: map_tile, x: number, y: number) {
-    let dir_absolute: number = 0;
-    let dir_relative: number = 0;
-    let blocked: number = map_water_determine_orientation_size3(tile.x, tile.y, 1, dir_absolute, dir_relative);
+    let dir_absolute: Ref<number> = new Ref(0);
+    let dir_relative: Ref<number> = new Ref(0);
+    let blocked: boolean = !!map_water_determine_orientation_size3(tile.x, tile.y, 1, dir_absolute, dir_relative);
     if (city_finance_out_of_money()) {
         blocked = true;
     }
@@ -734,7 +736,7 @@ function draw_dock(tile: map_tile, x: number, y: number) {
         }
     } else {
         let image_id: number;
-        switch (dir_relative) {
+        switch (dir_relative.v) {
             case 0:
                 image_id = image_group(GROUP_BUILDING_DOCK_1);
                 break;
@@ -802,9 +804,11 @@ export function city_building_ghost_draw(tile: map_tile) {
     if (building_construction_draw_as_constructing() || type == BUILDING_NONE || type == BUILDING_CLEAR_LAND) {
         return;
     }
-    let xy = city_view_get_selected_tile_pixels();
-    let x: number = xy.x;
-    let y: number = xy.y;
+    let x_ref: Ref<number> = new Ref(0);
+    let y_ref: Ref<number> = new Ref(0);
+    city_view_get_selected_tile_pixels(x_ref, y_ref);
+    let x: number = x_ref.v;
+    let y: number = y_ref.v;
     switch (type) {
         case BUILDING_DRAGGABLE_RESERVOIR:
             draw_draggable_reservoir(tile, x, y);

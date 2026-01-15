@@ -810,12 +810,72 @@ function is_ascii(utf8_char: number) {
 export function encoding_can_display(utf8_char: number) {
     return true //is_ascii(utf8_char) || get_letter_code_for_utf8(utf8_char, NULL, NULL) != NULL;
 }
-export function encoding_to_utf8(input: Uint8Array): string {
-    // todo
-    return "";
+export function encoding_to_utf8(
+    input: string | ArrayLike<number>,
+    output?: (ArrayLike<number> & { [index: number]: number }) | number,
+    output_length?: number,
+    decomposed?: number
+): string | void {
+    const toString = (value: string | ArrayLike<number>) => {
+        if (typeof value === "string") {
+            return value;
+        }
+        let result = "";
+        for (let i = 0; i < value.length; i++) {
+            const code = value[i];
+            if (!code) {
+                break;
+            }
+            result += String.fromCharCode(code);
+        }
+        return result;
+    };
+    if (typeof output === "number" || output === undefined) {
+        const maxLength = typeof output === "number" ? output : undefined;
+        const text = toString(input);
+        return maxLength ? text.substring(0, maxLength - 1) : text;
+    }
+    const out = output as ArrayLike<number> & { [index: number]: number };
+    const maxLength = output_length ?? out.length ?? 0;
+    const text = toString(input);
+    const copyLength = Math.min(text.length, maxLength > 0 ? maxLength - 1 : 0);
+    for (let i = 0; i < copyLength; i++) {
+        out[i] = text.charCodeAt(i);
+    }
+    if (maxLength > 0) {
+        out[copyLength] = 0;
+    }
 }
-export function encoding_from_utf8(input: string): Uint8Array {
-    return new Uint8Array(input.length);
+export function encoding_from_utf8(
+    input: string | ArrayLike<number>,
+    output?: ArrayLike<number> & { [index: number]: number },
+    output_length?: number
+): Uint8Array | void {
+    const toBytes = (value: string | ArrayLike<number>) => {
+        if (typeof value !== "string") {
+            return value;
+        }
+        const bytes = new Uint8Array(value.length + 1);
+        for (let i = 0; i < value.length; i++) {
+            bytes[i] = value.charCodeAt(i);
+        }
+        bytes[value.length] = 0;
+        return bytes;
+    };
+    if (!output) {
+        const bytes = toBytes(input);
+        return bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes as ArrayLike<number>);
+    }
+    const bytes = toBytes(input);
+    const out = output as ArrayLike<number> & { [index: number]: number };
+    const maxLength = output_length ?? out.length ?? 0;
+    const copyLength = Math.min(bytes.length, maxLength > 0 ? maxLength - 1 : 0);
+    for (let i = 0; i < copyLength; i++) {
+        out[i] = bytes[i];
+    }
+    if (maxLength > 0) {
+        out[copyLength] = 0;
+    }
 }
 export function encoding_japanese_sjis_to_image_id(first: number, second: number): number {
     return 0;

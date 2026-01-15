@@ -6,6 +6,7 @@ import { CHANNEL_FILENAME_MAX, sound_device_close, sound_device_init_channels, s
 import { sound_effect_set_volume } from 'sound/effect';
 import { sound_music_set_volume } from 'sound/music';
 import { sound_speech_set_volume } from 'sound/speech';
+import { strncpy } from '../../ext/crt';
 import MAY_BE_LOCALIZED = localized.MAY_BE_LOCALIZED;
 import SOUND_MUSIC = set_sound_type.SOUND_MUSIC;
 import SOUND_SPEECH = set_sound_type.SOUND_SPEECH;

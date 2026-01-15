@@ -14,7 +14,11 @@ export const enum lang_type {
     TYPE_MESSAGE = 2,
     TYPE_MISSION = 3
 };
-import { FILE_NAME_MAX } from 'core/file';
+import { buffer, buffer_init, buffer_read_i16, buffer_read_i32, buffer_read_raw, buffer_skip } from 'core/buffer';
+import { localized } from 'core/dir';
+import { file_exists, FILE_NAME_MAX } from 'core/file';
+import { io_read_file_into_buffer } from 'core/io';
+import { textDecodeUTF8 } from '../../ext/crt';
 export const MAX_TEXT_ENTRIES = 1000;
 export const MAX_TEXT_DATA = 200000;
 export const BUFFER_SIZE = 400000;
@@ -80,18 +84,9 @@ export class lang_message {
         args.length >= 12 && (this.content = args[11]);
     }
 }
-import { buffer } from 'core/buffer';
-import { buffer_init } from 'core/buffer';
-import { buffer_read_i16 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
-import { buffer_read_raw } from 'core/buffer';
-import { buffer_skip } from 'core/buffer';
-import { localized } from 'core/dir';
 import NOT_LOCALIZED = localized.NOT_LOCALIZED;
 import MAY_BE_LOCALIZED = localized.MAY_BE_LOCALIZED;
 import MUST_BE_LOCALIZED = localized.MUST_BE_LOCALIZED;
-import { file_exists } from 'core/file';
-import { io_read_file_into_buffer } from 'core/io';
 class text_entries {
     public offset: number = 0;
     public in_use: number = 0;
@@ -225,7 +220,7 @@ export function lang_get_string(group: number, index: number) {
     while (str < charCodeSpace) { // skip non-printables
         ++strIdx;
     }
-    return new Uint8Array(data.text_data.buffer, strIdx);
+    return textDecodeUTF8(new Uint8Array<ArrayBuffer>(data.text_data.buffer, strIdx));
 }
 export function lang_get_message(id: number) {
     return data.message_entries[id];

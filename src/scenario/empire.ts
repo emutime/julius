@@ -1,11 +1,11 @@
 
-;
 import { city_message_post, city_message_type } from 'city/message';
 import { empire_city_expand_empire } from 'empire/city';
 import { resource_type } from 'game/resource';
 import { game_time_year } from 'game/time';
 import MESSAGE_EMPIRE_HAS_EXPANDED = city_message_type.MESSAGE_EMPIRE_HAS_EXPANDED;
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
+import { scenario_t } from './data';
 export let scenario: scenario_t = new scenario_t();
 export function scenario_empire_id() {
     return scenario.empire.id;

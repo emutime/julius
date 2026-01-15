@@ -1,7 +1,7 @@
 export const MAX_RANDOM = 100;
 ;
 import { buffer, buffer_read_u32, buffer_write_u32 } from 'core/buffer';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
+import { memset } from '../../ext/crt';
 export class unnamed7_8 {
     public iv1: number = 0;
     public iv2: number = 0;

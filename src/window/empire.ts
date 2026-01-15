@@ -38,6 +38,7 @@ import { message_dialog, window_message_dialog_show } from 'window/message_dialo
 import { popup_dialog_type, window_popup_dialog_show } from 'window/popup_dialog';
 import { window_resource_settings_show } from 'window/resource_settings';
 import { window_trade_opened_show } from 'window/trade_opened';
+import { Ref } from '../../ext/crt';
 import WARNING_NOT_AVAILABLE = warning_type.WARNING_NOT_AVAILABLE;
 import WARNING_NOT_AVAILABLE_YET = warning_type.WARNING_NOT_AVAILABLE_YET;
 import GROUP_EMPIRE_MAP = group_terrain.GROUP_EMPIRE_MAP;
@@ -421,7 +422,11 @@ function draw_map() {
     empire_set_viewport(data.x_max - data.x_min - 32, data.y_max - data.y_min - 136);
     data.x_draw_offset = data.x_min + 16;
     data.y_draw_offset = data.y_min + 16;
-    empire_adjust_scroll(data.x_draw_offset, data.y_draw_offset);
+    const xOffsetRef = new Ref(data.x_draw_offset);
+    const yOffsetRef = new Ref(data.y_draw_offset);
+    empire_adjust_scroll(xOffsetRef, yOffsetRef);
+    data.x_draw_offset = xOffsetRef.v;
+    data.y_draw_offset = yOffsetRef.v;
     image_draw(image_group(GROUP_EMPIRE_MAP), data.x_draw_offset, data.y_draw_offset);
     empire_object_foreach(draw_empire_object);
     scenario_invasion_foreach_warning(draw_invasion_warning);
@@ -444,7 +449,7 @@ function draw_panel_buttons(city: empire_city) {
     if (city) {
         if (city.type == EMPIRE_CITY_TRADE && !city.is_open) {
             button_border_draw((data.x_min + data.x_max - 500) / 2 + 30, data.y_max - 49, 440,
-                26, data.selected_button);
+                26, data.selected_button != 0);
         }
     }
 }
@@ -491,26 +496,28 @@ function handle_input(m: mouse, h: hotkeys) {
         }
         if (t.has_ended) {
             data.is_scrolling = 0;
-            data.finished_scroll = !touch_was_click(t);
+            data.finished_scroll = touch_was_click(t) ? 0 : 1;
             scroll_drag_end();
         }
     }
     data.focus_button_id = 0;
     data.focus_resource = 0;
-    let button_id: number;
-    image_buttons_handle_mouse(m, data.x_min + 20, data.y_max - 44, image_button_help, 1, button_id);
-    if (button_id) {
+    let button_id_ref = new Ref(0);
+    image_buttons_handle_mouse(m, data.x_min + 20, data.y_max - 44, image_button_help, 1, button_id_ref);
+    if (button_id_ref.v) {
         data.focus_button_id = 1;
     }
-    image_buttons_handle_mouse(m, data.x_max - 44, data.y_max - 44, image_button_return_to_city, 1, button_id);
-    if (button_id) {
+    button_id_ref.v = 0;
+    image_buttons_handle_mouse(m, data.x_max - 44, data.y_max - 44, image_button_return_to_city, 1, button_id_ref);
+    if (button_id_ref.v) {
         data.focus_button_id = 2;
     }
-    image_buttons_handle_mouse(m, data.x_max - 44, data.y_max - 100, image_button_advisor, 1, button_id);
-    if (button_id) {
+    button_id_ref.v = 0;
+    image_buttons_handle_mouse(m, data.x_max - 44, data.y_max - 100, image_button_advisor, 1, button_id_ref);
+    if (button_id_ref.v) {
         data.focus_button_id = 3;
     }
-    button_id = 0;
+    button_id_ref.v = 0;
     determine_selected_object(m);
     let selected_object: number = empire_selected_object();
     if (selected_object) {
@@ -526,23 +533,29 @@ function handle_input(m: mouse, h: hotkeys) {
                     let index_buy: number = 0;
                     for (let resource: number = RESOURCE_MIN; resource < RESOURCE_MAX; resource++) {
                         if (empire_object_city_sells_resource(obj.id, resource)) {
-                            generic_buttons_handle_mouse(m, x_offset + 120 + 104 * index_sell, y_offset + 31,
-                                generic_button_trade_resource + resource - 1, 1, button_id);
+                            button_id_ref.v = 0;
+                            generic_buttons_handle_mouse(
+                                m, x_offset + 120 + 104 * index_sell, y_offset + 31,
+                                [generic_button_trade_resource[resource - 1]], 1, button_id_ref);
                             index_sell++;
                         } else if (empire_object_city_buys_resource(obj.id, resource)) {
-                            generic_buttons_handle_mouse(m, x_offset + 120 + 104 * index_buy, y_offset + 62,
-                                generic_button_trade_resource + resource - 1, 1, button_id);
+                            button_id_ref.v = 0;
+                            generic_buttons_handle_mouse(
+                                m, x_offset + 120 + 104 * index_buy, y_offset + 62,
+                                [generic_button_trade_resource[resource - 1]], 1, button_id_ref);
                             index_buy++;
                         }
-                        if (button_id) {
+                        if (button_id_ref.v) {
                             data.focus_resource = resource;
                             break;
                         }
                     }
                 } else {
+                    const selectedButtonRef = new Ref(data.selected_button);
                     generic_buttons_handle_mouse(
                         m, (data.x_min + data.x_max - 500) / 2, data.y_max - 105,
-                        generic_button_open_trade, 1, data.selected_button);
+                        generic_button_open_trade, 1, selectedButtonRef);
+                    data.selected_button = selectedButtonRef.v;
                 }
             }
         }
@@ -632,7 +645,7 @@ function get_tooltip(c: tooltip_context) {
     }
 }
 function button_help(param1: number, param2: number) {
-    window_message_dialog_show(MESSAGE_DIALOG_EMPIRE_MAP, 0);
+    window_message_dialog_show(MESSAGE_DIALOG_EMPIRE_MAP, null);
 }
 function button_return_to_city(param1: number, param2: number) {
     window_city_show();

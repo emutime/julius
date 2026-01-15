@@ -20,6 +20,7 @@ import { hotkeys } from 'input/hotkey';
 import { input_go_back_requested } from 'input/input';
 import { mouse } from 'input/mouse';
 import { window_city_draw, window_city_draw_panels, window_city_show } from 'window/city';
+import { Ref } from '../../ext/crt';
 import OVERLAY_NONE = overlay.OVERLAY_NONE;
 import OVERLAY_WATER = overlay.OVERLAY_WATER;
 import OVERLAY_RELIGION = overlay.OVERLAY_RELIGION;
@@ -108,12 +109,12 @@ function draw_background() {
     window_city_draw_panels();
 }
 function get_sidebar_x_offset() {
-    let view_x: number
-    let view_y: number
-    let view_width: number
-    let view_height: number;
+    const view_x = new Ref(0);
+    const view_y = new Ref(0);
+    const view_width = new Ref(0);
+    const view_height = new Ref(0);
     city_view_get_viewport(view_x, view_y, view_width, view_height);
-    return view_x + view_width;
+    return view_x.v + view_width.v;
 }
 function draw_foreground() {
     window_city_draw();
@@ -171,15 +172,19 @@ function click_outside_menu(m: mouse, x_offset: number) {
 function handle_input(m: mouse, h: hotkeys) {
     let x_offset: number = get_sidebar_x_offset();
     let handled: boolean = false;
-    handled = handled || generic_buttons_handle_mouse(m, x_offset - MENU_X_OFFSET, MENU_Y_OFFSET,
-        menu_buttons, MAX_BUTTONS, data.menu_focus_button_id)
+    const menuFocusRef = new Ref(data.menu_focus_button_id);
+    handled = handled || !!generic_buttons_handle_mouse(m, x_offset - MENU_X_OFFSET, MENU_Y_OFFSET,
+        menu_buttons, MAX_BUTTONS, menuFocusRef);
+    data.menu_focus_button_id = menuFocusRef.v;
     if (!data.keep_submenu_open) {
         handle_submenu_focus();
     }
     if (data.selected_submenu) {
-        handled = handled || generic_buttons_handle_mouse(
+        const submenuFocusRef = new Ref(data.submenu_focus_button_id);
+        handled = handled || !!generic_buttons_handle_mouse(
             m, x_offset - SUBMENU_X_OFFSET, MENU_Y_OFFSET + MENU_ITEM_HEIGHT * data.selected_menu,
-            submenu_buttons, data.num_submenu_items, data.submenu_focus_button_id)
+            submenu_buttons, data.num_submenu_items, submenuFocusRef);
+        data.submenu_focus_button_id = submenuFocusRef.v;
     }
     if (!handled && input_go_back_requested(m, h)) {
         if (data.keep_submenu_open) {

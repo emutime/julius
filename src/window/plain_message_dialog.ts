@@ -20,9 +20,9 @@ let buttons: image_button[] = [
     new image_button(223, 140, 39, 26, IB_NORMAL, GROUP_OK_CANCEL_SCROLL_BUTTONS, 0, button_ok, button_none, 1, 0, 1)
 ];
 export class unnamed18_8 {
-    public title: number = 0;
-    public message: number = 0;
-    public extra: number = 0;
+    public title: string | ArrayLike<number> = "";
+    public message: string | ArrayLike<number> = "";
+    public extra: string | ArrayLike<number> | null = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.title = args[0]);
         args.length >= 2 && (this.message = args[1]);
@@ -30,7 +30,7 @@ export class unnamed18_8 {
     }
 }
 let data: unnamed18_8 = new unnamed18_8();
-function init(title: translation_key, message: translation_key, extra: number) {
+function init(title: translation_key, message: translation_key, extra: string | ArrayLike<number> | null) {
     if (window_is(WINDOW_PLAIN_MESSAGE_DIALOG)) {
         return 0;
     }
@@ -69,7 +69,7 @@ function button_ok(param1: number, param2: number) {
     close();
 }
 export function window_plain_message_dialog_show(title: translation_key, message: translation_key) {
-    if (init(title, message, 0)) {
+    if (init(title, message, null)) {
         let window: window_type = new window_type(
             WINDOW_PLAIN_MESSAGE_DIALOG,
             draw_background,
@@ -79,7 +79,7 @@ export function window_plain_message_dialog_show(title: translation_key, message
         window_show(window);
     }
 }
-export function window_plain_message_dialog_show_with_extra(title: translation_key, message: translation_key, extra: number) {
+export function window_plain_message_dialog_show_with_extra(title: translation_key, message: translation_key, extra: string | ArrayLike<number> | null) {
     if (init(title, message, extra)) {
         let window: window_type = new window_type(
             WINDOW_PLAIN_MESSAGE_DIALOG,

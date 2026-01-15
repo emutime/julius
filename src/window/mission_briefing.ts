@@ -146,11 +146,11 @@ function handle_input(m: mouse, h: hotkeys) {
     if (rich_text_handle_mouse(m_dialog)) {
         return;
     }
-    if (image_buttons_handle_mouse(m_dialog, 516, 426, image_button_start_mission, 1, 0)) {
+    if (image_buttons_handle_mouse(m_dialog, 516, 426, image_button_start_mission, 1, null)) {       
         return;
     }
     if (!data.is_review && game_mission_has_choice()) {
-        if (image_buttons_handle_mouse(m_dialog, 26, 428, image_button_back, 1, 0)) {
+        if (image_buttons_handle_mouse(m_dialog, 26, 428, image_button_back, 1, null)) {
             return;
         }
     }

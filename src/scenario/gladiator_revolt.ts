@@ -1,12 +1,11 @@
 
-;
 import { building_count_active } from 'building/count';
 import { building_type } from 'building/type';
 import { city_message_post, city_message_type } from 'city/message';
 import { buffer, buffer_read_i32, buffer_write_i32 } from 'core/buffer';
 import { random_byte } from 'core/random';
 import { game_time_month, game_time_year } from 'game/time';
-import { event } from 'scenario/data';
+import { event, scenario_t } from 'scenario/data';
 import BUILDING_GLADIATOR_SCHOOL = building_type.BUILDING_GLADIATOR_SCHOOL;
 import MESSAGE_GLADIATOR_REVOLT = city_message_type.MESSAGE_GLADIATOR_REVOLT;
 import MESSAGE_GLADIATOR_REVOLT_FINISHED = city_message_type.MESSAGE_GLADIATOR_REVOLT_FINISHED;

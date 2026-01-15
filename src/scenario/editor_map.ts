@@ -1,7 +1,6 @@
 import { figure_create_flotsam } from 'figuretype/water';
 import { map_routing_update_water } from 'map/routing_terrain';
 import { MAX_FISH_POINTS, MAX_HERD_POINTS, MAX_INVASION_POINTS, scenario_t } from 'scenario/data';
-;
 export let scenario: scenario_t = new scenario_t();
 export function scenario_editor_set_entry_point(x: number, y: number) {
     scenario.entry_point.x = x;

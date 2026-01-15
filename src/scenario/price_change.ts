@@ -3,7 +3,6 @@ import { random_byte, random_generate_next } from 'core/random';
 import { trade_price_change } from 'empire/trade_prices';
 import { game_time_month, game_time_year } from 'game/time';
 import { MAX_PRICE_CHANGES, scenario_t } from 'scenario/data';
-;
 import MESSAGE_PRICE_INCREASED = city_message_type.MESSAGE_PRICE_INCREASED;
 import MESSAGE_PRICE_DECREASED = city_message_type.MESSAGE_PRICE_DECREASED;
 export let scenario: scenario_t = new scenario_t();

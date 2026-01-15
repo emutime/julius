@@ -23,6 +23,7 @@ import { game_animation_init } from 'game/animation';
 import { game_file_io_read_scenario, game_file_io_write_scenario } from 'game/file_io';
 import { game_state_init, game_state_unpause } from 'game/state';
 import { game_time_init } from 'game/time';
+import { string_from_bytes } from 'core/string';
 import { map_aqueduct_clear } from 'map/aqueduct';
 import { map_building_clear } from 'map/building';
 import { map_desirability_clear } from 'map/desirability';
@@ -121,16 +122,18 @@ export function game_file_editor_create_scenario(size: number) {
     create_blank_map(size);
     prepare_map_for_editing();
 }
-export function game_file_editor_load_scenario(scenario_file: string) {
+export function game_file_editor_load_scenario(scenario_file: string | ArrayLike<number>) {
+    const scenarioFileStr = typeof scenario_file === "string" ? scenario_file : string_from_bytes(scenario_file);
     clear_map_data();
-    if (!game_file_io_read_scenario(scenario_file)) {
+    if (!game_file_io_read_scenario(scenarioFileStr)) {
         return 0;
     }
     scenario_map_init();
     prepare_map_for_editing();
     return 1;
 }
-export function game_file_editor_write_scenario(scenario_file: string) {
+export function game_file_editor_write_scenario(scenario_file: string | ArrayLike<number>) {
+    const scenarioFileStr = typeof scenario_file === "string" ? scenario_file : string_from_bytes(scenario_file);
     scenario_editor_set_native_images(
         image_group(GROUP_EDITOR_BUILDING_NATIVE),
         image_group(GROUP_EDITOR_BUILDING_NATIVE) + 2,
@@ -138,5 +141,5 @@ export function game_file_editor_write_scenario(scenario_file: string) {
     );
     scenario_distant_battle_set_roman_travel_months();
     scenario_distant_battle_set_enemy_travel_months();
-    return game_file_io_write_scenario(scenario_file);
+    return game_file_io_write_scenario(scenarioFileStr);
 }

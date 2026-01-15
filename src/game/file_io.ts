@@ -1,223 +1,58 @@
-export const  = 1;
 export const COMPRESS_BUFFER_SIZE = 600000;
 export const UNCOMPRESSED = 2147483648;
-import { building_type } from 'building/type';
-import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';
-import { __va_start } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vadefs';;
-import { buffer } from 'core/buffer';
-import { buffer_init } from 'core/buffer';
-import { buffer_reset } from 'core/buffer';
-import { buffer_write_i32 } from 'core/buffer';
-import { buffer_read_i32 } from 'core/buffer';
-import { buffer_skip } from 'core/buffer';
-import { building } from 'building/building';
-import { building_save_state } from 'building/building';
-import { building_load_state } from 'building/building';
-import { map_point } from 'map/point';
-import { building_barracks_save_state } from 'building/barracks';
-import { building_barracks_load_state } from 'building/barracks';
+import { building_barracks_load_state, building_barracks_save_state } from 'building/barracks';
+import { building_load_state, building_save_state } from 'building/building';
+import { building_count_load_state, building_count_save_state } from 'building/count';
+import { building_list_load_state, building_list_save_state } from 'building/list';
+import { building_storage_load_state, building_storage_save_state } from 'building/storage';
+import { city_culture_load_state, city_culture_save_state } from 'city/culture';
+import { city_data_load_state, city_data_save_state } from 'city/data';
+import { city_message_load_state, city_message_save_state } from 'city/message';
+import { city_view_load_scenario_state, city_view_load_state, city_view_save_scenario_state, city_view_save_state } from 'city/view';
+import { buffer, buffer_init, buffer_read_i32, buffer_reset, buffer_skip, buffer_write_i32 } from 'core/buffer';
+import { dir_get_file, localized } from 'core/dir';
+import { file_close, file_open, file_remove } from 'core/file';
+import { log_error, log_info } from 'core/log';
+import { random_load_state, random_save_state } from 'core/random';
+import { zip_compress, zip_decompress } from 'core/zip';
+import { empire_city_load_state, empire_city_save_state } from 'empire/city';
+import { empire_load_state, empire_save_state } from 'empire/empire';
+import { trade_prices_load_state, trade_prices_save_state } from 'empire/trade_prices';
+import { trade_routes_load_state, trade_routes_save_state } from 'empire/trade_route';
+import { enemy_armies_load_state, enemy_armies_save_state } from 'figure/enemy_army';
+import { figure_load_state, figure_save_state } from 'figure/figure';
+import { formations_load_state, formations_save_state } from 'figure/formation';
+import { figure_name_load_state, figure_name_save_state } from 'figure/name';
+import { figure_route_load_state, figure_route_save_state } from 'figure/route';
+import { traders_load_state, traders_save_state } from 'figure/trader';
 import { resource_type } from 'game/resource';
+import { game_time_load_state, game_time_save_state } from 'game/time';
+import { tutorial_load_state, tutorial_save_state } from 'game/tutorial';
+import { map_aqueduct_load_state, map_aqueduct_save_state } from 'map/aqueduct';
+import { map_bookmark_load_state, map_bookmark_save_state } from 'map/bookmark';
+import { map_building_load_state, map_building_save_state } from 'map/building';
+import { map_desirability_load_state, map_desirability_save_state } from 'map/desirability';
+import { map_elevation_load_state, map_elevation_save_state } from 'map/elevation';
+import { map_figure_load_state, map_figure_save_state } from 'map/figure';
+import { map_image_load_state, map_image_save_state } from 'map/image';
+import { map_property_load_state, map_property_save_state } from 'map/property';
+import { map_random_load_state, map_random_save_state } from 'map/random';
+import { map_routing_load_state, map_routing_save_state } from 'map/routing';
+import { map_sprite_load_state, map_sprite_save_state } from 'map/sprite';
+import { map_terrain_load_state, map_terrain_save_state, terrain } from 'map/terrain';
+import { scenario_criteria_load_state, scenario_criteria_save_state } from 'scenario/criteria';
+import { scenario_earthquake_load_state, scenario_earthquake_save_state } from 'scenario/earthquake';
+import { scenario_emperor_change_load_state, scenario_emperor_change_save_state } from 'scenario/emperor_change';
+import { scenario_gladiator_revolt_load_state, scenario_gladiator_revolt_save_state } from 'scenario/gladiator_revolt';
+import { scenario_invasion_load_state, scenario_invasion_save_state } from 'scenario/invasion';
+import { scenario_load_state, scenario_save_state, scenario_settings_load_state, scenario_settings_save_state } from 'scenario/scenario';
+import { sound_city_load_state, sound_city_save_state } from 'sound/city';
 import RESOURCE_MAX = resource_type.RESOURCE_MAX;
-import { resource_type } from 'game/resource';
-import { workshop_type } from 'game/resource';
-import { resource_image_type } from 'game/resource';
-import { building_count_save_state } from 'building/count';
-import { building_count_load_state } from 'building/count';
-import { building_list_save_state } from 'building/list';
-import { building_list_load_state } from 'building/list';
-import { building_storage_state } from 'building/storage';
-import { building_storage } from 'building/storage';
-import { building_storage_save_state } from 'building/storage';
-import { building_storage_load_state } from 'building/storage';
-import { god_type } from 'city/constants';
-import { city_culture_save_state } from 'city/culture';
-import { city_culture_load_state } from 'city/culture';
-import { city_data_save_state } from 'city/data';
-import { city_data_load_state } from 'city/data';
-import { localized } from 'core/dir';
 import NOT_LOCALIZED = localized.NOT_LOCALIZED;
-import { dir_listing } from 'core/dir';
-import { dir_get_file } from 'core/dir';
-import { _invalid_parameter_noinfo } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt';
-import { __local_stdio_printf_options } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_stdio_config';
-import { __local_stdio_scanf_options } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_stdio_config';
-import { __acrt_iob_func } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vfwscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vfwscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vsnwprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_c_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __vswprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vscwprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vscwprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { __stdio_common_vswscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vswscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { _vsnwscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstdio';
-import { fread } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { fread } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { fseek } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { fwrite } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { fwrite } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vfscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vfscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsnprintf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsnprintf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_p_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vscprintf_p } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsnprintf_c_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { __stdio_common_vsscanf } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsscanf_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { _vsscanf_s_l } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { vsscanf_s } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdio';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stddef';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/stdlib';
-import { file_open } from 'core/file';
-import { file_close } from 'core/file';
-import { file_remove } from 'core/file';
-import { log_info } from 'core/log';
-import { log_error } from 'core/log';
-import { message_category } from 'city/message';
-import { message_advisor } from 'city/message';
-import { city_message_type } from 'city/message';
-import { city_message } from 'city/message';
-import { city_message_save_state } from 'city/message';
-import { city_message_load_state } from 'city/message';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_save_state } from 'city/view';
-import { city_view_load_state } from 'city/view';
-import { city_view_save_scenario_state } from 'city/view';
-import { city_view_load_scenario_state } from 'city/view';
-import { random_save_state } from 'core/random';
-import { random_load_state } from 'core/random';
-import { zip_compress } from 'core/zip';
-import { zip_decompress } from 'core/zip';
-import { empire_city } from 'empire/city';
-import { empire_city_save_state } from 'empire/city';
-import { empire_city_load_state } from 'empire/city';
-import { empire_save_state } from 'empire/empire';
-import { empire_load_state } from 'empire/empire';
-import { trade_prices_save_state } from 'empire/trade_prices';
-import { trade_prices_load_state } from 'empire/trade_prices';
-import { trade_routes_save_state } from 'empire/trade_route';
-import { trade_routes_load_state } from 'empire/trade_route';
-import { enemy_army } from 'figure/enemy_army';
-import { enemy_armies_save_state } from 'figure/enemy_army';
-import { enemy_armies_load_state } from 'figure/enemy_army';
-import { figure_type } from 'figure/type';
-import { enemy_type } from 'figure/type';
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formations_save_state } from 'figure/formation';
-import { formations_load_state } from 'figure/formation';
-import { figure_name_save_state } from 'figure/name';
-import { figure_name_load_state } from 'figure/name';
-import { direction_type } from 'core/direction';
-import { figure } from 'figure/figure';
-import { figure_save_state } from 'figure/figure';
-import { figure_load_state } from 'figure/figure';
-import { figure_route_save_state } from 'figure/route';
-import { figure_route_load_state } from 'figure/route';
-import { traders_save_state } from 'figure/trader';
-import { traders_load_state } from 'figure/trader';
-import { game_time_save_state } from 'game/time';
-import { game_time_load_state } from 'game/time';
-import { tutorial_availability } from 'game/tutorial';
-import { tutorial_build_buttons } from 'game/tutorial';
-import { tutorial_save_state } from 'game/tutorial';
-import { tutorial_load_state } from 'game/tutorial';
-import { map_aqueduct_save_state } from 'map/aqueduct';
-import { map_aqueduct_load_state } from 'map/aqueduct';
-import { map_bookmark_save_state } from 'map/bookmark';
-import { map_bookmark_load_state } from 'map/bookmark';
-import { map_building_save_state } from 'map/building';
-import { map_building_load_state } from 'map/building';
-import { map_desirability_save_state } from 'map/desirability';
-import { map_desirability_load_state } from 'map/desirability';
-import { map_elevation_save_state } from 'map/elevation';
-import { map_elevation_load_state } from 'map/elevation';
-import { map_figure_save_state } from 'map/figure';
-import { map_figure_load_state } from 'map/figure';
-import { map_image_save_state } from 'map/image';
-import { map_image_load_state } from 'map/image';
-import { map_property_save_state } from 'map/property';
-import { map_property_load_state } from 'map/property';
-import { map_random_save_state } from 'map/random';
-import { map_random_load_state } from 'map/random';
-import { routed_building_type } from 'map/routing';
-import { map_routing_save_state } from 'map/routing';
-import { map_routing_load_state } from 'map/routing';
-import { map_sprite_save_state } from 'map/sprite';
-import { map_sprite_load_state } from 'map/sprite';
-import { terrain } from 'map/terrain';
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_save_state } from 'map/terrain';
-import { map_terrain_load_state } from 'map/terrain';
-import { scenario_criteria_save_state } from 'scenario/criteria';
-import { scenario_criteria_load_state } from 'scenario/criteria';
-import { scenario_earthquake_save_state } from 'scenario/earthquake';
-import { scenario_earthquake_load_state } from 'scenario/earthquake';
-import { scenario_emperor_change_save_state } from 'scenario/emperor_change';
-import { scenario_emperor_change_load_state } from 'scenario/emperor_change';
-import { scenario_gladiator_revolt_save_state } from 'scenario/gladiator_revolt';
-import { scenario_gladiator_revolt_load_state } from 'scenario/gladiator_revolt';
-import { scenario_invasion_save_state } from 'scenario/invasion';
-import { scenario_invasion_load_state } from 'scenario/invasion';
-import { scenario_save_state } from 'scenario/scenario';
-import { scenario_load_state } from 'scenario/scenario';
-import { scenario_settings_save_state } from 'scenario/scenario';
-import { scenario_settings_load_state } from 'scenario/scenario';
-import { sound_city_save_state } from 'sound/city';
-import { sound_city_load_state } from 'sound/city';
-import { _errno } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/errno';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memcpy } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memmove } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { memset } from 'C:/Program Files (x86)/Microsoft Visual Studio/2022/BuildTools/VC/Tools/MSVC/14.43.34808/include/vcruntime_string';
-import { wcsnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { wcstok } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_wstring';
-import { strnlen } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/string';
 let SAVE_GAME_VERSION: number = 0x66;
-let compress_buffer: char[] = new Array(COMPRESS_BUFFER_SIZE);
+let compress_buffer: number[] = new Array(COMPRESS_BUFFER_SIZE);
 let savegame_version: number;
 export class file_piece {
     public buf: buffer = null;
@@ -445,9 +280,9 @@ export class unnamed170_8 {
 let savegame_data: unnamed170_8 = new unnamed170_8(0);
 function init_file_piece(piece: file_piece, size: number, compressed: number) {
     piece.compressed = compressed;
-    let data: void = malloc(size);
-    memset(data, 0);
-    buffer_init(piece.buf, data, size);
+    let view: Uint8Array = new Uint8Array(size);
+    view.fill(0);
+    buffer_init(piece.buf, view, size);
 }
 function create_scenario_piece(size: number) {
     let piece: file_piece = scenario_data.pieces[scenario_data.num_pieces++];
@@ -734,7 +569,7 @@ export function game_file_io_read_scenario(filename: string) {
         return 0;
     }
     for (let i: number = 0; i < scenario_data.num_pieces; i++) {
-        let read_size: size_t = fread(scenario_data.pieces[i].buf.data, 1, scenario_data.pieces[i].buf.size, fp);
+        let read_size = fread(scenario_data.pieces[i].buf.data, 1, scenario_data.pieces[i].buf.size, fp);
         if (read_size != scenario_data.pieces[i].buf.size) {
             log_error("Unable to load scenario", filename, 0);
             file_close(fp);
@@ -749,7 +584,7 @@ export function game_file_io_write_scenario(filename: string) {
     log_info("Saving scenario", filename, 0);
     init_scenario_data();
     scenario_save_to_state(scenario_data.state);
-    let fp: FILE = file_open(filename, "wb");
+    let fp: any = file_open(filename, "wb");
     if (!fp) {
         log_error("Unable to save scenario", 0, 0);
         return 0;
@@ -760,7 +595,7 @@ export function game_file_io_write_scenario(filename: string) {
     file_close(fp);
     return 1;
 }
-function read_int32(fp: FILE) {
+function read_int32(fp: any) {
     let data: number[];
     if (fread(data, 1, 4, fp) != 4) {
         return 0;
@@ -769,19 +604,19 @@ function read_int32(fp: FILE) {
     buffer_init(buf, data, 4);
     return buffer_read_i32(buf);
 }
-function write_int32(fp: FILE, value: number) {
+function write_int32(fp: any, value: number) {
     let data: number[];
     let buf: buffer;
     buffer_init(buf, data, 4);
     buffer_write_i32(buf, value);
     fwrite(data, 1, 4, fp);
 }
-function read_compressed_chunk(fp: FILE, buffer: void, bytes_to_read: number) {
+function read_compressed_chunk(fp: any, buffer: void, bytes_to_read: number) {
     if (bytes_to_read > COMPRESS_BUFFER_SIZE) {
         return 0;
     }
     let input_size: number = read_int32(fp);
-    if ((unsigned int) input_size == UNCOMPRESSED) {
+    if (input_size == UNCOMPRESSED) {
         if (fread(buffer, 1, bytes_to_read, fp) != bytes_to_read) {
             return 0;
         }
@@ -793,7 +628,7 @@ function read_compressed_chunk(fp: FILE, buffer: void, bytes_to_read: number) {
     }
     return 1;
 }
-function write_compressed_chunk(fp: FILE, buffer: void, bytes_to_write: number) {
+function write_compressed_chunk(fp: any, buffer: void, bytes_to_write: number) {
     if (bytes_to_write > COMPRESS_BUFFER_SIZE) {
         return 0;
     }
@@ -807,7 +642,7 @@ function write_compressed_chunk(fp: FILE, buffer: void, bytes_to_write: number) 
     }
     return 1;
 }
-function savegame_read_from_file(fp: FILE) {
+function savegame_read_from_file(fp: any) {
     for (let i: number = 0; i < savegame_data.num_pieces; i++) {
         let piece: file_piece = savegame_data.pieces[i];
         let result: number = 0;
@@ -822,7 +657,7 @@ function savegame_read_from_file(fp: FILE) {
     }
     return 1;
 }
-function savegame_write_to_file(fp: FILE) {
+function savegame_write_to_file(fp: any) {
     for (let i: number = 0; i < savegame_data.num_pieces; i++) {
         let piece: file_piece = savegame_data.pieces[i];
         if (piece.compressed) {
@@ -832,10 +667,10 @@ function savegame_write_to_file(fp: FILE) {
         }
     }
 }
-export function game_file_io_read_saved_game(filename: char, offset: number) {
+export function game_file_io_read_saved_game(filename: string, offset: number) {
     init_savegame_data();
     log_info("Loading saved game", filename, 0);
-    let fp: FILE = file_open(dir_get_file(filename, NOT_LOCALIZED), "rb");
+    let fp: any = file_open(dir_get_file(filename, NOT_LOCALIZED), "rb");
     if (!fp) {
         log_error("Unable to load game", 0, 0);
         return 0;
@@ -857,7 +692,7 @@ export function game_file_io_write_saved_game(filename: char) {
     log_info("Saving game", filename, 0);
     savegame_version = SAVE_GAME_VERSION;
     savegame_save_to_state(savegame_data.state);
-    let fp: FILE = file_open(filename, "wb");
+    let fp: any = file_open(filename, "wb");
     if (!fp) {
         log_error("Unable to save game", 0, 0);
         return 0;

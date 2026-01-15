@@ -8,6 +8,7 @@ import { font_t } from 'graphics/font';
 import { font_definition } from 'graphics/font';
 import { font_definition_for } from 'graphics/font';
 import { font_letter_id } from 'graphics/font';
+import { PtrBuffer, Ref } from '../../ext/crt';
 import { time_millis } from 'core/time';
 import { touch_coords } from 'input/touch';
 import { touch_mode } from 'input/touch';
@@ -42,10 +43,9 @@ import { hotkeys } from 'input/hotkey';
 import { window_id } from 'graphics/window';
 import { window_type } from 'graphics/window';
 import { window_invalidate } from 'graphics/window';
-let scrollbar: scrollbar_type = {
-    has_y_margin: 1,
-    on_scroll_callback: on_scroll
-};
+let scrollbar: scrollbar_type = new scrollbar_type();
+scrollbar.has_y_margin = 1;
+scrollbar.on_scroll_callback = on_scroll;
 export class TextLink {
     public message_id: number = 0;
     public x_min: number = 0;
@@ -61,7 +61,11 @@ export class TextLink {
     }
 }
 let links: TextLink[] = new Array(MAX_LINKS).fill(null).map(() => new TextLink());
-let tmp_line: number[] = new Array(200);
+let tmp_line: Uint8Array = new Uint8Array(200);
+
+function string_to_int_at(str: Uint8Array, index: number): number {
+    return string_to_int(new PtrBuffer(str, index));
+}
 export class RichTextData {
     public normal_font: font_definition | null = null;
     public link_font: font_definition | null = null;
@@ -190,7 +194,7 @@ function get_word_width(str: Uint8Array, strIndex: number, in_link: number, num_
                 }
             }
         }
-        let num_bytes: number = 1;
+        let num_bytes = new Ref<number>(1);
         if (str[strIndex] === 32) { // ' '
             if (word_char_seen) {
                 break;
@@ -198,25 +202,25 @@ function get_word_width(str: Uint8Array, strIndex: number, in_link: number, num_
             width += 4;
         } else if (str[strIndex] > 32) {
             // normal char
-            let letter_id: number = font_letter_id(data.normal_font!, str, strIndex, num_bytes);
+            let letter_id: number = font_letter_id(data.normal_font!, str, num_bytes, strIndex);
             if (letter_id >= 0) {
                 width += 1 + image_letter(letter_id).width;
             }
             word_char_seen = 1;
-            if (num_bytes > 1) {
+            if (num_bytes.v > 1) {
                 if (start_link) {
                     // add space before links in multibyte charsets
                     width += 4;
                     start_link = 0;
                 }
                 if (!in_link) {
-                    num_chars[0] += num_bytes;
+                    num_chars[0] += num_bytes.v;
                     break;
                 }
             }
         }
-        strIndex += num_bytes;
-        num_chars[0] += num_bytes;
+        strIndex += num_bytes.v;
+        num_chars[0] += num_bytes.v;
     }
     return width;
 }
@@ -227,7 +231,7 @@ function draw_line(str: Uint8Array, x: number, y: number, color: color_t, measur
     while (str[strIndex] !== 0) {
         if (str[strIndex] === 64) { // '@'
             strIndex++;
-            let message_id: number = string_to_int(str, strIndex);
+            let message_id: number = string_to_int_at(str, strIndex);
             while (str[strIndex] >= 48 && str[strIndex] <= 57) { // '0' to '9'
                 strIndex++;
             }
@@ -243,12 +247,12 @@ function draw_line(str: Uint8Array, x: number, y: number, color: color_t, measur
                 def = data.link_font;
             }
 
-            let num_bytes: number = 1;
-            let letter_id: number = font_letter_id(def!, str, strIndex, num_bytes);
+            let num_bytes = new Ref<number>(1);
+            let letter_id: number = font_letter_id(def!, str, num_bytes, strIndex);
             if (letter_id < 0) {
                 x += def!.space_width;
             } else {
-                if (num_bytes > 1 && start_link) {
+                if (num_bytes.v > 1 && start_link) {
                     // add space before links in multibyte charsets
                     x += def!.space_width;
                     start_link = 0;
@@ -261,9 +265,9 @@ function draw_line(str: Uint8Array, x: number, y: number, color: color_t, measur
                 x += img.width + def!.letter_spacing;
             }
             if (num_link_chars > 0) {
-                num_link_chars -= num_bytes;
+                num_link_chars -= num_bytes.v;
             }
-            strIndex += num_bytes;
+            strIndex += num_bytes.v;
         } else {
             strIndex++;
         }
@@ -324,7 +328,7 @@ function draw_text(text: Uint8Array, x_offset: number, y_offset: number, box_wid
                             }
                             textIndex++; // skip 'G'
                             current_width = box_width;
-                            image_id = string_to_int(text, textIndex);
+                            image_id = string_to_int_at(text, textIndex);
                             c = text[textIndex++];
                             while (c >= 48 && c <= 57) { // '0' to '9'
                                 c = text[textIndex++];

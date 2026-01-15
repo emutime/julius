@@ -8,6 +8,28 @@ export const HOTKEY_BTN_HEIGHT = 22;
 export const HOTKEY_X_OFFSET_2 = 430;
 export const NUM_BOTTOM_BUTTONS = 3;
 import { building_type } from 'building/type';
+import { hotkey_action, hotkey_config_add_mapping, hotkey_config_clear, hotkey_config_save, hotkey_default_for_action, hotkey_for_action, hotkey_mapping } from 'core/hotkey_config';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { lang_get_string } from 'core/lang';
+import { button_border_draw, button_none } from 'graphics/button';
+import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { graphics_clear_screen, graphics_in_dialog, graphics_reset_clip_rectangle, graphics_reset_dialog, graphics_set_clip_rectangle } from 'graphics/graphics';
+import { image_draw_fullscreen_background } from 'graphics/image';
+import { lang_text_draw } from 'graphics/lang_text';
+import { inner_panel_draw, outer_panel_draw } from 'graphics/panel';
+import { scrollbar_draw, scrollbar_handle_mouse, scrollbar_init, scrollbar_type } from 'graphics/scrollbar';
+import { text_draw, text_draw_centered } from 'graphics/text';
+import { window_go_back, window_id, window_invalidate, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { key_combination_display_name, key_modifier_type, key_type } from 'input/keys';
+import { mouse, mouse_in_dialog } from 'input/mouse';
+import { translation_for, translation_key } from 'translation/translation';
+import { window_config_show } from 'window/config';
+import { window_hotkey_editor_show } from 'window/hotkey_editor';
+import { window_plain_message_dialog_show_with_extra } from 'window/plain_message_dialog';
+import { Ref } from '../../ext/crt';
 import BUILDING_ROAD = building_type.BUILDING_ROAD;
 import BUILDING_WALL = building_type.BUILDING_WALL;
 import BUILDING_AQUEDUCT = building_type.BUILDING_AQUEDUCT;
@@ -22,14 +44,8 @@ import BUILDING_WAREHOUSE = building_type.BUILDING_WAREHOUSE;
 import BUILDING_ENGINEERS_POST = building_type.BUILDING_ENGINEERS_POST;
 import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
 import BUILDING_FOUNTAIN = building_type.BUILDING_FOUNTAIN;;
-import { key_type } from 'input/keys';
 import KEY_TYPE_NONE = key_type.KEY_TYPE_NONE;
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
 import KEY_MOD_NONE = key_modifier_type.KEY_MOD_NONE;
-import { key_modifier_type } from 'input/keys';
-import { key_combination_display_name } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
 import HOTKEY_ARROW_UP = hotkey_action.HOTKEY_ARROW_UP;
 import HOTKEY_ARROW_DOWN = hotkey_action.HOTKEY_ARROW_DOWN;
 import HOTKEY_ARROW_LEFT = hotkey_action.HOTKEY_ARROW_LEFT;
@@ -94,70 +110,12 @@ import HOTKEY_SAVE_SCREENSHOT = hotkey_action.HOTKEY_SAVE_SCREENSHOT;
 import HOTKEY_SAVE_CITY_SCREENSHOT = hotkey_action.HOTKEY_SAVE_CITY_SCREENSHOT;
 import HOTKEY_BUILD_CLONE = hotkey_action.HOTKEY_BUILD_CLONE;
 import HOTKEY_MAX_ITEMS = hotkey_action.HOTKEY_MAX_ITEMS;
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkey_for_action } from 'core/hotkey_config';
-import { hotkey_default_for_action } from 'core/hotkey_config';
-import { hotkey_config_clear } from 'core/hotkey_config';
-import { hotkey_config_add_mapping } from 'core/hotkey_config';
-import { hotkey_config_save } from 'core/hotkey_config';
-import { group_terrain } from 'core/image_group';
 import GROUP_CONFIG = group_terrain.GROUP_CONFIG;
-import { lang_type } from 'core/lang';
-import { lang_message_type } from 'core/lang';
-import { lang_message } from 'core/lang';
-import { lang_get_string } from 'core/lang';
-import { button_none } from 'graphics/button';
-import { button_border_draw } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { mouse_in_dialog } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_in_dialog } from 'graphics/graphics';
-import { graphics_reset_dialog } from 'graphics/graphics';
-import { graphics_set_clip_rectangle } from 'graphics/graphics';
-import { graphics_reset_clip_rectangle } from 'graphics/graphics';
-import { graphics_clear_screen } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
 import FONT_NORMAL_BLACK = font_t.FONT_NORMAL_BLACK;
 import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
 import FONT_LARGE_BLACK = font_t.FONT_LARGE_BLACK;
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw_fullscreen_background } from 'graphics/image';
-import { lang_text_draw } from 'graphics/lang_text';
-import { outer_panel_draw } from 'graphics/panel';
-import { inner_panel_draw } from 'graphics/panel';
-import { scrollbar_type } from 'graphics/scrollbar';
-import { scrollbar_init } from 'graphics/scrollbar';
-import { scrollbar_draw } from 'graphics/scrollbar';
-import { scrollbar_handle_mouse } from 'graphics/scrollbar';
-import { text_draw } from 'graphics/text';
-import { text_draw_centered } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { hotkeys } from 'input/hotkey';
-import { window_id } from 'graphics/window';
 import WINDOW_HOTKEY_CONFIG = window_id.WINDOW_HOTKEY_CONFIG;
-import { window_type } from 'graphics/window';
-import { window_invalidate } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { window_go_back } from 'graphics/window';
 import TR_BUTTON_OK = translation_key.TR_BUTTON_OK;
 import TR_BUTTON_CANCEL = translation_key.TR_BUTTON_CANCEL;
 import TR_BUTTON_RESET_DEFAULTS = translation_key.TR_BUTTON_RESET_DEFAULTS;
@@ -221,12 +179,6 @@ import TR_HOTKEY_SET_BOOKMARK_4 = translation_key.TR_HOTKEY_SET_BOOKMARK_4;
 import TR_HOTKEY_EDITOR_TOGGLE_BATTLE_INFO = translation_key.TR_HOTKEY_EDITOR_TOGGLE_BATTLE_INFO;
 import TR_HOTKEY_DUPLICATE_TITLE = translation_key.TR_HOTKEY_DUPLICATE_TITLE;
 import TR_HOTKEY_DUPLICATE_MESSAGE = translation_key.TR_HOTKEY_DUPLICATE_MESSAGE;
-import { translation_key } from 'translation/translation';
-import { translation_string } from 'translation/translation';
-import { translation_for } from 'translation/translation';
-import { window_config_show } from 'window/config';
-import { window_hotkey_editor_show } from 'window/hotkey_editor';
-import { window_plain_message_dialog_show_with_extra } from 'window/plain_message_dialog';
 let scrollbar: scrollbar_type = new scrollbar_type(580, 72, 352, 560, NUM_VISIBLE_OPTIONS, on_scroll, 1);
 export class hotkey_widget {
     public action: number = 0;
@@ -367,11 +319,11 @@ let data: unnamed165_8 = new unnamed165_8();
 function init() {
     scrollbar_init(scrollbar, 0, hotkey_widgets.length);
     for (let i: number = 0; i < HOTKEY_MAX_ITEMS; i++) {
-        let empty: hotkey_mapping = { KEY_TYPE_NONE, KEY_MOD_NONE, i };
+        let empty: hotkey_mapping = new hotkey_mapping(KEY_TYPE_NONE, KEY_MOD_NONE, i);
         let mapping: hotkey_mapping = hotkey_for_action(i, 0);
-        data.mappings[i][0] = mapping ? * mapping : empty;
+        data.mappings[i][0] = mapping ? mapping : empty;
         mapping = hotkey_for_action(i, 1);
-        data.mappings[i][1] = mapping ? * mapping : empty;
+        data.mappings[i][1] = mapping ? mapping : empty;
     }
 }
 function draw_background() {
@@ -401,7 +353,7 @@ function draw_background() {
             }
             let mapping1: hotkey_mapping = data.mappings[widget.action][0];
             if (mapping1.key) {
-                let keyname: number = key_combination_display_name(mapping1.key, mapping1.modifiers);
+                let keyname = key_combination_display_name(mapping1.key, mapping1.modifiers);
                 graphics_set_clip_rectangle(HOTKEY_X_OFFSET_1, text_offset, HOTKEY_BTN_WIDTH, HOTKEY_BTN_HEIGHT);
                 text_draw_centered(keyname, HOTKEY_X_OFFSET_1 + 3, text_offset,
                     HOTKEY_BTN_WIDTH - 6, FONT_NORMAL_WHITE, 0);
@@ -410,7 +362,7 @@ function draw_background() {
             let mapping2: hotkey_mapping = data.mappings[widget.action][1];
             if (mapping2.key) {
                 graphics_set_clip_rectangle(HOTKEY_X_OFFSET_2, text_offset, HOTKEY_BTN_WIDTH, HOTKEY_BTN_HEIGHT);
-                let keyname: number = key_combination_display_name(mapping2.key, mapping2.modifiers);
+                let keyname = key_combination_display_name(mapping2.key, mapping2.modifiers);
                 text_draw_centered(keyname, HOTKEY_X_OFFSET_2 + 3, text_offset,
                     HOTKEY_BTN_WIDTH - 6, FONT_NORMAL_WHITE, 0);
                 graphics_reset_clip_rectangle();
@@ -432,7 +384,7 @@ function draw_foreground() {
         if (widget.action != HOTKEY_HEADER) {
             let btn: generic_button = hotkey_buttons[2 * i];
             button_border_draw(btn.x, btn.y, btn.width, btn.height, data.focus_button == 1 + 2 * i);
-            btn++;
+            btn = hotkey_buttons[2 * i + 1];
             button_border_draw(btn.x, btn.y, btn.width, btn.height, data.focus_button == 2 + 2 * i);
         }
     }
@@ -448,17 +400,19 @@ function handle_input(m: mouse, h: hotkeys) {
     if (scrollbar_handle_mouse(scrollbar, m_dialog)) {
         return;
     }
-    let handled: number = 0;
-    handled |= generic_buttons_handle_mouse(m_dialog, 0, 0,
-        hotkey_buttons, NUM_VISIBLE_OPTIONS * 2, data.focus_button)
-    handled |= generic_buttons_handle_mouse(m_dialog, 0, 0,
-        bottom_buttons, NUM_BOTTOM_BUTTONS, data.bottom_focus_button)
+    let handled: boolean = false;
+    let focus_button_ref: Ref<number> = new Ref(data.focus_button)
+    handled ||= generic_buttons_handle_mouse(m_dialog, 0, 0, hotkey_buttons, NUM_VISIBLE_OPTIONS * 2, focus_button_ref)
+    data.focus_button = focus_button_ref.v;
+    let bottom_focus_button_ref: Ref<number> = new Ref(data.bottom_focus_button);
+    handled ||= generic_buttons_handle_mouse(m_dialog, 0, 0, bottom_buttons, NUM_BOTTOM_BUTTONS, bottom_focus_button_ref)
+    data.bottom_focus_button = bottom_focus_button_ref.v;
     if (!handled && (m.right.went_up || h.escape_pressed)) {
         window_config_show();
     }
 }
 function hotkey_action_name_for(action: hotkey_action) {
-    let name: number = null;
+    let name: string = null;
     for (let i: number = 0; i < NUM_VISIBLE_OPTIONS + scrollbar.max_scroll_position; i++) {
         let widget: hotkey_widget = hotkey_widgets[i];
         if (widget.action == action) {
@@ -508,7 +462,7 @@ function button_hotkey(row: number, is_alternative: number) {
 function button_reset_defaults(param1: number, param2: number) {
     for (let action: number = 0; action < HOTKEY_MAX_ITEMS; action++) {
         for (let index: number = 0; index < 2; index++) {
-            data.mappings[action][index] = * hotkey_default_for_action(action, index);
+            data.mappings[action][index] = hotkey_default_for_action(action, index);
         }
     }
     window_invalidate();

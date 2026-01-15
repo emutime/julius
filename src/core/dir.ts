@@ -21,6 +21,7 @@ import CONFIG_STRING_UI_LANGUAGE_DIR = config_string_key.CONFIG_STRING_UI_LANGUA
 import { config_string_key } from 'core/config';
 import { config_get_string } from 'core/config';
 import { file_open } from 'core/file';
+import { string_from_bytes } from 'core/string';
 import { file_close } from 'core/file';
 import { type } from 'platform/file_manager';
 import TYPE_DIR = type.TYPE_DIR;
@@ -84,9 +85,10 @@ function add_to_listing(filename: string) {
     ++data.listing.num_files;
     return LIST_CONTINUE;
 }
-export function dir_find_files_with_extension(extension: string) {
+export function dir_find_files_with_extension(extension: string | ArrayLike<number>) {
+    const extensionStr = typeof extension === "string" ? extension : string_from_bytes(extension);
     clear_dir_listing();
-    platform_file_manager_list_directory_contents(0, TYPE_FILE, extension, add_to_listing);
+    platform_file_manager_list_directory_contents(0, TYPE_FILE, extensionStr, add_to_listing);
     let filesToSort = data.listing.files.slice(0, data.listing.num_files);
     filesToSort.sort((a, b) => compare_lower(a, b));
     for (let i = 0; i < data.listing.num_files; i++) {

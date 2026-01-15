@@ -284,9 +284,7 @@ function set_layout_mapping(name: string, default_key: key_type, modifiers: key_
     set_mapping(key, modifiers, action);
 }
 function init_defaults() {
-    for (let i = 0; i < HOTKEY_MAX_ITEMS; i++) {
-        data.default_mappings[i] = [null, null];
-    }
+    data.default_mappings.fill(null);
     set_mapping(KEY_TYPE_UP, KEY_MOD_NONE, HOTKEY_ARROW_UP);
     set_mapping(KEY_TYPE_DOWN, KEY_MOD_NONE, HOTKEY_ARROW_DOWN);
     set_mapping(KEY_TYPE_LEFT, KEY_MOD_NONE, HOTKEY_ARROW_LEFT);
@@ -362,7 +360,7 @@ export function hotkey_for_action(action: hotkey_action, index: number) {
             num++;
         }
     }
-    return 0;
+    return null;
 }
 export function hotkey_default_for_action(action: hotkey_action, index: number) {
     if (index < 0 || index >= 2 || action < 0 || action >= HOTKEY_MAX_ITEMS) {

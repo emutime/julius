@@ -4,7 +4,30 @@ export const MENU_Y_OFFSET = 110;
 export const MENU_ITEM_HEIGHT = 24;
 export const MENU_ITEM_WIDTH = 176;
 export const MENU_CLICK_MARGIN = 20;
-
+import { building_construction_clear_type, building_construction_set_type, building_construction_type } from 'building/construction';
+import { build_menu_group, building_menu_count_items, building_menu_for_type, building_menu_next_index, building_menu_type } from 'building/menu';
+import { model_get_building } from 'building/model';
+import { building_type } from 'building/type';
+import { city_view_get_viewport } from 'city/view';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { button_none } from 'graphics/button';
+import { font_t } from 'graphics/font';
+import { generic_button, generic_buttons_handle_mouse } from 'graphics/generic_button';
+import { lang_text_draw_centered } from 'graphics/lang_text';
+import { label_draw } from 'graphics/panel';
+import { text_draw_centered, text_draw_money } from 'graphics/text';
+import { window_id, window_show, window_type } from 'graphics/window';
+import { hotkeys } from 'input/hotkey';
+import { input_go_back_requested } from 'input/input';
+import { mouse } from 'input/mouse';
+import { scenario_climate, scenario_property_climate } from 'scenario/property';
+import { translation_for, translation_key } from 'translation/translation';
+import { widget_city_clear_current_tile } from 'widget/city';
+import { widget_sidebar_city_handle_mouse_build_menu } from 'widget/sidebar/city';
+import { window_city_draw, window_city_draw_panels, window_city_show } from 'window/city';
+import { Ref } from '../../ext/crt';
+import BUILD_MENU_VACANT_HOUSE = build_menu_group.BUILD_MENU_VACANT_HOUSE;
 import BUILDING_NONE = building_type.BUILDING_NONE;
 import BUILDING_MENU_FARMS = building_type.BUILDING_MENU_FARMS;
 import BUILDING_MENU_RAW_MATERIALS = building_type.BUILDING_MENU_RAW_MATERIALS;
@@ -16,13 +39,6 @@ import BUILDING_LARGE_TEMPLE_CERES = building_type.BUILDING_LARGE_TEMPLE_CERES;
 import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
 import BUILDING_MENU_SMALL_TEMPLES = building_type.BUILDING_MENU_SMALL_TEMPLES;
 import BUILDING_MENU_LARGE_TEMPLES = building_type.BUILDING_MENU_LARGE_TEMPLES;
-
-import { house_level } from 'building/type';
-import { building_construction_set_type } from 'building/construction';
-import { building_construction_clear_type } from 'building/construction';
-import { building_construction_type } from 'building/construction';
-
-import BUILD_MENU_VACANT_HOUSE = build_menu_group.BUILD_MENU_VACANT_HOUSE;
 import BUILD_MENU_CLEAR_LAND = build_menu_group.BUILD_MENU_CLEAR_LAND;
 import BUILD_MENU_ROAD = build_menu_group.BUILD_MENU_ROAD;
 import BUILD_MENU_WATER = build_menu_group.BUILD_MENU_WATER;
@@ -40,73 +56,12 @@ import BUILD_MENU_WORKSHOPS = build_menu_group.BUILD_MENU_WORKSHOPS;
 import BUILD_MENU_SMALL_TEMPLES = build_menu_group.BUILD_MENU_SMALL_TEMPLES;
 import BUILD_MENU_LARGE_TEMPLES = build_menu_group.BUILD_MENU_LARGE_TEMPLES;
 import BUILD_MENU_FORTS = build_menu_group.BUILD_MENU_FORTS;
-
-import { building_menu_count_items } from 'building/menu';
-import { building_menu_next_index } from 'building/menu';
-import { building_menu_type } from 'building/menu';
-import { building_menu_for_type } from 'building/menu';
-import { model_building } from 'building/model';
-import { model_house } from 'building/model';
-import { model_get_building } from 'building/model';;
-import { buffer } from 'core/buffer';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_get_viewport } from 'city/view';
-import { button_none } from 'graphics/button';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
-import { generic_button } from 'graphics/generic_button';
-import { generic_buttons_handle_mouse } from 'graphics/generic_button';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_PANEL_WINDOWS = group_terrain.GROUP_PANEL_WINDOWS;
 import GROUP_PANEL_WINDOWS_DESERT = group_terrain.GROUP_PANEL_WINDOWS_DESERT;
-import { color_t } from 'graphics/color';
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-
 import FONT_NORMAL_GREEN = font_t.FONT_NORMAL_GREEN;
-
-import { font_definition } from 'graphics/font';
-import { lang_text_draw_centered } from 'graphics/lang_text';
-import { label_draw } from 'graphics/panel';
-import { text_draw_centered } from 'graphics/text';
-import { text_draw_money } from 'graphics/text';
-import { tooltip_type } from 'graphics/tooltip';
-import { tooltip_extra_text_type } from 'graphics/tooltip';
-import { tooltip_context } from 'graphics/tooltip';
-import { key_type } from 'input/keys';
-import { key_modifier_type } from 'input/keys';
-import { hotkey_action } from 'core/hotkey_config';
-import { hotkey_mapping } from 'core/hotkey_config';
-import { hotkeys } from 'input/hotkey';
-
 import WINDOW_BUILD_MENU = window_id.WINDOW_BUILD_MENU;
-
-import { window_type } from 'graphics/window';
-import { window_show } from 'graphics/window';
-import { input_go_back_requested } from 'input/input';
-
 import CLIMATE_DESERT = scenario_climate.CLIMATE_DESERT;
-
-import { scenario_property_climate } from 'scenario/property';
-import { translation_key } from 'translation/translation';
 import TR_BUILD_ALL_TEMPLES = translation_key.TR_BUILD_ALL_TEMPLES;
-import { translation_key } from 'translation/translation';
-import { translation_string } from 'translation/translation';
-import { translation_for } from 'translation/translation';
-import { pixel_coordinate } from 'widget/city';
-import { widget_city_clear_current_tile } from 'widget/city';
-import { widget_sidebar_city_handle_mouse_build_menu } from 'widget/sidebar/city';
-import { window_city_draw_panels } from 'window/city';
-import { window_city_draw } from 'window/city';
-import { window_city_show } from 'window/city';
 let build_menu_buttons: generic_button[] = [
     new generic_button(0, 0, 256, 20, button_menu_index, button_none, 1, 0),
     new generic_button(0, 24, 256, 20, button_menu_index, button_none, 2, 0),
@@ -231,12 +186,12 @@ function draw_background() {
     window_city_draw_panels();
 }
 function get_sidebar_x_offset() {
-    let view_x: number
-    let view_y: number
-    let view_width: number
-    let view_height: number;
+    let view_x: Ref<number> = new Ref(0);
+    let view_y: Ref<number> = new Ref(0);
+    let view_width: Ref<number> = new Ref(0);
+    let view_height: Ref<number> = new Ref(0);
     city_view_get_viewport(view_x, view_y, view_width, view_height);
-    return view_x + view_width;
+    return view_x.v + view_width.v;
 }
 function is_all_button(type: building_type) {
     return (type == BUILDING_MENU_SMALL_TEMPLES && data.selected_submenu == BUILD_MENU_SMALL_TEMPLES) ||

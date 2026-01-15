@@ -1,7 +1,11 @@
 export const SPEED_CHANGE_IMMEDIATE = 0;
+export const enum speed_direction {
+    SPEED_DIRECTION_NEGATIVE = -1,
+    SPEED_DIRECTION_STOPPED = 0,
+    SPEED_DIRECTION_POSITIVE = 1
+}
 import { time_millis } from 'core/time';
 import { time_get_millis } from 'core/time';
-import { speed_direction } from 'core/speed';
 import SPEED_DIRECTION_NEGATIVE = speed_direction.SPEED_DIRECTION_NEGATIVE;
 import SPEED_DIRECTION_STOPPED = speed_direction.SPEED_DIRECTION_STOPPED;
 import SPEED_DIRECTION_POSITIVE = speed_direction.SPEED_DIRECTION_POSITIVE;

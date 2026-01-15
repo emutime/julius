@@ -1,61 +1,30 @@
-import { COLOR_MINIMAP_ENEMY_CENTRAL } from 'graphics/color';
-import { COLOR_MINIMAP_ENEMY_NORTHERN } from 'graphics/color';
-import { COLOR_MINIMAP_ENEMY_DESERT } from 'graphics/color';
-import { VIEW_X_MAX } from 'city/view';
-import { VIEW_Y_MAX } from 'city/view';
-import { COLOR_MINIMAP_WOLF } from 'graphics/color';
-import { COLOR_MINIMAP_SOLDIER } from 'graphics/color';
-import { COLOR_MINIMAP_SELECTED_SOLDIER } from 'graphics/color';
-import { COLOR_MINIMAP_VIEWPORT } from 'graphics/color';
-import { COLOR_MINIMAP_DARK } from 'graphics/color';
-import { COLOR_MINIMAP_LIGHT } from 'graphics/color';
-import { time_millis } from 'core/time';
-import { touch_coords } from 'input/touch';
-import { touch_mode } from 'input/touch';
-import { touch } from 'input/touch';
-import { mouse_button } from 'input/mouse';
-import { scroll_state } from 'input/mouse';
-import { mouse } from 'input/mouse';
+import { building, building_get } from 'building/building';
 import { building_type } from 'building/type';
+import { city_view_foreach_minimap_tile, city_view_get_camera, city_view_get_pixel_offset, city_view_get_viewport_size_tiles, city_view_go_to_grid_offset, map_callback, VIEW_X_MAX, VIEW_Y_MAX } from 'city/view';
+import { image_group } from 'core/image';
+import { group_terrain } from 'core/image_group';
+import { figure_action } from 'figure/action';
+import { figure, figure_is_enemy, figure_is_legion } from 'figure/figure';
+import { formation_get_selected } from 'figure/formation';
+import { figure_type } from 'figure/type';
+import { COLOR_MINIMAP_DARK, COLOR_MINIMAP_ENEMY_CENTRAL, COLOR_MINIMAP_ENEMY_DESERT, COLOR_MINIMAP_ENEMY_NORTHERN, COLOR_MINIMAP_LIGHT, COLOR_MINIMAP_SELECTED_SOLDIER, COLOR_MINIMAP_SOLDIER, COLOR_MINIMAP_VIEWPORT, COLOR_MINIMAP_WOLF, color_t } from 'graphics/color';
+import { graphics_draw_from_buffer, graphics_draw_horizontal_line, graphics_draw_rect, graphics_draw_vertical_line, graphics_reset_clip_rectangle, graphics_save_to_buffer, graphics_set_clip_rectangle } from 'graphics/graphics';
+import { image_draw } from 'graphics/image';
+import { mouse } from 'input/mouse';
+import { map_building_at } from 'map/building';
+import { map_figure_foreach_until } from 'map/figure';
+import { GRID, map_grid_height, map_grid_width } from 'map/grid';
+import { map_property_is_draw_tile, map_property_multi_tile_size } from 'map/property';
+import { map_random_get } from 'map/random';
+import { map_terrain_get, terrain } from 'map/terrain';
+import { scenario_property_climate } from 'scenario/property';
+import { free } from '../../ext/crt';
 import BUILDING_FORT_GROUND = building_type.BUILDING_FORT_GROUND;
 import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
-import { building_type } from 'building/type';;
-import { buffer } from 'core/buffer';
-import { building } from 'building/building';
-import { building_get } from 'building/building';
-import { view_tile } from 'city/view';
-import { map_callback } from 'city/view';
-import { city_view_get_camera } from 'city/view';
-import { city_view_get_pixel_offset } from 'city/view';
-import { city_view_go_to_grid_offset } from 'city/view';
-import { city_view_get_viewport_size_tiles } from 'city/view';
-import { city_view_foreach_minimap_tile } from 'city/view';
-import { direction_type } from 'core/direction';
-import { figure_action } from 'figure/action';
+;
 import FIGURE_ACTION_159_NATIVE_ATTACKING = figure_action.FIGURE_ACTION_159_NATIVE_ATTACKING;
-import { figure_type } from 'figure/type';
 import FIGURE_INDIGENOUS_NATIVE = figure_type.FIGURE_INDIGENOUS_NATIVE;
 import FIGURE_WOLF = figure_type.FIGURE_WOLF;
-import { figure_type } from 'figure/type';
-import { figure } from 'figure/figure';
-import { figure_is_enemy } from 'figure/figure';
-import { figure_is_legion } from 'figure/figure';
-import { formation_state } from 'figure/formation';
-import { formation } from 'figure/formation';
-import { formation_get_selected } from 'figure/formation';
-import { color_t } from 'graphics/color';
-import { clip_code } from 'graphics/graphics';
-import { clip_info } from 'graphics/graphics';
-import { graphics_set_clip_rectangle } from 'graphics/graphics';
-import { graphics_reset_clip_rectangle } from 'graphics/graphics';
-import { graphics_save_to_buffer } from 'graphics/graphics';
-import { graphics_draw_from_buffer } from 'graphics/graphics';
-import { graphics_draw_vertical_line } from 'graphics/graphics';
-import { graphics_draw_horizontal_line } from 'graphics/graphics';
-import { graphics_draw_rect } from 'graphics/graphics';
-import { language_type } from 'core/locale';
-import { encoding_type } from 'core/encoding';
-import { group_terrain } from 'core/image_group';
 import GROUP_MINIMAP_EMPTY_LAND = group_terrain.GROUP_MINIMAP_EMPTY_LAND;
 import GROUP_MINIMAP_WATER = group_terrain.GROUP_MINIMAP_WATER;
 import GROUP_MINIMAP_TREE = group_terrain.GROUP_MINIMAP_TREE;
@@ -67,21 +36,7 @@ import GROUP_MINIMAP_BUILDING = group_terrain.GROUP_MINIMAP_BUILDING;
 import GROUP_MINIMAP_WALL = group_terrain.GROUP_MINIMAP_WALL;
 import GROUP_MINIMAP_AQUEDUCT = group_terrain.GROUP_MINIMAP_AQUEDUCT;
 import GROUP_MINIMAP_BLACK = group_terrain.GROUP_MINIMAP_BLACK;
-import { image } from 'core/image';
-import { image_group } from 'core/image';
-import { font_t } from 'graphics/font';
-import { font_definition } from 'graphics/font';
-import { image_draw } from 'graphics/image';
-import { map_building_at } from 'map/building';
-import { map_figure_foreach_until } from 'map/figure';
-import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
-import { map_grid_width } from 'map/grid';
-import { map_grid_height } from 'map/grid';
-import { map_property_is_draw_tile } from 'map/property';
-import { map_property_multi_tile_size } from 'map/property';
-import { map_random_get } from 'map/random';
-import { terrain } from 'map/terrain';
 import TERRAIN_TREE = terrain.TERRAIN_TREE;
 import TERRAIN_ROCK = terrain.TERRAIN_ROCK;
 import TERRAIN_WATER = terrain.TERRAIN_WATER;
@@ -93,13 +48,6 @@ import TERRAIN_ELEVATION = terrain.TERRAIN_ELEVATION;
 import TERRAIN_MEADOW = terrain.TERRAIN_MEADOW;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
-import { map_terrain_get } from 'map/terrain';
-import { scenario_climate } from 'scenario/property';
-import { scenario_property_climate } from 'scenario/property';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { free } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
-import { malloc } from 'C:/Program Files (x86)/Windows Kits/10/Include/10.0.26100.0/ucrt/corecrt_malloc';
 export const enum figure_color {
     FIGURE_COLOR_NONE = 0,
     FIGURE_COLOR_SOLDIER = 1,
@@ -107,11 +55,23 @@ export const enum figure_color {
     FIGURE_COLOR_ENEMY = 3,
     FIGURE_COLOR_WOLF = 4,
 }
+
+import FIGURE_COLOR_NONE = figure_color.FIGURE_COLOR_NONE;
+import FIGURE_COLOR_SOLDIER = figure_color.FIGURE_COLOR_SOLDIER;
+import FIGURE_COLOR_SELECTED_SOLDIER = figure_color.FIGURE_COLOR_SELECTED_SOLDIER;
+import FIGURE_COLOR_ENEMY = figure_color.FIGURE_COLOR_ENEMY;
+import FIGURE_COLOR_WOLF = figure_color.FIGURE_COLOR_WOLF;
+
 export const enum refresh {
     REFRESH_NOT_NEEDED = 0,
     REFRESH_FULL = 1,
     REFRESH_CAMERA_MOVED = 2,
 }
+
+import REFRESH_NOT_NEEDED = refresh.REFRESH_NOT_NEEDED;
+import REFRESH_FULL = refresh.REFRESH_FULL;
+import REFRESH_CAMERA_MOVED = refresh.REFRESH_CAMERA_MOVED;
+
 let ENEMY_COLOR_BY_CLIMATE: color_t[] = new Array().fill({
     COLOR_MINIMAP_ENEMY_CENTRAL,
     COLOR_MINIMAP_ENEMY_NORTHERN,
@@ -137,7 +97,7 @@ export class unnamed39_8 {
     public width: number = 0;
     public height: number = 0;
     public enemy_color: color_t = null;
-    public cache: color_t = null;
+    public cache: color_t[] = null;
     public mouse: mouse = null;
     public refresh_requested: number = 0;
     public camera_x: number = 0;
@@ -324,7 +284,7 @@ function draw_viewport_rectangle() {
 function prepare_minimap_cache(width: number, height: number) {
     if (width != data.width || height != data.height) {
         free(data.cache);
-        data.cache = (color_t *)malloc(sizeof(color_t) * width * height);
+        data.cache = new Array<color_t>(width * height);
     }
 }
 function cache_minimap() {

@@ -11,23 +11,23 @@ export const MAX_PALETTE = 256;
 export const BLOCK_MONO = 0;
 export const BLOCK_FULL = 1;
 export const BLOCK_SOLID = 3;
+export enum smacker_y_scale {
+    SMACKER_Y_SCALE_NONE = 0,
+    SMACKER_Y_SCALE_INTERLACE = 1,
+    SMACKER_Y_SCALE_DOUBLE = 2
+}
+export enum smacker_frame_status {
+    SMACKER_FRAME_ERROR = 0,
+    SMACKER_FRAME_OK = 1,
+    SMACKER_FRAME_DONE = 2
+}
+import { file_close } from 'core/file';
+import { log_error, log_info } from 'core/log';
 import { color_t } from 'graphics/color';
 export class smacker_t {
     public constructor(...args: any[]) {
     }
 }
-import { smacker_y_scale } from 'core/smacker';
-import SMACKER_Y_SCALE_NONE = smacker_y_scale.SMACKER_Y_SCALE_NONE;
-import SMACKER_Y_SCALE_INTERLACE = smacker_y_scale.SMACKER_Y_SCALE_INTERLACE;
-import SMACKER_Y_SCALE_DOUBLE = smacker_y_scale.SMACKER_Y_SCALE_DOUBLE;
-import { smacker_frame_status } from 'core/smacker';
-import SMACKER_FRAME_ERROR = smacker_frame_status.SMACKER_FRAME_ERROR;
-import SMACKER_FRAME_OK = smacker_frame_status.SMACKER_FRAME_OK;
-import SMACKER_FRAME_DONE = smacker_frame_status.SMACKER_FRAME_DONE;
-import { dir_listing } from 'core/dir';
-import { file_close } from 'core/file';
-import { log_info } from 'core/log';
-import { log_error } from 'core/log';
 export class bitstream {
     public data: number = 0;
     public length: number = 0;
@@ -85,7 +85,7 @@ export class hufftree16_t {
 export class frame_data_t {
     public palette: number[] = new Array(MAX_PALETTE).fill(0);
     public video: number = 0;
-    public audio: number[] = new Array(MAX_TRACKS).fill(0);
+    public audio: number[][] = new Array(MAX_TRACKS).fill(0);
     public audio_len: number[] = new Array(MAX_TRACKS).fill(0);
     public constructor(...args: any[]) {
         args.length >= 1 && (this.palette = args[0]);
@@ -94,7 +94,7 @@ export class frame_data_t {
         args.length >= 4 && (this.audio_len = args[3]);
     }
 }
-export class smacker_t {
+export class smacker {
     public fp: FILE = null;
     public width: number = 0;
     public height: number = 0;
@@ -172,7 +172,7 @@ function clear_malloc(s: number): any {
     return null;
 }
 function read_i32(data: number) {
-    return (int32_t)(data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24));
+    return (data[0] | (data[1] << 8) | (data[2] << 16) | (data[3] << 24));
 }
 function bitstream_init(bs: bitstream, data: number, len: number) {
     bs.data = data;
@@ -274,23 +274,23 @@ function free_tree16(tree: hufftree16) {
     free(tree);
 }
 function build_tree16_nodes(bs: bitstream, tree: hufftree16) {
-    let node: huffnode16 = (huffnode16 *) clear_malloc(sizeof(huffnode16));
+    let node: huffnode16 = null;
     if (!node) {
         log_error("SMK: no memory for 16-bit tree node", 0, 0);
-        return NULL;
+        return null;
     }
     if (read_bit(bs)) {
         node.is_leaf = 0;
         node.b[0] = build_tree16_nodes(bs, tree);
         if (!node.b[0]) {
             free(node);
-            return NULL;
+            return null;
         }
         node.b[1] = build_tree16_nodes(bs, tree);
         if (!node.b[1]) {
             free_node16(node.b[0]);
             free(node);
-            return NULL;
+            return null;
         }
     } else {
         node.is_leaf = 1;
@@ -307,10 +307,10 @@ function build_tree16_nodes(bs: bitstream, tree: hufftree16) {
     return node;
 }
 function create_tree16(bs: bitstream, low: hufftree8, high: hufftree8) {
-    let tree: hufftree16 = (hufftree16 *) clear_malloc(sizeof(hufftree16));
+    let tree: hufftree16 = null;
     if (!tree) {
         log_error("SMK: no memory for 16-bit tree", 0, 0);
-        return NULL;
+        return null;
     }
     tree.low = low;
     tree.high = high;
@@ -321,16 +321,16 @@ function create_tree16(bs: bitstream, low: hufftree8, high: hufftree8) {
     tree.root = build_tree16_nodes(bs, tree);
     if (!tree.root) {
         free(tree);
-        return NULL;
+        return null;
     }
     if (read_bit(bs) != 0) {
         log_error("SMK: 16-bit tree not closed", 0, 0);
         free_tree16(tree);
-        return NULL;
+        return null;
     }
     for (let i: number = 0; i < 3; i++) {
         if (!tree.escape_nodes[i]) {
-            tree.escape_nodes[i] = (huffnode16 *) clear_malloc(sizeof(huffnode16));
+            tree.escape_nodes[i] = clear_malloc(sizeof(huffnode16));
             tree.escape_nodes[i].is_leaf = 0;
             tree.escape_nodes[i].value = 0;
         }
@@ -414,11 +414,11 @@ function read_header(s: smacker) {
     return 1;
 }
 function read_frame_info(s: smacker) {
-    let sizes_length: number = sizeof(int32_t) * s.frames;
-    let types_length: number = sizeof(uint8_t) * s.frames;
-    s.frame_sizes = (int32_t *) clear_malloc(sizes_length);
-    s.frame_offsets = (long *) clear_malloc(sizeof(long) * s.frames);
-    s.frame_types = (uint8_t *) clear_malloc(types_length);
+    let sizes_length: number = 4 * s.frames;
+    let types_length: number = 1 * s.frames;
+    s.frame_sizes = clear_malloc(sizes_length);
+    s.frame_offsets = clear_malloc(8 * s.frames);
+    s.frame_types = clear_malloc(types_length);
     if (!s.frame_sizes || !s.frame_offsets || !s.frame_types) {
         log_error("SMK: no memory for frame info", 0, 0);
         free(s.frame_sizes);
@@ -434,7 +434,7 @@ function read_frame_info(s: smacker) {
         free(s.frame_types);
         return 0;
     }
-    let data: number = (uint8_t *) s.frame_sizes;
+    let data: number = s.frame_sizes;
     let offset: bigint = 0;
     for (let i: number = 0; i < s.frames; i++) {
         s.frame_sizes[i] = read_i32(data[4 * i]) & 0xfffffffc;
@@ -444,7 +444,7 @@ function read_frame_info(s: smacker) {
     return 1;
 }
 function read_trees_data(s: smacker) {
-    let trees_data: number = (uint8_t *) clear_malloc(s.trees_size);
+    let trees_data: number = clear_malloc(s.trees_size);
     if (!trees_data) {
         log_error("SMK: no memory for tree input data", 0, 0);
         return 0;
@@ -465,7 +465,7 @@ function allocate_frame_memory(s: smacker) {
         return 0;
     }
     for (let i: number = 0; i < MAX_TRACKS; i++) {
-        if (s.audio_rate[i] & AUDIO_FLAG_HAS_TRACK) {
+        if ((s.audio_rate[i] & AUDIO_FLAG_HAS_TRACK) !== 0) {
             s.frame_data.audio[i] = clear_malloc(s.audio_size[i]);
             if (!s.frame_data.audio[i]) {
                 log_error("SMK: no memory for audio track", 0, i);
@@ -480,7 +480,7 @@ export function smacker_open(fp: FILE) {
         log_error("SMK: file does not exist", 0, 0);
         return NULL;
     }
-    let s: smacker = (struct smacker_t *) clear_malloc(sizeof(struct smacker_t));
+    let s: smacker = clear_malloc(sizeof(smacker));
     memset(s, 0);
     s.fp = fp;
     if (!read_header(s)) {
@@ -517,53 +517,33 @@ export function smacker_close(s: smacker) {
     free(s.frame_data.video);
     free(s);
 }
-export function smacker_get_frames_info(s: smacker, frame_count: number, usf: number) {
-    if (frame_count) {
-        * frame_count = s.frames;
-    }
-    if (usf) {
-        * usf = s.us_per_frame;
-    }
+export function smacker_get_frames_info(s: smacker, frame_count?: number, usf?: number) {
+    return {
+        frame_count: s.frames,
+        usf: s.us_per_frame
+    };
 }
-export function smacker_get_video_info(s: smacker, width: number, height: number, y_scale_mode: number) {
-    if (width) {
-        * width = s.width;
+export function smacker_get_video_info(s: smacker, width?: number, height?: number, y_scale_mode?: number) {
+    let scale_mode = smacker_y_scale.SMACKER_Y_SCALE_NONE;
+    if ((s.flags & FLAG_Y_INTERLACE) !== 0) {
+        scale_mode = smacker_y_scale.SMACKER_Y_SCALE_INTERLACE;
+    } else if ((s.flags & FLAG_Y_DOUBLE) !== 0) {
+        scale_mode = smacker_y_scale.SMACKER_Y_SCALE_DOUBLE;
     }
-    if (height) {
-        * height = s.height;
-    }
-    if (y_scale_mode) {
-        if (s.flags & FLAG_Y_INTERLACE) {
-            * y_scale_mode = SMACKER_Y_SCALE_INTERLACE;
-        } else if (s.flags & FLAG_Y_DOUBLE) {
-            * y_scale_mode = SMACKER_Y_SCALE_DOUBLE;
-        } else {
-            * y_scale_mode = SMACKER_Y_SCALE_NONE;
-        }
-    }
+    return {
+        width: s.width,
+        height: s.height,
+        y_scale_mode: scale_mode
+    };
 }
-export function smacker_get_audio_info(s: smacker, track: number, enabled: number, channels: number, bitdepth: number, audio_rate: number) {
+export function smacker_get_audio_info(s: smacker, track: number, enabled?: number, channels?: number, bitdepth?: number, audio_rate?: number) {
     let has_track: number = (s.audio_rate[track] & AUDIO_FLAG_HAS_TRACK) ? 1 : 0;
-    if (enabled) {
-        * enabled = has_track;
-    }
-    if (channels) {
-        if (has_track) {
-            * channels = (s.audio_rate[track] & AUDIO_FLAG_STEREO) ? 2 : 1;
-        } else {
-            * channels = 0;
-        }
-    }
-    if (bitdepth) {
-        if (has_track) {
-            * bitdepth = (s.audio_rate[track] & AUDIO_FLAG_16BIT) ? 16 : 8;
-        } else {
-            * bitdepth = 0;
-        }
-    }
-    if (audio_rate) {
-        * audio_rate = s.audio_rate[track] & AUDIO_MASK_RATE;
-    }
+    return {
+        enabled: has_track,
+        channels: has_track ? (s.audio_rate[track] & AUDIO_FLAG_STEREO) ? 2 : 1 : 0,
+        bitdepth: has_track ? (s.audio_rate[track] & AUDIO_FLAG_16BIT) ? 16 : 8 : 0,
+        audio_rate: s.audio_rate[track] & AUDIO_MASK_RATE
+    };
 }
 function read_audio_frame_trees(bs: bitstream, trees: hufftree8, num_trees: number) {
     for (let i: number = 0; i < num_trees; i++) {
@@ -611,16 +591,16 @@ function decode_audio_track(s: smacker, track: number, data: number, length: num
         return 0;
     }
     if (is_16bit) {
-        let audio_data: number = (uint16_t *) s.frame_data.audio[track];
+        let audio_data: number[] = s.frame_data.audio[track];
         let index: number = 0;
         for (let c: number = 0; c < channels; c++) {
             audio_data[channels - c - 1] = read_byte(bs) << 8 | read_byte(bs);
         }
         index = channels;
         while (index < uncompressed_length / 2) {
-            for (int c = 0; c < channels; c++) {
-                        // Do not join the following two lines as it results in an optimization bug for MSVC. See PR #215
-                        uint16_t value = lookup_tree8(bs, trees[c * 2]);
+            for (let c = 0; c < channels; c++) {
+                // Do not join the following two lines as it results in an optimization bug for MSVC. See PR #215
+                let value: number = lookup_tree8(bs, trees[c * 2]);
                 value |= lookup_tree8(bs, trees[c * 2 + 1]) << 8;
                 audio_data[index] = value + audio_data[index - channels];
                 index++;
@@ -635,7 +615,7 @@ function decode_audio_track(s: smacker, track: number, data: number, length: num
         }
         index = channels;
         while (index < uncompressed_length) {
-            for (int c = 0; c < channels; c++) {
+            for (let c: number = 0; c < channels; c++) {
                 audio_data[index] = lookup_tree8(bs, trees[c]) + audio_data[index - channels];
                 index++;
             }
@@ -649,7 +629,7 @@ function decode_palette(s: smacker, data: number, length: number) {
     let index: number = 0;
     let color_index: number = 0;
     while (index < length && color_index < MAX_PALETTE) {
-        if (data[index] & 0x80) {
+        if ((data[index] & 0x80) !== 0) {
             // Copy from same position in previous palette
             let num_entries: number = 1 + (data[index] & 0x7f);
             if (num_entries + color_index > MAX_PALETTE) {
@@ -659,7 +639,7 @@ function decode_palette(s: smacker, data: number, length: number) {
             memcpy(new_palette[color_index], s.frame_data.palette[color_index], sizeof(int32_t) * num_entries);
             color_index += num_entries;
             index++;
-        } else if (data[index] & 0x40) {
+        } else if ((data[index] & 0x40) !== 0) {
             // Copy from 'offset' position in previous palette
             let num_entries: number = 1 + (data[index] & 0x3f);
             let offset: number = data[index + 1];
@@ -742,7 +722,7 @@ function read_frame_data(s: smacker, frame_id: number) {
         return NULL;
     }
     let frame_size: number = s.frame_sizes[frame_id];
-    let frame_data: number = (uint8_t *) clear_malloc(frame_size);
+    let frame_data: number = clear_malloc(frame_size);
     if (!frame_data) {
         log_error("SMK: no memory for frame data", 0, frame_id);
         return NULL;
@@ -768,7 +748,7 @@ function decode_frame(s: smacker) {
     }
     let frame_type: number = s.frame_types[frame_id];
     let data_index: number = 0;
-    if (frame_type & 0x01) {
+    if ((frame_type & 0x01) !== 0) {
         let palette_size: number = frame_data[0] * 4;
         if (!decode_palette(s, frame_data[1], palette_size - 1)) {
             free_frame_data(s, frame_data);
@@ -777,7 +757,7 @@ function decode_frame(s: smacker) {
         data_index += palette_size
     }
     for (let i: number = 0; i < MAX_TRACKS; i++) {
-        if (frame_type & (1 << (i + 1))) {
+        if ((frame_type & (1 << (i + 1))) !== 0) {
             let track_length: number = read_i32(frame_data[data_index]);
             decode_audio_track(s, i, frame_data[data_index + 4], track_length - 4);
             data_index += track_length

@@ -19,6 +19,7 @@ import { hotkeys } from 'input/hotkey';
 import { input_go_back_requested } from 'input/input';
 import { mouse, mouse_in_dialog } from 'input/mouse';
 import { window_advisors_draw_dialog_background, window_advisors_show } from 'window/advisors';
+import { Ref } from '../../ext/crt';
 import RESOURCE_DENARII = resource_type.RESOURCE_DENARII;
 ;
 import GROUP_RESOURCE_ICONS = group_terrain.GROUP_RESOURCE_ICONS;
@@ -80,9 +81,12 @@ function draw_foreground() {
     graphics_reset_dialog();
 }
 function handle_input(m: mouse, h: hotkeys) {
-    if (generic_buttons_handle_mouse(mouse_in_dialog(m), 0, 0, buttons, 12, focus_button_id)) {
+    const focusRef = new Ref(focus_button_id);
+    if (generic_buttons_handle_mouse(mouse_in_dialog(m), 0, 0, buttons, 12, focusRef)) {
+        focus_button_id = focusRef.v;
         return;
     }
+    focus_button_id = focusRef.v;
     if (input_go_back_requested(m, h)) {
         window_advisors_show();
     }

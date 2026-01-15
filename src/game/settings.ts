@@ -365,7 +365,7 @@ export function setting_set_last_advisor(advisor: number) {
 export function setting_player_name() {
     return data.player_name;
 }
-export function setting_set_player_name(player_name: Uint8Array) {
+export function setting_set_player_name(player_name: string | ArrayLike<number>) {
     string_copy(player_name, data.player_name, MAX_PLAYER_NAME);
 }
 export function setting_personal_savings_for_mission(mission_id: number) {
