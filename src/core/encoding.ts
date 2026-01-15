@@ -835,15 +835,14 @@ export function encoding_to_utf8(
         const text = toString(input);
         return maxLength ? text.substring(0, maxLength - 1) : text;
     }
-    const out = output as ArrayLike<number> & { [index: number]: number };
-    const maxLength = output_length ?? out.length ?? 0;
+    const maxLength = output_length ?? output.length ?? 0;
     const text = toString(input);
     const copyLength = Math.min(text.length, maxLength > 0 ? maxLength - 1 : 0);
     for (let i = 0; i < copyLength; i++) {
-        out[i] = text.charCodeAt(i);
+        output[i] = text.charCodeAt(i);
     }
     if (maxLength > 0) {
-        out[copyLength] = 0;
+        output[copyLength] = 0;
     }
 }
 export function encoding_from_utf8(
@@ -867,14 +866,13 @@ export function encoding_from_utf8(
         return bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes as ArrayLike<number>);
     }
     const bytes = toBytes(input);
-    const out = output as ArrayLike<number> & { [index: number]: number };
-    const maxLength = output_length ?? out.length ?? 0;
+    const maxLength = output_length ?? output.length ?? 0;
     const copyLength = Math.min(bytes.length, maxLength > 0 ? maxLength - 1 : 0);
     for (let i = 0; i < copyLength; i++) {
-        out[i] = bytes[i];
+        output[i] = bytes[i];
     }
     if (maxLength > 0) {
-        out[copyLength] = 0;
+        output[copyLength] = 0;
     }
 }
 export function encoding_japanese_sjis_to_image_id(first: number, second: number): number {

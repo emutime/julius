@@ -2,10 +2,10 @@ export const FILE_NAME_MAX = 300;
 import { dir_listing } from 'core/dir';
 import { dir_get_file } from 'core/dir';
 import { string_from_bytes } from 'core/string';
-import { platform_file_manager_compare_filename } from '../platform/file_manager';
-import { platform_file_manager_open_file } from '../platform/file_manager';
-import { platform_file_manager_close_file } from '../platform/file_manager';
-import { platform_file_manager_remove_file } from '../platform/file_manager';
+import { platform_file_manager_compare_filename } from 'platform/file_manager';
+import { platform_file_manager_open_file } from 'platform/file_manager';
+import { platform_file_manager_close_file } from 'platform/file_manager';
+import { platform_file_manager_remove_file } from 'platform/file_manager';
 export function file_open(filename: string, mode: string) {
     return platform_file_manager_open_file(filename, mode);
 }
@@ -35,16 +35,15 @@ export function file_change_extension(filename: string | (ArrayLike<number> & { 
         return filename.substring(0, dotIndex + 1) + newExtStr;
     }
     const newExtStr = typeof new_extension === "string" ? new_extension : string_from_bytes(new_extension);
-    const buffer = filename as ArrayLike<number> & { [index: number]: number };
     let i = 0;
-    while (buffer[i] && buffer[i] !== ".".charCodeAt(0)) {
+    while (filename[i] && filename[i] !== ".".charCodeAt(0)) {
         i++;
     }
-    if (buffer[i] === ".".charCodeAt(0)) {
-        buffer[i + 0] = newExtStr.charCodeAt(0) || 0;
-        buffer[i + 1] = newExtStr.charCodeAt(1) || 0;
-        buffer[i + 2] = newExtStr.charCodeAt(2) || 0;
-        buffer[i + 3] = 0;
+    if (filename[i] === ".".charCodeAt(0)) {
+        filename[i + 0] = newExtStr.charCodeAt(0) || 0;
+        filename[i + 1] = newExtStr.charCodeAt(1) || 0;
+        filename[i + 2] = newExtStr.charCodeAt(2) || 0;
+        filename[i + 3] = 0;
     }
 }
 export function file_append_extension(filename: string | (ArrayLike<number> & { [index: number]: number }), extension: string | ArrayLike<number>): string | void {
@@ -52,16 +51,15 @@ export function file_append_extension(filename: string | (ArrayLike<number> & { 
     if (typeof filename === "string") {
         return filename + '.' + extensionStr;
     }
-    const buffer = filename as ArrayLike<number> & { [index: number]: number };
     let i = 0;
-    while (buffer[i]) {
+    while (filename[i]) {
         i++;
     }
-    buffer[i++] = ".".charCodeAt(0);
-    buffer[i++] = extensionStr.charCodeAt(0) || 0;
-    buffer[i++] = extensionStr.charCodeAt(1) || 0;
-    buffer[i++] = extensionStr.charCodeAt(2) || 0;
-    buffer[i] = 0;
+    filename[i++] = ".".charCodeAt(0);
+    filename[i++] = extensionStr.charCodeAt(0) || 0;
+    filename[i++] = extensionStr.charCodeAt(1) || 0;
+    filename[i++] = extensionStr.charCodeAt(2) || 0;
+    filename[i] = 0;
 }
 export function file_remove_extension(filename: string | (ArrayLike<number> & { [index: number]: number })): string | void {
     if (typeof filename === "string") {
@@ -71,13 +69,12 @@ export function file_remove_extension(filename: string | (ArrayLike<number> & { 
         }
         return filename.substring(0, dotIndex);
     }
-    const buffer = filename as ArrayLike<number> & { [index: number]: number };
     let i = 0;
-    while (buffer[i] && buffer[i] !== ".".charCodeAt(0)) {
+    while (filename[i] && filename[i] !== ".".charCodeAt(0)) {
         i++;
     }
-    if (buffer[i] === ".".charCodeAt(0) && i > 0) {
-        buffer[i] = 0;
+    if (filename[i] === ".".charCodeAt(0) && i > 0) {
+        filename[i] = 0;
     }
 }
 export function file_exists(filename: string | ArrayLike<number>, localizable: number): number {

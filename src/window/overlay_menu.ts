@@ -173,7 +173,7 @@ function handle_input(m: mouse, h: hotkeys) {
     let x_offset: number = get_sidebar_x_offset();
     let handled: boolean = false;
     const menuFocusRef = new Ref(data.menu_focus_button_id);
-    handled = handled || !!generic_buttons_handle_mouse(m, x_offset - MENU_X_OFFSET, MENU_Y_OFFSET,
+    handled = handled || generic_buttons_handle_mouse(m, x_offset - MENU_X_OFFSET, MENU_Y_OFFSET,
         menu_buttons, MAX_BUTTONS, menuFocusRef);
     data.menu_focus_button_id = menuFocusRef.v;
     if (!data.keep_submenu_open) {
@@ -181,7 +181,7 @@ function handle_input(m: mouse, h: hotkeys) {
     }
     if (data.selected_submenu) {
         const submenuFocusRef = new Ref(data.submenu_focus_button_id);
-        handled = handled || !!generic_buttons_handle_mouse(
+        handled = handled || generic_buttons_handle_mouse(
             m, x_offset - SUBMENU_X_OFFSET, MENU_Y_OFFSET + MENU_ITEM_HEIGHT * data.selected_menu,
             submenu_buttons, data.num_submenu_items, submenuFocusRef);
         data.submenu_focus_button_id = submenuFocusRef.v;

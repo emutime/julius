@@ -70,7 +70,7 @@ export class unnamed67_8 {
     public y: number = 0;
     public mode: number = 0;
     public group: number = 0;
-    public items: Array<string | ArrayLike<number>> = [];
+    public items: string[] = [];
     public num_items: number = 0;
     public callback: ((size: number) => void) | null = null;
     public focus_button_id: number = 0;
@@ -94,7 +94,7 @@ function init_group(x: number, y: number, group: number, num_items: number, call
     data.num_items = num_items;
     data.callback = callback;
 }
-function init_text(x: number, y: number, items: Array<string | ArrayLike<number>>, num_items: number, callback: (size: number) => void) {
+function init_text(x: number, y: number, items: string[], num_items: number, callback: (size: number) => void) {
     data.x = x;
     data.y = y;
     data.mode = MODE_TEXT;
@@ -174,7 +174,7 @@ export function window_select_list_show(x: number, y: number, group: number, num
     init_group(x, y, group, num_items, callback);
     window_show(window);
 }
-export function window_select_list_show_text(x: number, y: number, items: Array<string | ArrayLike<number>>, num_items: number, callback: (size: number) => void) {
+export function window_select_list_show_text(x: number, y: number, items: string[], num_items: number, callback: (size: number) => void) {
     let window: window_type = new window_type(
         WINDOW_SELECT_LIST,
         window_draw_underlying_window,

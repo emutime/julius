@@ -116,30 +116,17 @@ export function string_to_int(str: PtrBuffer) {
     }
     return result;
 }
-export function string_from_int(
-    dst: ArrayLike<number> & { [index: number]: number },
-    value_or_offset: number,
-    value_or_force: number,
-    force_plus_sign?: number
-) {
-    let offset = 0;
-    let value = value_or_offset;
-    let force = value_or_force;
-    if (force_plus_sign !== undefined) {
-        offset = value_or_offset;
-        value = value_or_force;
-        force = force_plus_sign;
-    }
+export function string_from_int(dst: number, value: number, force_plus_sign: number) {
     let total_chars: number = 0;
     if (value >= 0) {
-        if (force) {
-            dst[offset] = '+'.charCodeAt(0);
-            offset++;
+        if (force_plus_sign) {
+            dst[0] = '+';
+            dst++;
             total_chars = 1;
         }
     } else {
-        dst[offset] = '-'.charCodeAt(0);
-        offset++;
+        dst[0] = '-';
+        dst++;
         value = -value;
         total_chars = 1;
     }
@@ -166,9 +153,9 @@ export function string_from_int(
         num_digits = 0;
     }
     total_chars += num_digits;
-    dst[offset + num_digits] = 0;
+    dst[num_digits] = 0;
     while (--num_digits >= 0) {
-        dst[offset + num_digits] = Math.floor(value % 10 + '0'.charCodeAt(0));
+        dst[num_digits] = Math.floor(value % 10 + '0'.charCodeAt(0));
         value = Math.floor(value / 10);
     }
     return total_chars;

@@ -307,7 +307,7 @@ function init() {
         }
     }
     enable_all_widgets();
-    if (!system_can_scale_display(null, null)) {
+    if (!system_can_scale_display(0, 0)) {
         disable_widget(TYPE_NUMERICAL_DESC, RANGE_DISPLAY_SCALE);
         disable_widget(TYPE_NUMERICAL_RANGE, RANGE_DISPLAY_SCALE);
     }

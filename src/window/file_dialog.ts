@@ -41,7 +41,7 @@ import { window_draw_underlying_window, window_go_back, window_id, window_show, 
 import { hotkeys } from 'input/hotkey';
 import { input_go_back_requested } from 'input/input';
 import { mouse, mouse_in_dialog } from 'input/mouse';
-import { platform_file_manager_compare_filename_prefix } from '../platform/file_manager';
+import { platform_file_manager_compare_filename_prefix } from 'platform/file_manager';
 import { input_box, input_box_draw, input_box_handle_mouse, input_box_is_accepted, input_box_refresh_text, input_box_start, input_box_stop } from 'widget/input_box';
 import { window_city_show } from 'window/city';
 import { Ref } from '../../ext/crt';

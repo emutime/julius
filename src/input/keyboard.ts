@@ -10,7 +10,7 @@ export class unnamed8_8 {
     public accepted: number = 0;
     public capture_numeric: number = 0;
     public capture_numeric_callback: (num: number) => void = null;
-    public text: ArrayLike<number> & { [index: number]: number } = null;
+    public text: number = 0;
     public cursor_position: number = 0;
     public length: number = 0;
     public max_length: number = 0;
@@ -39,41 +39,30 @@ export class unnamed8_8 {
     }
 }
 let data: unnamed8_8 = new unnamed8_8();
-function get_char_bytes(text: ArrayLike<number>, index: number) {
-    return (text[index] ?? 0) >= 0x80 && encoding_is_multibyte() ? 2 : 1;
+function get_char_bytes(str: number) {
+    return (str as any)[0] >= 0x80 && encoding_is_multibyte() ? 2 : 1;
 }
 function get_current_char_bytes() {
-    return get_char_bytes(data.text, data.cursor_position);
-}
-function slice_text(text: ArrayLike<number>, start: number): ArrayLike<number> {
-    if (typeof (text as any).slice === "function") {
-        return (text as any).slice(start);
-    }
-    const result: number[] = [];
-    for (let i = start; i < text.length; i++) {
-        result.push(text[i] ?? 0);
-    }
-    result.push(0);
-    return result;
+    return get_char_bytes(data.text[data.cursor_position]);
 }
 function set_viewport_to_start() {
     data.viewport_start = 0;
-    data.viewport_end = text_get_max_length_for_width(data.text as any, data.length, data.font, data.box_width, 0);
+    data.viewport_end = text_get_max_length_for_width(data.text, data.length, data.font, data.box_width, 0);
 }
 function set_viewport_to_end() {
     data.viewport_end = data.length;
-    let maxlen: number = text_get_max_length_for_width(data.text as any, data.length, data.font, data.box_width, 1);
+    let maxlen: number = text_get_max_length_for_width(data.text, data.length, data.font, data.box_width, 1);
     data.viewport_start = data.length - maxlen;
 }
 function include_cursor_in_viewport() {
     let new_start: number = data.viewport_start;
-    let new_end: number = text_get_max_length_for_width(data.text as any, data.length - new_start, data.font, data.box_width, 0);
+    let new_end: number = text_get_max_length_for_width(data.text, data.length - new_start, data.font, data.box_width, 0);
     if (data.cursor_position >= new_start && data.cursor_position < new_end && new_start + new_end < data.length) {
         return;
     }
     if (data.cursor_position <= data.viewport_cursor_position) {
         let maxlen: number = text_get_max_length_for_width(
-            slice_text(data.text, data.cursor_position),
+            data.text + data.cursor_position,
             data.length - data.cursor_position,
             data.font, data.box_width, 0);
         if (data.cursor_position + maxlen < data.length) {
@@ -85,7 +74,7 @@ function include_cursor_in_viewport() {
     } else {
         let viewport_length: number = data.cursor_position + get_current_char_bytes();
         let maxlen: number = text_get_max_length_for_width(
-            data.text as any, viewport_length, data.font, data.box_width, 1);
+            data.text, viewport_length, data.font, data.box_width, 1);
         if (maxlen < viewport_length) {
             data.viewport_start = viewport_length - maxlen;
             data.viewport_end = viewport_length;
@@ -107,7 +96,7 @@ function update_viewport(has_changed: number) {
     }
     data.viewport_cursor_position = data.cursor_position;
 }
-export function keyboard_start_capture(text: ArrayLike<number> & { [index: number]: number }, max_length: number, allow_punctuation: number, box_width: number, font: font_t) {
+export function keyboard_start_capture(text: number, max_length: number, allow_punctuation: number, box_width: number, font: font_t) {
     data.capture = 1;
     data.text = text;
     data.length = string_length(text);

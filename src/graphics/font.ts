@@ -546,20 +546,13 @@ export function font_can_display(character: string) {
 }
 
 // todo
-function get_code_point(str: string | ArrayLike<number>, index: number): number {
-    if (typeof str === "string") {
-        return str.charCodeAt(index) || 0;
-    }
-    return str[index] ?? 0;
-}
-
-export function font_letter_id(def: font_definition, str: string | ArrayLike<number>, num_bytes: Ref<number>, strIndex: number = 0) {
-    if (data.multibyte != MULTIBYTE_NONE && get_code_point(str, strIndex) >= 0x80) {
+export function font_letter_id(def: font_definition, str: string, num_bytes: Ref<number>, strIndex: number = 0) {
+    if (data.multibyte != MULTIBYTE_NONE && str.charCodeAt(strIndex) >= 0x80) {
         num_bytes.v = 2;
         if (data.multibyte == MULTIBYTE_TRADITIONAL_CHINESE) {
-            let char_id: number = (get_code_point(str, strIndex) & 0x7f) | ((get_code_point(str, strIndex + 1) & 0x7f) << 7);
+            let char_id: number = (str.charCodeAt(strIndex) & 0x7f) | ((str.charCodeAt(strIndex + 1) & 0x7f) << 7);
             if (char_id >= IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS) {
-                let big5_encoded: number = get_code_point(str, strIndex) << 8 | get_code_point(str, strIndex + 1);
+                let big5_encoded: number = str.charCodeAt(strIndex) << 8 | str.charCodeAt(strIndex + 1);
                 char_id = encoding_trad_chinese_big5_to_image_id(big5_encoded);
                 if (char_id < 0 || char_id >= IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS) {
                     return -1;
@@ -567,14 +560,14 @@ export function font_letter_id(def: font_definition, str: string | ArrayLike<num
             }
             return IMAGE_FONT_MULTIBYTE_OFFSET + def.multibyte_image_offset + char_id;
         } else if (data.multibyte == MULTIBYTE_SIMPLIFIED_CHINESE) {
-            let char_id: number = (get_code_point(str, strIndex) & 0x7f) | ((get_code_point(str, strIndex + 1) & 0x7f) << 7);
+            let char_id: number = (str.charCodeAt(strIndex) & 0x7f) | ((str.charCodeAt(strIndex + 1) & 0x7f) << 7);
             if (char_id >= IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS) {
                 return -1;
             }
             return IMAGE_FONT_MULTIBYTE_OFFSET + def.multibyte_image_offset + char_id;
         } else if (data.multibyte == MULTIBYTE_KOREAN) {
-            let b0: number = get_code_point(str, strIndex) - 0xb0;
-            let b1: number = get_code_point(str, strIndex + 1) - 0xa1;
+            let b0: number = str.charCodeAt(strIndex) - 0xb0;
+            let b1: number = str.charCodeAt(strIndex + 1) - 0xa1;
             let char_id: number = b0 * 94 + b1;
             if (b0 < 0 || b1 < 0 || char_id < 0 || char_id >= IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS) {
                 return -1;
@@ -582,11 +575,11 @@ export function font_letter_id(def: font_definition, str: string | ArrayLike<num
             return IMAGE_FONT_MULTIBYTE_OFFSET + def.multibyte_image_offset + char_id;
         } else if (data.multibyte == MULTIBYTE_JAPANESE) {
             let char_id: number;
-            if (get_code_point(str, strIndex) >= 0xa0 && get_code_point(str, strIndex) < 0xe0) {
+            if (str.charCodeAt(0) >= 0xa0 && str.charCodeAt(0) < 0xe0) {
                 num_bytes.v = 1;
-                char_id = encoding_japanese_sjis_to_image_id(get_code_point(str, strIndex), 0);
+                char_id = encoding_japanese_sjis_to_image_id(str.charCodeAt(0), 0);
             } else {
-                char_id = encoding_japanese_sjis_to_image_id(get_code_point(str, strIndex), get_code_point(str, strIndex + 1));
+                char_id = encoding_japanese_sjis_to_image_id(str.charCodeAt(0), str.charCodeAt(1));
             }
             if (char_id == -1) {
                 return -1;
@@ -597,9 +590,9 @@ export function font_letter_id(def: font_definition, str: string | ArrayLike<num
         }
     } else {
         num_bytes.v = 1;
-        if (!data.font_mapping[get_code_point(str, strIndex)]) {
+        if (!data.font_mapping[str]) {
             return -1;
         }
-        return data.font_mapping[get_code_point(str, strIndex)] + def.image_offset - 1;
+        return data.font_mapping[str] + def.image_offset - 1;
     }
 }
