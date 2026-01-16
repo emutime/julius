@@ -318,7 +318,7 @@ function draw_title(msg: lang_message) {
         return;
     }
     let image_id: number = get_message_image_id(msg);
-    let img: image = image_id ? image_get(image_id) : 0;
+    let img: image | null = image_id ? image_get(image_id) : null;
     if (msg.message_type == MESSAGE_TYPE_TUTORIAL) {
         text_draw_centered(msg.title.text,
             data.x, data.y + msg.title.y, BLOCK_SIZE * msg.width_blocks, FONT_LARGE_BLACK, 0);

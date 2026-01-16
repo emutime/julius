@@ -13,7 +13,7 @@ import { empire_city, empire_city_get } from 'empire/city';
 import { empire_object, empire_object_get_closest, empire_object_get_our_city, empire_object_init_cities, empire_object_load } from 'empire/object';
 import { trade_route_limit_reached } from 'empire/trade_route';
 import { resource_type } from 'game/resource';
-import { memset } from '../../ext/crt';
+import { memset, Ref } from '../../ext/crt';
 import RESOURCE_NONE = resource_type.RESOURCE_NONE;
 import RESOURCE_WHEAT = resource_type.RESOURCE_WHEAT;
 import RESOURCE_VEGETABLES = resource_type.RESOURCE_VEGETABLES;

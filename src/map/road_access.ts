@@ -214,7 +214,7 @@ export function map_road_to_largest_network_hippodrome(x: number, y: number, x_r
     if (min_index.v < 12) {
         x_road.v = map_grid_offset_to_x(min_grid_offset.v);
         y_road.v = map_grid_offset_to_y(min_grid_offset.v);
-        return min_grid_offset;
+        return min_grid_offset.v;
     }
     let min_dist: Ref<number> = new Ref(100000);
     min_grid_offset.v = -1;

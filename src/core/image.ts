@@ -17,6 +17,7 @@ import { file_change_extension } from 'core/file';
 import { group_terrain } from 'core/image_group';
 import { io_read_file_into_buffer, io_read_file_part_into_buffer } from 'core/io';
 import { log_error, log_info } from 'core/log';
+import { string_from_bytes } from 'core/string';
 import { ALPHA_FONT_SEMI_TRANSPARENT, ALPHA_OPAQUE, COLOR_SG2_TRANSPARENT, color_t } from 'graphics/color';
 export const TRAD_CHINESE_FONT_ENTRIES = 3;
 export const CHINESE_FONT_DATA_SIZE = 7200000;
@@ -168,7 +169,7 @@ export class unnamed125_8 {
     public fonts_enabled: number = 0;
     public font_base_offset: number = 0;
     public group_image_ids: number[] = new Array(300).fill(0);
-    public bitmaps: string[] = new Array(100).fill(null);
+    public bitmaps: Uint8Array = new Uint8Array(20000);
     public main: image[] = new Array(MAIN_ENTRIES).fill(null);
     public enemy: image[] = new Array(ENEMY_ENTRIES).fill(null);
     public font: image[] = null;
@@ -209,7 +210,7 @@ export function image_init() {
     }
     return 1;
 }
-function prepare_index(images: image, size: number) {
+function prepare_index(images: image[], size: number) {
     let offset: number = 4;
     for (let i: number = 1; i < size; i++) {
         let img: image = images[i];
@@ -259,7 +260,11 @@ function read_header(buf: buffer) {
     for (let i: number = 0; i < 300; i++) {
         data.group_image_ids[i] = buffer_read_u16(buf);
     }
-    buffer_read_raw(buf, data.bitmaps as any, 20000);
+    buffer_read_raw(buf, data.bitmaps, 20000);
+}
+function bitmap_name(bitmap_id: number) {
+    const offset = bitmap_id * 200;
+    return string_from_bytes(data.bitmaps.subarray(offset, offset + 200));
 }
 function to_32_bit(c: number) {
     return ((c & 0x7c00) << 9) | ((c & 0x7000) << 4) |
@@ -285,12 +290,12 @@ function convert_images(images: image[], size: number, buf: buffer, dst: any) {
         buffer_set(buf, img.draw.offset);
         let img_offset: number = (dst - start_dst);
         if (img.draw.is_fully_compressed) {
-            dst += convert_compressed(buf, img.draw.data_length, dst)
+            dst += convert_compressed(buf, img.draw.data_length, dst as any)
         } else if (img.draw.has_compressed_part) {
-            dst += convert_uncompressed(buf, img.draw.uncompressed_length, dst)
-            dst += convert_compressed(buf, img.draw.data_length - img.draw.uncompressed_length, dst)
+            dst += convert_uncompressed(buf, img.draw.uncompressed_length, dst as any)
+            dst += convert_compressed(buf, img.draw.data_length - img.draw.uncompressed_length, dst as any)
         } else {
-            dst += convert_uncompressed(buf, img.draw.data_length, dst)
+            dst += convert_uncompressed(buf, img.draw.data_length, dst as any)
         }
         img.draw.offset = img_offset;
         img.draw.uncompressed_length /= 2
@@ -634,14 +639,9 @@ export function image_load_enemy(enemy_id: number) {
 }
 function load_external_data(image_id: number) {
     let img: image = data.main[image_id];
-    let filename_no_prefix: string = file_change_extension(
-        data.bitmaps[img.draw.bitmap_id],
-        "555"
-    ) as string;
-    let filename_with_prefix: string = file_change_extension(
-        "555/" + data.bitmaps[img.draw.bitmap_id],
-        "555"
-    ) as string;
+    const bitmap = String(data.bitmaps[img.draw.bitmap_id] ?? "");
+    let filename_no_prefix: string = file_change_extension(bitmap, "555") as string;
+    let filename_with_prefix: string = file_change_extension("555/" + bitmap, "555") as string;
     let size: number = io_read_file_part_into_buffer(
         filename_no_prefix, MAY_BE_LOCALIZED, data.tmp_data,
         img.draw.data_length, img.draw.offset - 1
@@ -652,14 +652,13 @@ function load_external_data(image_id: number) {
             img.draw.data_length, img.draw.offset - 1
         );
         if (!size) {
-            log_error("unable to load external image",
-                data.bitmaps[img.draw.bitmap_id], image_id);
+            log_error("unable to load external image", bitmap, image_id);
             return null;
         }
     }
     let buf: buffer;
     buffer_init(buf, data.tmp_data, size);
-    let dst: color_t = data.tmp_data[4000000];
+    let dst: any = data.tmp_data;
     if (img.draw.is_fully_compressed) {
         convert_compressed(buf, img.draw.data_length, dst);
     } else {

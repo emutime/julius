@@ -186,16 +186,16 @@ function mark_construction(x: number, y: number, size: number, terrain: number, 
     }
 }
 function place_houses(measure_only: number, x_start: number, y_start: number, x_end: number, y_end: number) {
-    let x_min: number
-    let x_max: number
-    let y_min: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_start_end_to_area(x_start, y_start, x_end, y_end, x_min, y_min, x_max, y_max);
     let needs_road_warning: number = 0;
     let items_placed: number = 0;
     game_undo_restore_building_state();
-    for (let y: number = y_min; y <= y_max; y++) {
-        for (let x: number = x_min; x <= x_max; x++) {
+    for (let y: number = y_min.v; y <= y_max.v; y++) {
+        for (let x: number = x_min.v; x <= x_max.v; x++) {
             let grid_offset: number = map_grid_offset(x, y);
             if (map_terrain_is(grid_offset, TERRAIN_NOT_CLEAR)) {
                 continue
@@ -228,15 +228,15 @@ function place_houses(measure_only: number, x_start: number, y_start: number, x_
     return items_placed;
 }
 function place_plaza(x_start: number, y_start: number, x_end: number, y_end: number) {
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_start_end_to_area(x_start, y_start, x_end, y_end, x_min, y_min, x_max, y_max);
     game_undo_restore_map(1);
     let items_placed: number = 0;
-    for (let y: number = y_min; y <= y_max; y++) {
-        for (let x: number = x_min; x <= x_max; x++) {
+    for (let y: number = y_min.v; y <= y_max.v; y++) {
+        for (let x: number = x_min.v; x <= x_max.v; x++) {
             let grid_offset: number = map_grid_offset(x, y);
             if (map_terrain_is(grid_offset, TERRAIN_ROAD) &&
                 !map_terrain_is(grid_offset, TERRAIN_WATER | TERRAIN_BUILDING | TERRAIN_AQUEDUCT)) {
@@ -255,14 +255,14 @@ function place_plaza(x_start: number, y_start: number, x_end: number, y_end: num
 }
 function place_garden(x_start: number, y_start: number, x_end: number, y_end: number) {
     game_undo_restore_map(1);
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_start_end_to_area(x_start, y_start, x_end, y_end, x_min, y_min, x_max, y_max);
     let items_placed: number = 0;
-    for (let y: number = y_min; y <= y_max; y++) {
-        for (let x: number = x_min; x <= x_max; x++) {
+    for (let y: number = y_min.v; y <= y_max.v; y++) {
+        for (let x: number = x_min.v; x <= x_max.v; x++) {
             let grid_offset: number = map_grid_offset(x, y);
             if (!map_terrain_is(grid_offset, TERRAIN_NOT_CLEAR)) {
                 items_placed++;

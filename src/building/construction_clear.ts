@@ -8,6 +8,7 @@ import { game_undo_add_building, game_undo_disable, game_undo_restore_building_s
 import { window_invalidate } from 'graphics/window';
 import { map_aqueduct_remove } from 'map/aqueduct';
 import { map_bridge_count_figures, map_bridge_remove, map_is_bridge } from 'map/bridge';
+import { Ref } from '../../ext/crt';
 import { map_building_at } from 'map/building';
 import { map_building_tiles_mark_deleting } from 'map/building_tiles';
 import { GRID, map_grid_offset, map_grid_start_end_to_area } from 'map/grid';
@@ -169,19 +170,19 @@ function clear_land_confirmed(measure_only: number, x_start: number, y_start: nu
     }
     if (!measure_only || !visual_feedback_on_delete) {
         let radius: number;
-        if (x_max - x_min <= y_max - y_min) {
-            radius = y_max - y_min + 3;
+        if (x_max.v - x_min.v <= y_max.v - y_min.v) {
+            radius = y_max.v - y_min.v + 3;
         } else {
-            radius = x_max - x_min + 3;
+            radius = x_max.v - x_min.v + 3;
         }
-        map_tiles_update_region_empty_land(x_min, y_min, x_max, y_max);
-        map_tiles_update_region_meadow(x_min, y_min, x_max, y_max);
-        map_tiles_update_region_rubble(x_min, y_min, x_max, y_max);
+        map_tiles_update_region_empty_land(x_min.v, y_min.v, x_max.v, y_max.v);
+        map_tiles_update_region_meadow(x_min.v, y_min.v, x_max.v, y_max.v);
+        map_tiles_update_region_rubble(x_min.v, y_min.v, x_max.v, y_max.v);
         map_tiles_update_all_gardens();
-        map_tiles_update_area_roads(x_min, y_min, radius);
+        map_tiles_update_area_roads(x_min.v, y_min.v, radius);
         map_tiles_update_all_plazas();
-        map_tiles_update_area_walls(x_min, y_min, radius);
-        map_tiles_update_region_aqueducts(x_min - 3, y_min - 3, x_max + 3, y_max + 3);
+        map_tiles_update_area_walls(x_min.v, y_min.v, radius);
+        map_tiles_update_region_aqueducts(x_min.v - 3, y_min.v - 3, x_max.v + 3, y_max.v + 3);
     }
     if (!measure_only) {
         map_routing_update_land();

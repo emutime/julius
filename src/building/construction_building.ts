@@ -775,6 +775,13 @@ export function building_construction_place_building(type: building_type, x: num
     if (b.id <= 0) {
         return 0;
     }
-    add_to_map(type, b, size, building_orientation, waterside_orientation_abs, waterside_orientation_rel);
+    add_to_map(
+        type,
+        b,
+        size,
+        building_orientation,
+        waterside_orientation_abs.v,
+        waterside_orientation_rel.v
+    );
     return 1;
 }

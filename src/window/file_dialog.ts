@@ -24,7 +24,7 @@ import NOT_LOCALIZED = localized.NOT_LOCALIZED;
 import { file_append_extension, file_exists, file_remove_extension } from 'core/file';
 import { group_terrain } from 'core/image_group';
 import { lang_get_string } from 'core/lang';
-import { string_copy, string_equals, string_length } from 'core/string';
+import { string_copy, string_equals, string_from_bytes, string_length } from 'core/string';
 import { time_get_millis, time_millis } from 'core/time';
 import { game_file_delete_saved_game, game_file_load_saved_game, game_file_write_saved_game } from 'game/file';
 import { game_file_editor_load_scenario, game_file_editor_write_scenario } from 'game/file_editor';
@@ -257,9 +257,10 @@ function button_ok_cancel(is_ok: number, param2: number) {
         data.message_not_exist_start_time = time_get_millis();
         return;
     }
+    const filename_str = string_from_bytes(filename);
     if (data.dialog_type == FILE_DIALOG_LOAD) {
         if (data.type == FILE_TYPE_SAVED_GAME) {
-            if (game_file_load_saved_game(filename)) {
+            if (game_file_load_saved_game(filename_str)) {
                 input_box_stop(file_name_input);
                 window_city_show();
             } else {
@@ -278,14 +279,14 @@ function button_ok_cancel(is_ok: number, param2: number) {
     } else if (data.dialog_type == FILE_DIALOG_SAVE) {
         input_box_stop(file_name_input);
         if (data.type == FILE_TYPE_SAVED_GAME) {
-            game_file_write_saved_game(filename);
+            game_file_write_saved_game(filename_str);
             window_city_show();
         } else if (data.type == FILE_TYPE_SCENARIO) {
             game_file_editor_write_scenario(filename);
             window_editor_map_show();
         }
     } else if (data.dialog_type == FILE_DIALOG_DELETE) {
-        if (game_file_delete_saved_game(filename)) {
+        if (game_file_delete_saved_game(filename_str)) {
             dir_find_files_with_extension(data.file_data.extension);
             if (scrollbar.scroll_position + NUM_FILES_IN_VIEW >= data.file_list.num_files) {
                 --scrollbar.scroll_position;
