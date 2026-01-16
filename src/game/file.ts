@@ -20,6 +20,7 @@ import { image_load_climate, image_load_enemy } from 'core/image';
 import { io_read_file_part_into_buffer } from 'core/io';
 import { lang_get_string } from 'core/lang';
 import { locale_translate_rank_autosaves } from 'core/locale';
+import { string_from_bytes } from 'core/string';
 import { empire_init_scenario, empire_load } from 'empire/empire';
 import { trade_prices_reset } from 'empire/trade_prices';
 import { enemy_armies_clear } from 'figure/enemy_army';
@@ -260,7 +261,7 @@ function start_scenario(scenario_name: number[], scenario_file: string) {
     city_message_init_scenario();
     return 1;
 }
-function get_scenario_filename(scenario_name: number, decomposed: number) {
+function get_scenario_filename(scenario_name: string | ArrayLike<number>, decomposed: number) {
     let filename: char[];
     encoding_to_utf8(scenario_name, filename, FILE_NAME_MAX, decomposed);
     if (!file_has_extension(filename, "map")) {
@@ -268,21 +269,23 @@ function get_scenario_filename(scenario_name: number, decomposed: number) {
     }
     return filename;
 }
-export function game_file_start_scenario_by_name(scenario_name: number[]) {
+export function game_file_start_scenario_by_name(scenario_name: string | ArrayLike<number>) {
     if (start_scenario(scenario_name, get_scenario_filename(scenario_name, 0))) {
         return 1;
     } else {
         return start_scenario(scenario_name, get_scenario_filename(scenario_name, 1));
     }
 }
-export function game_file_start_scenario(scenario_file: string) {
-    let scenario_name: number[];
+export function game_file_start_scenario(scenario_file: string | ArrayLike<number>) {
+    let scenario_name: Uint8Array = new Uint8Array(FILE_NAME_MAX);
     encoding_from_utf8(scenario_file, scenario_name, FILE_NAME_MAX);
     file_remove_extension(scenario_name);
-    return start_scenario(scenario_name, scenario_file);
+    const scenario_file_str = typeof scenario_file === "string" ? scenario_file : string_from_bytes(scenario_file);
+    return start_scenario(scenario_name, scenario_file_str);
 }
-export function game_file_load_scenario_data(scenario_file: string) {
-    if (!game_file_io_read_scenario(scenario_file)) {
+export function game_file_load_scenario_data(scenario_file: string | ArrayLike<number>) {
+    const scenario_file_str = typeof scenario_file === "string" ? scenario_file : string_from_bytes(scenario_file);
+    if (!game_file_io_read_scenario(scenario_file_str)) {
         return 0;
     }
     trade_prices_reset();

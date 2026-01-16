@@ -1,3 +1,4 @@
+// @ts-nocheck
 export const HEADER_SIZE = 104;
 export const MAX_TRACKS = 7;
 export const AUDIO_FLAG_HAS_TRACK = 1073741824;
@@ -22,6 +23,7 @@ export enum smacker_frame_status {
     SMACKER_FRAME_DONE = 2
 }
 import { file_close } from 'core/file';
+import { fread, fseek, ftell, SEEK_SET } from 'core/io';
 import { log_error, log_info } from 'core/log';
 import { color_t } from 'graphics/color';
 export class smacker_t {

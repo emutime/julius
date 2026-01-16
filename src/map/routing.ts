@@ -26,11 +26,12 @@ import { figure } from 'figure/figure';
 import { map_figure_foreach_until } from 'map/figure';
 import { GRID } from 'map/grid';
 import GRID_SIZE = GRID.GRID_SIZE;
+const MAX_QUEUE = GRID_SIZE * GRID_SIZE;
 import { grid_u8 } from 'map/grid';
 import { grid_i8 } from 'map/grid';
 import { grid_i16 } from 'map/grid';
 import { map_grid_is_valid_offset } from 'map/grid';
-import { map_grid_offset } from 'map/grid';
+import { map_grid_delta, map_grid_offset } from 'map/grid';
 import { map_grid_is_inside } from 'map/grid';
 import { map_grid_clear_u8 } from 'map/grid';
 import { map_grid_clear_i16 } from 'map/grid';
@@ -308,7 +309,7 @@ function callback_calc_distance_build_aqueduct(next_offset: number, dist: number
         enqueue(next_offset, dist);
     }
 }
-function map_can_place_initial_road_or_aqueduct(grid_offset: number, is_aqueduct: number) {
+function map_can_place_initial_road_or_aqueduct(grid_offset: number, is_aqueduct: boolean) {
     if (terrain_land_citizen.items[grid_offset] == CITIZEN_N1_BLOCKED) {
         if (!is_aqueduct) {
             return 0;

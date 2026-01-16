@@ -245,7 +245,7 @@ export function map_orientation_for_triumphal_arch(x: number, y: number) {
 }
 export function map_orientation_update_buildings() {
     let map_orientation: number = city_view_orientation();
-    let orientation_is_top_bottom: number = map_orientation == DIR_0_TOP || map_orientation == DIR_4_BOTTOM;
+    let orientation_is_top_bottom: boolean = map_orientation == DIR_0_TOP || map_orientation == DIR_4_BOTTOM;
     for (let i: number = 1; i < MAX_BUILDINGS; i++) {
         let b: building = building_get(i);
         if (b.state == BUILDING_STATE_UNUSED || b.state == BUILDING_STATE_DELETED_BY_GAME) {

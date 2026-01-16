@@ -2,6 +2,7 @@
 ;
 import { buffer } from 'core/buffer';
 import { GRID, grid_u16, map_grid_clear_u16, map_grid_copy_u16, map_grid_load_state_u16, map_grid_offset, map_grid_save_state_u16, map_grid_size } from 'map/grid';
+import { Ref } from '../../ext/crt';
 import GRID_SIZE = GRID.GRID_SIZE;
 let images: grid_u16;
 let images_backup: grid_u16;
@@ -24,18 +25,18 @@ export function map_image_clear() {
     map_grid_clear_u16(images.items);
 }
 export function map_image_init_edges() {
-    let width: number
-    let height: number;
+    let width = new Ref<number>(0);
+    let height = new Ref<number>(0);
     map_grid_size(width, height);
-    for (let x: number = 1; x < width; x++) {
-        images.items[map_grid_offset(x, height)] = 1;
+    for (let x: number = 1; x < width.v; x++) {
+        images.items[map_grid_offset(x, height.v)] = 1;
     }
-    for (let y: number = 1; y < height; y++) {
-        images.items[map_grid_offset(width, y)] = 2;
+    for (let y: number = 1; y < height.v; y++) {
+        images.items[map_grid_offset(width.v, y)] = 2;
     }
-    images.items[map_grid_offset(0, height)] = 3;
-    images.items[map_grid_offset(width, 0)] = 4;
-    images.items[map_grid_offset(width, height)] = 5;
+    images.items[map_grid_offset(0, height.v)] = 3;
+    images.items[map_grid_offset(width.v, 0)] = 4;
+    images.items[map_grid_offset(width.v, height.v)] = 5;
 }
 export function map_image_save_state(buf: buffer) {
     map_grid_save_state_u16(images.items, buf);

@@ -1,0 +1,9 @@
+export function window_building_draw_barracks(..._args: any[]): any { return 0; }
+export function window_building_draw_fort(..._args: any[]): any { return 0; }
+export function window_building_draw_gatehouse(..._args: any[]): any { return 0; }
+export function window_building_draw_legion_info(..._args: any[]): any { return 0; }
+export function window_building_draw_legion_info_foreground(..._args: any[]): any { return 0; }
+export function window_building_draw_military_academy(..._args: any[]): any { return 0; }
+export function window_building_draw_tower(..._args: any[]): any { return 0; }
+export function window_building_get_legion_info_tooltip_text(..._args: any[]): any { return 0; }
+export function window_building_handle_mouse_legion_info(..._args: any[]): any { return 0; }

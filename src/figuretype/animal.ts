@@ -156,9 +156,11 @@ function herd_get_destination(index: number, m: formation, x: Ref<number>, y: Re
     let offset_y: number = formation_layout_position_y(FORMATION_HERD, index);
     let destination_x: number = m.destination_x + offset_x;
     let destination_y: number = m.destination_y + offset_y;
-    map_grid_bound(destination_x, destination_y);
-    x.v = destination_x;
-    y.v = destination_y;
+    let destination_x_ref: Ref<number> = new Ref(destination_x);
+    let destination_y_ref: Ref<number> = new Ref(destination_y);
+    map_grid_bound(destination_x_ref, destination_y_ref);
+    x.v = destination_x_ref.v;
+    y.v = destination_y_ref.v;
 }
 export function figure_sheep_action(f: figure) {
     let m: formation = formation_get(f.formation_id);

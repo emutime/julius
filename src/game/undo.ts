@@ -10,6 +10,7 @@ import { image_group } from 'core/image';
 import { group_terrain } from 'core/image_group';
 import { resource_type } from 'game/resource';
 import { window_invalidate } from 'graphics/window';
+import { Ref } from '../../ext/crt';
 import { map_aqueduct_backup, map_aqueduct_restore } from 'map/aqueduct';
 import { map_building_at } from 'map/building';
 import { map_building_tiles_add, map_building_tiles_add_farm } from 'map/building_tiles';
@@ -158,11 +159,11 @@ export function game_undo_restore_building_state() {
     clear_buildings();
 }
 function restore_map_images() {
-    let map_width: number
-    let map_height: number;
+    let map_width: Ref<number> = new Ref(0);
+    let map_height: Ref<number> = new Ref(0);
     map_grid_size(map_width, map_height);
-    for (let y: number = 0; y < map_height; y++) {
-        for (let x: number = 0; x < map_width; x++) {
+    for (let y: number = 0; y < map_height.v; y++) {
+        for (let x: number = 0; x < map_width.v; x++) {
             let grid_offset: number = map_grid_offset(x, y);
             if (!map_building_at(grid_offset)) {
                 map_image_restore_at(grid_offset);

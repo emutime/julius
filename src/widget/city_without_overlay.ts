@@ -33,6 +33,7 @@ import { sound_city_mark_building_view, sound_direction } from 'sound/city';
 import { pixel_coordinate } from 'widget/city';
 import { city_draw_bridge } from 'widget/city_bridge';
 import { city_building_ghost_draw, city_building_ghost_mark_deleting } from 'widget/city_building_ghost';
+import { Ref } from '../../ext/crt';
 import { city_draw_figure, city_draw_selected_figure } from 'widget/city_figure';
 import BUILDING_AMPHITHEATER = building_type.BUILDING_AMPHITHEATER;
 import BUILDING_THEATER = building_type.BUILDING_THEATER;
@@ -154,7 +155,7 @@ function is_multi_tile_terrain(grid_offset: number) {
 function has_adjacent_deletion(grid_offset: number) {
     let size: number = map_property_multi_tile_size(grid_offset);
     let total_adjacent_offsets: number = size * 2 + 1;
-    let adjacent_offset: number = ADJACENT_OFFSETS[size - 2][city_view_orientation() / 2];
+    let adjacent_offset: number[] = ADJACENT_OFFSETS[size - 2][city_view_orientation() / 2];
     for (let i: number = 0; i < total_adjacent_offsets; ++i) {
         if (map_property_is_deleted(grid_offset + adjacent_offset[i]) ||
             draw_building_as_deleted(building_get(map_building_at(grid_offset + adjacent_offset[i])))) {
@@ -175,14 +176,14 @@ function draw_footprint(x: number, y: number, grid_offset: number) {
             if (draw_building_as_deleted(b)) {
                 color_mask = COLOR_MASK_RED;
             }
-            let view_x: number
-            let view_y: number
-            let view_width: number
-            let view_height: number;
+            let view_x = new Ref<number>(0);
+            let view_y = new Ref<number>(0);
+            let view_width = new Ref<number>(0);
+            let view_height = new Ref<number>(0);
             city_view_get_viewport(view_x, view_y, view_width, view_height);
-            if (x < view_x + 100) {
+            if (x < view_x.v + 100) {
                 sound_city_mark_building_view(b, SOUND_DIRECTION_LEFT);
-            } else if (x > view_x + view_width - 100) {
+            } else if (x > view_x.v + view_width.v - 100) {
                 sound_city_mark_building_view(b, SOUND_DIRECTION_RIGHT);
             } else {
                 sound_city_mark_building_view(b, SOUND_DIRECTION_CENTER);
@@ -343,11 +344,15 @@ function draw_figures(x: number, y: number, grid_offset: number) {
         let f: figure = figure_get(figure_id);
         if (figure_id == draw_context.selected_figure_id) {
             if (!f.is_ghost || f.height_adjusted_ticks) {
-                city_draw_selected_figure(f, x, y, draw_context.selected_figure_coord);
+                let x_ref = new Ref<number>(x);
+                let y_ref = new Ref<number>(y);
+                city_draw_selected_figure(f, x_ref, y_ref, draw_context.selected_figure_coord);
             }
         } else if (!f.is_ghost) {
-            let highlight: number = f.formation_id > 0 && f.formation_id == draw_context.highlighted_formation;
-            city_draw_figure(f, x, y, highlight);
+            let highlight: number = (f.formation_id > 0 && f.formation_id == draw_context.highlighted_formation) ? 1 : 0;
+            let x_ref = new Ref<number>(x);
+            let y_ref = new Ref<number>(y);
+            city_draw_figure(f, x_ref, y_ref, highlight);
         }
         figure_id = f.next_figure_id_on_same_tile;
     }
@@ -505,7 +510,9 @@ function draw_elevated_figures(x: number, y: number, grid_offset: number) {
     while (figure_id > 0) {
         let f: figure = figure_get(figure_id);
         if ((f.use_cross_country && !f.is_ghost) || f.height_adjusted_ticks) {
-            city_draw_figure(f, x, y, 0);
+            let x_ref = new Ref<number>(x);
+            let y_ref = new Ref<number>(y);
+            city_draw_figure(f, x_ref, y_ref, 0);
         }
         figure_id = f.next_figure_id_on_same_tile;
     }
@@ -574,7 +581,7 @@ export function city_without_overlay_draw(selected_figure_id: number, figure_coo
         city_view_foreach_valid_map_tile_row(
             draw_elevated_figures,
             draw_hippodrome_ornaments,
-            0
+            null
         );
     } else {
         city_view_foreach_valid_map_tile(deletion_draw_terrain_top);

@@ -2,11 +2,10 @@ import { dir_get_file, localized } from 'core/dir';
 import { set_sound_type, setting_sound } from 'game/settings';
 import { sound_channel } from 'sound/channel';
 import { sound_city_set_volume } from 'sound/city';
-import { CHANNEL_FILENAME_MAX, sound_device_close, sound_device_init_channels, sound_device_open } from 'sound/device';
+import { sound_device_close, sound_device_init_channels, sound_device_open } from 'sound/device';
 import { sound_effect_set_volume } from 'sound/effect';
 import { sound_music_set_volume } from 'sound/music';
 import { sound_speech_set_volume } from 'sound/speech';
-import { strncpy } from '../../ext/crt';
 import MAY_BE_LOCALIZED = localized.MAY_BE_LOCALIZED;
 import SOUND_MUSIC = set_sound_type.SOUND_MUSIC;
 import SOUND_SPEECH = set_sound_type.SOUND_SPEECH;
@@ -168,15 +167,15 @@ let channel_filenames: string[] = [
 ];
 function correct_channel_filenames() {
     for (let i: number = 1; i < SOUND_CHANNEL_MAX; i++) {
-        if (!channel_filenames[i][0]) {
+        if (!channel_filenames[i]) {
             continue
         }
-        let original: char = channel_filenames[i];
-        let corrected: char = dir_get_file(original, MAY_BE_LOCALIZED);
+        let original: string = channel_filenames[i];
+        let corrected: string | null = dir_get_file(original, MAY_BE_LOCALIZED);
         if (!corrected) {
-            channel_filenames[i][0] = 0;
+            channel_filenames[i] = "";
         } else if (corrected != original) {
-            strncpy(original, corrected, CHANNEL_FILENAME_MAX);
+            channel_filenames[i] = corrected;
         }
     }
 }

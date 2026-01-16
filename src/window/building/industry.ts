@@ -1,0 +1,17 @@
+export function window_building_draw_clay_pit(..._args: any[]): any { return 0; }
+export function window_building_draw_fruit_farm(..._args: any[]): any { return 0; }
+export function window_building_draw_furniture_workshop(..._args: any[]): any { return 0; }
+export function window_building_draw_iron_mine(..._args: any[]): any { return 0; }
+export function window_building_draw_marble_quarry(..._args: any[]): any { return 0; }
+export function window_building_draw_oil_workshop(..._args: any[]): any { return 0; }
+export function window_building_draw_olive_farm(..._args: any[]): any { return 0; }
+export function window_building_draw_pig_farm(..._args: any[]): any { return 0; }
+export function window_building_draw_pottery_workshop(..._args: any[]): any { return 0; }
+export function window_building_draw_shipyard(..._args: any[]): any { return 0; }
+export function window_building_draw_timber_yard(..._args: any[]): any { return 0; }
+export function window_building_draw_vegetable_farm(..._args: any[]): any { return 0; }
+export function window_building_draw_vines_farm(..._args: any[]): any { return 0; }
+export function window_building_draw_weapons_workshop(..._args: any[]): any { return 0; }
+export function window_building_draw_wharf(..._args: any[]): any { return 0; }
+export function window_building_draw_wheat_farm(..._args: any[]): any { return 0; }
+export function window_building_draw_wine_workshop(..._args: any[]): any { return 0; }

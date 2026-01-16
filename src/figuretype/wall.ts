@@ -163,7 +163,7 @@ function tower_sentry_pick_target(f: figure) {
         }
     }
 }
-function tower_sentry_init_patrol(b: building, x_tile: number, y_tile: number) {
+function tower_sentry_init_patrol(b: building, x_tile: Ref<number>, y_tile: Ref<number>) {
     let dir: number = b.figure_roam_direction;
     let x: number = b.x;
     let y: number = b.y;
@@ -181,8 +181,10 @@ function tower_sentry_init_patrol(b: building, x_tile: number, y_tile: number) {
             x -= 8
             break
     }
-    map_grid_bound(x, y);
-    if (map_routing_wall_tile_in_radius(x, y, 6, x_tile, y_tile)) {
+    let x_ref: Ref<number> = new Ref(x);
+    let y_ref: Ref<number> = new Ref(y);
+    map_grid_bound(x_ref, y_ref);
+    if (map_routing_wall_tile_in_radius(x_ref.v, y_ref.v, 6, x_tile, y_tile)) {
         b.figure_roam_direction += 2
         if (b.figure_roam_direction > 6) {
             b.figure_roam_direction = 0;
@@ -211,8 +213,10 @@ function tower_sentry_init_patrol(b: building, x_tile: number, y_tile: number) {
                 x -= 3
                 break
         }
-        map_grid_bound(x, y);
-        if (map_routing_wall_tile_in_radius(x, y, 6, x_tile, y_tile)) {
+        x_ref = new Ref(x);
+        y_ref = new Ref(y);
+        map_grid_bound(x_ref, y_ref);
+        if (map_routing_wall_tile_in_radius(x_ref.v, y_ref.v, 6, x_tile, y_tile)) {
             return 1;
         }
     }
@@ -242,12 +246,12 @@ export function figure_tower_sentry_action(f: figure) {
             f.wait_ticks++;
             if (f.wait_ticks > 40) {
                 f.wait_ticks = 0;
-                let x_tile: number
-                let y_tile: number;
+                let x_tile: Ref<number> = new Ref(0);
+                let y_tile: Ref<number> = new Ref(0);
                 if (tower_sentry_init_patrol(b, x_tile, y_tile)) {
                     f.action_state = FIGURE_ACTION_171_TOWER_SENTRY_PATROLLING;
-                    f.destination_x = x_tile;
-                    f.destination_y = y_tile;
+                    f.destination_x = x_tile.v;
+                    f.destination_y = y_tile.v;
                     figure_route_remove(f);
                 }
             }
@@ -335,17 +339,17 @@ export function figure_tower_sentry_reroute() {
         if (f.type != FIGURE_TOWER_SENTRY || map_routing_is_wall_passable(f.grid_offset)) {
             continue
         }
-        let x_tile: number
-        let y_tile: number;
+        let x_tile: Ref<number> = new Ref(0);
+        let y_tile: Ref<number> = new Ref(0);
         if (map_routing_wall_tile_in_radius(f.x, f.y, 2, x_tile, y_tile)) {
             figure_route_remove(f);
             f.progress_on_tile = 0;
             map_figure_delete(f);
-            f.previous_tile_x = f.x = x_tile;
-            f.previous_tile_y = f.y = y_tile;
-            f.cross_country_x = 15 * x_tile;
-            f.cross_country_y = 15 * y_tile;
-            f.grid_offset = map_grid_offset(x_tile, y_tile);
+            f.previous_tile_x = f.x = x_tile.v;
+            f.previous_tile_y = f.y = y_tile.v;
+            f.cross_country_x = 15 * x_tile.v;
+            f.cross_country_y = 15 * y_tile.v;
+            f.grid_offset = map_grid_offset(x_tile.v, y_tile.v);
             map_figure_add(f);
             f.action_state = FIGURE_ACTION_173_TOWER_SENTRY_RETURNING;
             f.destination_x = f.source_x;

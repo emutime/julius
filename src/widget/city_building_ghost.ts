@@ -788,7 +788,7 @@ export function city_building_ghost_mark_deleting(tile: map_tile) {
     let construction_type: number = building_construction_type();
     if (!tile.grid_offset || building_construction_draw_as_constructing() ||
         scroll_in_progress() || construction_type != BUILDING_CLEAR_LAND) {
-        return (construction_type == BUILDING_CLEAR_LAND);
+        return (construction_type == BUILDING_CLEAR_LAND) ? 1 : 0;
     }
     if (!building_construction_in_progress()) {
         map_property_clear_constructing_and_deleted();

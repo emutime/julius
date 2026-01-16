@@ -12,7 +12,7 @@ export class input_box {
     public height_blocks: number = 0;
     public font: font_t = null;
     public allow_punctuation: number = 0;
-    public text: number = 0;
+    public text: string | ArrayLike<number> = "";
     public text_length: number = 0;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.x = args[0]);
@@ -64,11 +64,11 @@ export function input_box_handle_mouse(m: mouse, box: input_box) {
     if (!m.left.went_up) {
         return 0;
     }
-    let selected: number = is_mouse_inside_input(m, box);
+    let selected: boolean = is_mouse_inside_input(m, box);
     if (selected) {
         system_keyboard_show();
     } else {
         system_keyboard_hide();
     }
-    return selected;
+    return selected ? 1 : 0;
 }

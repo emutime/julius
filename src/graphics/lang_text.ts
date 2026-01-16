@@ -6,27 +6,27 @@ import { font_definition_for, font_t } from 'graphics/font';
 import { text_draw, text_draw_centered, text_draw_ellipsized, text_draw_multiline, text_draw_number, text_draw_number_colored, text_get_width } from 'graphics/text';
 ;
 export function lang_text_get_width(group: number, number: number, font: font_t) {
-    let str: number = lang_get_string(group, number);
+    let str: string = lang_get_string(group, number);
     return text_get_width(str, font) + font_definition_for(font).space_width;
 }
 export function lang_text_draw(group: number, number: number, x_offset: number, y_offset: number, font: font_t) {
-    let str: number = lang_get_string(group, number);
+    let str: string = lang_get_string(group, number);
     return text_draw(str, x_offset, y_offset, font, 0);
 }
 export function lang_text_draw_colored(group: number, number: number, x_offset: number, y_offset: number, font: font_t, color: color_t) {
-    let str: number = lang_get_string(group, number);
+    let str: string = lang_get_string(group, number);
     return text_draw(str, x_offset, y_offset, font, color);
 }
 export function lang_text_draw_centered(group: number, number: number, x_offset: number, y_offset: number, box_width: number, font: font_t) {
-    let str: number = lang_get_string(group, number);
+    let str: string = lang_get_string(group, number);
     text_draw_centered(str, x_offset, y_offset, box_width, font, 0);
 }
 export function lang_text_draw_centered_colored(group: number, number: number, x_offset: number, y_offset: number, box_width: number, font: font_t, color: color_t) {
-    let str: number = lang_get_string(group, number);
+    let str: string = lang_get_string(group, number);
     text_draw_centered(str, x_offset, y_offset, box_width, font, color);
 }
 export function lang_text_draw_ellipsized(group: number, number: number, x_offset: number, y_offset: number, box_width: number, font: font_t) {
-    let str: number = lang_get_string(group, number);
+    let str: string = lang_get_string(group, number);
     text_draw_ellipsized(str, x_offset, y_offset, box_width, font, 0);
 }
 export function lang_text_draw_amount(group: number, number: number, amount: number, x_offset: number, y_offset: number, font: font_t) {
@@ -48,7 +48,7 @@ export function lang_text_draw_amount(group: number, number: number, amount: num
 export function lang_text_draw_year(year: number, x_offset: number, y_offset: number, font: font_t) {
     let width: number = 0;
     if (year >= 0) {
-        let use_year_ad: number = locale_year_before_ad();
+        let use_year_ad: boolean = locale_year_before_ad();
         if (use_year_ad) {
             width += text_draw_number(year, ' ', " ", x_offset + width, y_offset, font)
             width += lang_text_draw(20, 1, x_offset + width, y_offset, font)
@@ -76,7 +76,7 @@ export function lang_text_draw_month_year_max_width(month: number, year: number,
     }
     let width: number = negative_padding + lang_text_draw_colored(25, month, x_offset, y_offset, font, color);
     if (year >= 0) {
-        let use_year_ad: number = locale_year_before_ad();
+        let use_year_ad: boolean = locale_year_before_ad();
         if (use_year_ad) {
             width += negative_padding +
                 text_draw_number_colored(year, ' ', " ", x_offset + width, y_offset, font, color)
@@ -91,6 +91,6 @@ export function lang_text_draw_month_year_max_width(month: number, year: number,
     }
 }
 export function lang_text_draw_multiline(group: number, number: number, x_offset: number, y_offset: number, box_width: number, font: font_t) {
-    let str: number = lang_get_string(group, number);
+    let str: string = lang_get_string(group, number);
     return text_draw_multiline(str, x_offset, y_offset, box_width, font, 0);
 }

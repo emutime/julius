@@ -39,7 +39,7 @@ export function malloc(size: number): Uint8Array {
     return new Uint8Array(size);
 }
 
-export function free(buffer: Uint8Array): void {
+export function free(buffer: any): void {
 }
 
 export function memset(ptr: any, value: number, size?: number): void {

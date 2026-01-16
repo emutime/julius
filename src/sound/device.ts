@@ -3,7 +3,7 @@ export const CHANNEL_FILENAME_MAX = 32;
 export function sound_device_open(): void {}
 export function sound_device_close(): void {}
 
-export function sound_device_init_channels(num_channels: number, filenames: string[][]): void {}
+export function sound_device_init_channels(num_channels: number, filenames: string[]): void {}
 export function sound_device_is_channel_playing(channel: number): number { return 0; }
 
 export function sound_device_set_music_volume(volume_pct: number): void {}

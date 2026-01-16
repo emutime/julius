@@ -254,7 +254,7 @@ function handle_emulated_mouse_clicks() {
     mouse_reset_scroll();
     switch (data.touchpad_mode_click_type) {
         case EMULATED_MOUSE_CLICK_LEFT:
-            mouse_set_left_down(0);
+            mouse_set_left_down(false);
             break;
         case EMULATED_MOUSE_CLICK_RIGHT:
             mouse_set_right_down(0);
@@ -277,7 +277,7 @@ function handle_mouse_touchpad() {
     }
     if (any_touch_went_up()) {
         if (num_fingers == 1 && touch_was_click(touch_get_earliest())) {
-            mouse_set_left_down(1);
+            mouse_set_left_down(true);
             mouse_determine_button_state();
             data.touchpad_mode_click_type = EMULATED_MOUSE_CLICK_LEFT;
         } else if (num_fingers == 2 &&

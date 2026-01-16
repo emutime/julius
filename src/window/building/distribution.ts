@@ -1,0 +1,16 @@
+export function window_building_draw_dock(..._args: any[]): any { return 0; }
+export function window_building_draw_granary(..._args: any[]): any { return 0; }
+export function window_building_draw_granary_foreground(..._args: any[]): any { return 0; }
+export function window_building_draw_granary_orders(..._args: any[]): any { return 0; }
+export function window_building_draw_granary_orders_foreground(..._args: any[]): any { return 0; }
+export function window_building_draw_market(..._args: any[]): any { return 0; }
+export function window_building_draw_warehouse(..._args: any[]): any { return 0; }
+export function window_building_draw_warehouse_foreground(..._args: any[]): any { return 0; }
+export function window_building_draw_warehouse_orders(..._args: any[]): any { return 0; }
+export function window_building_draw_warehouse_orders_foreground(..._args: any[]): any { return 0; }
+export function window_building_get_tooltip_granary_orders(..._args: any[]): any { return 0; }
+export function window_building_get_tooltip_warehouse_orders(..._args: any[]): any { return 0; }
+export function window_building_handle_mouse_granary(..._args: any[]): any { return 0; }
+export function window_building_handle_mouse_granary_orders(..._args: any[]): any { return 0; }
+export function window_building_handle_mouse_warehouse(..._args: any[]): any { return 0; }
+export function window_building_handle_mouse_warehouse_orders(..._args: any[]): any { return 0; }

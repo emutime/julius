@@ -149,7 +149,7 @@ export function map_routing_get_closest_tile_within_range(src_x: number, src_y: 
     }
     return 0;
 }
-export function map_routing_get_path_on_water(path: number, dst_x: number, dst_y: number, is_flotsam: number) {
+export function map_routing_get_path_on_water(path: number[], dst_x: number, dst_y: number, is_flotsam: number) {
     let rand: number = random_byte() & 3;
     let dst_grid_offset: number = map_grid_offset(dst_x, dst_y);
     let distance: number = map_routing_distance(dst_grid_offset);
@@ -158,19 +158,19 @@ export function map_routing_get_path_on_water(path: number, dst_x: number, dst_y
     }
     let num_tiles: number = 0;
     let last_direction: number = -1;
-    let x: number = dst_x;
-    let y: number = dst_y;
-    let grid_offset: number = dst_grid_offset;
+    let x: Ref<number> = new Ref<number>(dst_x);
+    let y: Ref<number> = new Ref<number>(dst_y);
+    let grid_offset: Ref<number> = new Ref<number>(dst_grid_offset);
     while (distance > 1) {
         let current_rand: number = rand;
-        distance = map_routing_distance(grid_offset);
+        distance = map_routing_distance(grid_offset.v);
         if (is_flotsam) {
-            current_rand = map_random_get(grid_offset) & 3;
+            current_rand = map_random_get(grid_offset.v) & 3;
         }
         let direction: number = -1;
         for (let d: number = 0; d < 8; d++) {
             if (d != last_direction) {
-                let next_offset: number = grid_offset + map_grid_direction_delta(d);
+                let next_offset: number = grid_offset.v + map_grid_direction_delta(d);
                 let next_distance: number = map_routing_distance(next_offset);
                 if (next_distance) {
                     if (next_distance < distance) {

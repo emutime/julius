@@ -1,0 +1,10 @@
+export function window_building_draw_burning_ruin(..._args: any[]): any { return 0; }
+export function window_building_draw_engineers_post(..._args: any[]): any { return 0; }
+export function window_building_draw_fountain(..._args: any[]): any { return 0; }
+export function window_building_draw_mission_post(..._args: any[]): any { return 0; }
+export function window_building_draw_native_crops(..._args: any[]): any { return 0; }
+export function window_building_draw_native_hut(..._args: any[]): any { return 0; }
+export function window_building_draw_native_meeting(..._args: any[]): any { return 0; }
+export function window_building_draw_prefect(..._args: any[]): any { return 0; }
+export function window_building_draw_reservoir(..._args: any[]): any { return 0; }
+export function window_building_draw_well(..._args: any[]): any { return 0; }

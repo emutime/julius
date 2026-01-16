@@ -24,7 +24,7 @@ import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 export function map_can_place_road_under_aqueduct(grid_offset: number) {
     let image_id: number = map_image_at(grid_offset) - image_group(GROUP_BUILDING_AQUEDUCT);
-    let check_y: number;
+    let check_y: boolean;
     switch (image_id) {
         case 0:
         case 2:
@@ -32,7 +32,7 @@ export function map_can_place_road_under_aqueduct(grid_offset: number) {
         case 15:
         case 17:
         case 23:
-            check_y = 1;
+            check_y = true;
             break
         case 1:
         case 3:
@@ -50,7 +50,7 @@ export function map_can_place_road_under_aqueduct(grid_offset: number) {
         case 27:
         case 28:
         case 29:
-            check_y = 0;
+            check_y = false;
             break
         default: // not a straight aqueduct
             return 0
@@ -88,7 +88,7 @@ export function map_can_place_aqueduct_on_road(grid_offset: number) {
     if (image_id != 0 && image_id != 1 && image_id != 49 && image_id != 50) {
         return 0;
     }
-    let check_y: number = image_id == 0 || image_id == 49;
+    let check_y: boolean = image_id == 0 || image_id == 49;
     if (city_view_orientation() == DIR_6_LEFT || city_view_orientation() == DIR_2_RIGHT) {
         check_y = !check_y;
     }

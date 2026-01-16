@@ -116,17 +116,16 @@ export function string_to_int(str: PtrBuffer) {
     }
     return result;
 }
-export function string_from_int(dst: number, value: number, force_plus_sign: number) {
+export function string_from_int(dst: ArrayLike<number> & { [index: number]: number }, value: number, force_plus_sign: number) {
     let total_chars: number = 0;
+    let dst_offset: number = 0;
     if (value >= 0) {
         if (force_plus_sign) {
-            dst[0] = '+';
-            dst++;
+            dst[dst_offset++] = '+'.charCodeAt(0);
             total_chars = 1;
         }
     } else {
-        dst[0] = '-';
-        dst++;
+        dst[dst_offset++] = '-'.charCodeAt(0);
         value = -value;
         total_chars = 1;
     }
@@ -153,9 +152,9 @@ export function string_from_int(dst: number, value: number, force_plus_sign: num
         num_digits = 0;
     }
     total_chars += num_digits;
-    dst[num_digits] = 0;
+    dst[dst_offset + num_digits] = 0;
     while (--num_digits >= 0) {
-        dst[num_digits] = Math.floor(value % 10 + '0'.charCodeAt(0));
+        dst[dst_offset + num_digits] = Math.floor(value % 10 + '0'.charCodeAt(0));
         value = Math.floor(value / 10);
     }
     return total_chars;

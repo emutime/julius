@@ -21,6 +21,7 @@ import { sound_city_decay_views } from 'sound/city';
 import { sound_effect, sound_effect_play } from 'sound/effect';
 import { city_draw_figure } from 'widget/city_figure';
 import { map_editor_tool_draw } from 'widget/map_editor_tool';
+import { Ref } from '../../ext/crt';
 import GROUP_TERRAIN_BLACK = group_terrain.GROUP_TERRAIN_BLACK;
 import GROUP_TERRAIN_WATER = group_terrain.GROUP_TERRAIN_WATER;
 import SCROLL_TYPE_CITY = scroll_type.SCROLL_TYPE_CITY;
@@ -93,18 +94,20 @@ function draw_flags(x: number, y: number, grid_offset: number) {
     while (figure_id) {
         let f: figure = figure_get(figure_id);
         if (!f.is_ghost) {
-            city_draw_figure(f, x, y, 0);
+            let x_ref = new Ref<number>(x);
+            let y_ref = new Ref<number>(y);
+            city_draw_figure(f, x_ref, y_ref, 0);
         }
         figure_id = f.next_figure_id_on_same_tile;
     }
 }
 function set_city_clip_rectangle() {
-    let x: number
-    let y: number
-    let width: number
-    let height: number;
+    let x = new Ref<number>(0);
+    let y = new Ref<number>(0);
+    let width = new Ref<number>(0);
+    let height = new Ref<number>(0);
     city_view_get_viewport(x, y, width, height);
-    graphics_set_clip_rectangle(x, y, width, height);
+    graphics_set_clip_rectangle(x.v, y.v, width.v, height.v);
 }
 export function widget_map_editor_draw() {
     set_city_clip_rectangle();
@@ -115,7 +118,7 @@ export function widget_map_editor_draw() {
     graphics_reset_clip_rectangle();
 }
 function update_city_view_coords(x: number, y: number, tile: map_tile) {
-    let view: view_tile;
+    let view: view_tile = new pixel_offset();
     if (city_view_pixels_to_view_tile(x, y, view)) {
         tile.grid_offset = city_view_tile_to_grid_offset(view);
         city_view_set_selected_view_tile(view);
@@ -126,31 +129,31 @@ function update_city_view_coords(x: number, y: number, tile: map_tile) {
     }
 }
 function scroll_map(m: mouse) {
-    let delta: pixel_offset;
+    let delta: pixel_offset = new pixel_offset();
     if (scroll_get_delta(m, delta, SCROLL_TYPE_CITY)) {
         city_view_scroll(delta.x, delta.y);
         sound_city_decay_views();
     }
 }
 function input_coords_in_map(x: number, y: number) {
-    let x_offset: number
-    let y_offset: number
-    let width: number
-    let height: number;
+    let x_offset = new Ref<number>(0);
+    let y_offset = new Ref<number>(0);
+    let width = new Ref<number>(0);
+    let height = new Ref<number>(0);
     city_view_get_viewport(x_offset, y_offset, width, height);
-    x -= x_offset
-    y -= y_offset
-    return (x >= 0 && x < width & y >= 0 && y < height);
+    x -= x_offset.v
+    y -= y_offset.v
+    return (x >= 0 && x < width.v && y >= 0 && y < height.v);
 }
 function handle_touch_scroll(t: touch) {
     if (editor_tool_is_active()) {
         if (t.has_started) {
-            let x_offset: number
-            let y_offset: number
-            let width: number
-            let height: number;
+            let x_offset = new Ref<number>(0);
+            let y_offset = new Ref<number>(0);
+            let width = new Ref<number>(0);
+            let height = new Ref<number>(0);
             city_view_get_viewport(x_offset, y_offset, width, height);
-            scroll_set_custom_margins(x_offset, y_offset, width, height);
+            scroll_set_custom_margins(x_offset.v, y_offset.v, width.v, height.v);
         }
         if (t.has_ended) {
             scroll_restore_margins();
@@ -183,14 +186,14 @@ function handle_cancel_construction_button(t: touch) {
     if (!editor_tool_is_active()) {
         return 0;
     }
-    let x: number
-    let y: number
-    let width: number
-    let height: number;
+    let x = new Ref<number>(0);
+    let y = new Ref<number>(0);
+    let width = new Ref<number>(0);
+    let height = new Ref<number>(0);
     city_view_get_viewport(x, y, width, height);
     let box_size: number = 5 * BLOCK_SIZE;
-    width -= box_size
-    if (t.current_point.x < width || t.current_point.x >= width + box_size ||
+    width.v -= box_size
+    if (t.current_point.x < width.v || t.current_point.x >= width.v + box_size ||
         t.current_point.y < 24 || t.current_point.y >= 40 + box_size) {
         return 0;
     }

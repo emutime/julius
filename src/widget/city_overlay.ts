@@ -1,7 +1,7 @@
 
 import { building } from 'building/building';
 import { figure } from 'figure/figure';
-import { tooltip_type } from 'graphics/tooltip';
+import { tooltip_context, tooltip_type } from 'graphics/tooltip';
 export const NO_COLUMN = -1;
 
 export const enum column_type {
@@ -11,13 +11,13 @@ export const enum column_type {
 export class city_overlay {
     public type: number = 0;
     public column_type: number = 0;
-    public show_building: (b: building) => void = null;
-    public show_figure: (f: figure) => void = null;
-    public get_column_height: () => number = null;
-    public get_tooltip_for_grid_offset: (offset: number) => tooltip_type = null;
-    public get_tooltip_for_building: (b: building) => tooltip_type = null;
+    public show_building: (b: building) => number = null;
+    public show_figure: (f: figure) => number = null;
+    public get_column_height: (b: building) => number = null;
+    public get_tooltip_for_grid_offset: (c: tooltip_context, offset: number) => tooltip_type = null;
+    public get_tooltip_for_building: (c: tooltip_context, b: building) => tooltip_type = null;
     public draw_custom_footprint: (x: number, y: number, grid_offset: number) => void = null;
-    public draw_custom_top: () => void = null;
+    public draw_custom_top: (x: number, y: number, grid_offset: number) => void = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.type = args[0]);
         args.length >= 2 && (this.column_type = args[1]);

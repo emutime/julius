@@ -1,4 +1,5 @@
 import { encoding_japanese_sjis_to_image_id, encoding_trad_chinese_big5_to_image_id, encoding_type } from 'core/encoding';
+import { string_from_bytes } from 'core/string';
 import { IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS, IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS, IMAGE_FONT_MULTIBYTE_OFFSET, IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS, IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS } from 'core/image';
 import { Ref } from '../../ext/crt';
 import ENCODING_EASTERN_EUROPE = encoding_type.ENCODING_EASTERN_EUROPE;
@@ -546,13 +547,14 @@ export function font_can_display(character: string) {
 }
 
 // todo
-export function font_letter_id(def: font_definition, str: string, num_bytes: Ref<number>, strIndex: number = 0) {
-    if (data.multibyte != MULTIBYTE_NONE && str.charCodeAt(strIndex) >= 0x80) {
+export function font_letter_id(def: font_definition, str: string | ArrayLike<number>, num_bytes: Ref<number>, strIndex: number = 0) {
+    const text = typeof str === "string" ? str : string_from_bytes(str);
+    if (data.multibyte != MULTIBYTE_NONE && text.charCodeAt(strIndex) >= 0x80) {
         num_bytes.v = 2;
         if (data.multibyte == MULTIBYTE_TRADITIONAL_CHINESE) {
-            let char_id: number = (str.charCodeAt(strIndex) & 0x7f) | ((str.charCodeAt(strIndex + 1) & 0x7f) << 7);
+            let char_id: number = (text.charCodeAt(strIndex) & 0x7f) | ((text.charCodeAt(strIndex + 1) & 0x7f) << 7);
             if (char_id >= IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS) {
-                let big5_encoded: number = str.charCodeAt(strIndex) << 8 | str.charCodeAt(strIndex + 1);
+                let big5_encoded: number = text.charCodeAt(strIndex) << 8 | text.charCodeAt(strIndex + 1);
                 char_id = encoding_trad_chinese_big5_to_image_id(big5_encoded);
                 if (char_id < 0 || char_id >= IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS) {
                     return -1;
@@ -560,14 +562,14 @@ export function font_letter_id(def: font_definition, str: string, num_bytes: Ref
             }
             return IMAGE_FONT_MULTIBYTE_OFFSET + def.multibyte_image_offset + char_id;
         } else if (data.multibyte == MULTIBYTE_SIMPLIFIED_CHINESE) {
-            let char_id: number = (str.charCodeAt(strIndex) & 0x7f) | ((str.charCodeAt(strIndex + 1) & 0x7f) << 7);
+            let char_id: number = (text.charCodeAt(strIndex) & 0x7f) | ((text.charCodeAt(strIndex + 1) & 0x7f) << 7);
             if (char_id >= IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS) {
                 return -1;
             }
             return IMAGE_FONT_MULTIBYTE_OFFSET + def.multibyte_image_offset + char_id;
         } else if (data.multibyte == MULTIBYTE_KOREAN) {
-            let b0: number = str.charCodeAt(strIndex) - 0xb0;
-            let b1: number = str.charCodeAt(strIndex + 1) - 0xa1;
+            let b0: number = text.charCodeAt(strIndex) - 0xb0;
+            let b1: number = text.charCodeAt(strIndex + 1) - 0xa1;
             let char_id: number = b0 * 94 + b1;
             if (b0 < 0 || b1 < 0 || char_id < 0 || char_id >= IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS) {
                 return -1;
@@ -575,11 +577,11 @@ export function font_letter_id(def: font_definition, str: string, num_bytes: Ref
             return IMAGE_FONT_MULTIBYTE_OFFSET + def.multibyte_image_offset + char_id;
         } else if (data.multibyte == MULTIBYTE_JAPANESE) {
             let char_id: number;
-            if (str.charCodeAt(0) >= 0xa0 && str.charCodeAt(0) < 0xe0) {
+            if (text.charCodeAt(0) >= 0xa0 && text.charCodeAt(0) < 0xe0) {
                 num_bytes.v = 1;
-                char_id = encoding_japanese_sjis_to_image_id(str.charCodeAt(0), 0);
+                char_id = encoding_japanese_sjis_to_image_id(text.charCodeAt(0), 0);
             } else {
-                char_id = encoding_japanese_sjis_to_image_id(str.charCodeAt(0), str.charCodeAt(1));
+                char_id = encoding_japanese_sjis_to_image_id(text.charCodeAt(0), text.charCodeAt(1));
             }
             if (char_id == -1) {
                 return -1;
@@ -590,9 +592,9 @@ export function font_letter_id(def: font_definition, str: string, num_bytes: Ref
         }
     } else {
         num_bytes.v = 1;
-        if (!data.font_mapping[str]) {
+        if (!data.font_mapping[text.charCodeAt(strIndex)]) {
             return -1;
         }
-        return data.font_mapping[str] + def.image_offset - 1;
+        return data.font_mapping[text.charCodeAt(strIndex)] + def.image_offset - 1;
     }
 }

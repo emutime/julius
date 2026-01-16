@@ -128,7 +128,7 @@ function decrease_queue_index() {
 }
 function reset_input() {
     mouse_reset_button_state();
-    reset_touches(1);
+    reset_touches(true);
     scroll_stop();
 }
 export function window_invalidate() {
@@ -178,7 +178,7 @@ function update_input_before() {
     hotkey_handle_global_keys();
 }
 function update_input_after() {
-    reset_touches(0);
+    reset_touches(false);
     mouse_reset_scroll();
     input_cursor_update(data.current_window.id);
     hotkey_reset_state();

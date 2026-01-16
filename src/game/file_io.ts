@@ -12,6 +12,7 @@ import { city_view_load_scenario_state, city_view_load_state, city_view_save_sce
 import { buffer, buffer_init, buffer_read_i32, buffer_reset, buffer_skip, buffer_write_i32 } from 'core/buffer';
 import { dir_get_file, localized } from 'core/dir';
 import { file_close, file_open, file_remove } from 'core/file';
+import { fseek, fread, fwrite, SEEK_SET } from 'core/io';
 import { log_error, log_info } from 'core/log';
 import { random_load_state, random_save_state } from 'core/random';
 import { zip_compress, zip_decompress } from 'core/zip';
@@ -596,22 +597,25 @@ export function game_file_io_write_scenario(filename: string) {
     return 1;
 }
 function read_int32(fp: any) {
-    let data: number[];
+    let data: Uint8Array = new Uint8Array(4);
     if (fread(data, 1, 4, fp) != 4) {
         return 0;
     }
-    let buf: buffer;
+    let buf: buffer = new buffer();
     buffer_init(buf, data, 4);
     return buffer_read_i32(buf);
 }
 function write_int32(fp: any, value: number) {
-    let data: number[];
-    let buf: buffer;
+    let data: Uint8Array = new Uint8Array(4);
+    let buf: buffer = new buffer();
     buffer_init(buf, data, 4);
     buffer_write_i32(buf, value);
     fwrite(data, 1, 4, fp);
 }
-function read_compressed_chunk(fp: any, buffer: void, bytes_to_read: number) {
+function read_compressed_chunk(fp: any, buffer: ArrayBufferView, bytes_to_read: number) {
+    const byte_buffer = buffer instanceof Uint8Array
+        ? buffer
+        : new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
     if (bytes_to_read > COMPRESS_BUFFER_SIZE) {
         return 0;
     }
@@ -622,18 +626,21 @@ function read_compressed_chunk(fp: any, buffer: void, bytes_to_read: number) {
         }
     } else {
         if (fread(compress_buffer, 1, input_size, fp) != input_size
-            || !zip_decompress(compress_buffer, input_size, buffer, bytes_to_read)) {
+            || !zip_decompress(compress_buffer, input_size, byte_buffer, bytes_to_read)) {
             return 0;
         }
     }
     return 1;
 }
-function write_compressed_chunk(fp: any, buffer: void, bytes_to_write: number) {
+function write_compressed_chunk(fp: any, buffer: ArrayBufferView, bytes_to_write: number) {
+    const byte_buffer = buffer instanceof Uint8Array
+        ? buffer
+        : new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
     if (bytes_to_write > COMPRESS_BUFFER_SIZE) {
         return 0;
     }
     let output_size: number = COMPRESS_BUFFER_SIZE;
-    if (zip_compress(buffer, bytes_to_write, compress_buffer, output_size)) {
+    if (zip_compress(byte_buffer, bytes_to_write, compress_buffer, output_size)) {
         write_int32(fp, output_size);
         fwrite(compress_buffer, 1, output_size, fp);
     } else {
@@ -649,7 +656,7 @@ function savegame_read_from_file(fp: any) {
         if (piece.compressed) {
             result = read_compressed_chunk(fp, piece.buf.data, piece.buf.size);
         } else {
-            result = fread(piece.buf.data, 1, piece.buf.size, fp) == piece.buf.size;
+            result = fread(piece.buf.data, 1, piece.buf.size, fp) == piece.buf.size ? 1 : 0;
         }
         if (!result && i != (savegame_data.num_pieces - 1)) {
             return 0;
@@ -687,7 +694,7 @@ export function game_file_io_read_saved_game(filename: string, offset: number) {
     savegame_load_from_state(savegame_data.state);
     return 1;
 }
-export function game_file_io_write_saved_game(filename: char) {
+export function game_file_io_write_saved_game(filename: string) {
     init_savegame_data();
     log_info("Saving game", filename, 0);
     savegame_version = SAVE_GAME_VERSION;
@@ -701,7 +708,7 @@ export function game_file_io_write_saved_game(filename: char) {
     file_close(fp);
     return 1;
 }
-export function game_file_io_delete_saved_game(filename: char) {
+export function game_file_io_delete_saved_game(filename: string) {
     log_info("Deleting game", filename, 0);
     let result: number = file_remove(filename);
     if (!result) {

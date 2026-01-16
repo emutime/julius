@@ -17,6 +17,7 @@ import { map_property_clear_constructing, map_property_clear_plaza_or_earthquake
 import { map_random_get } from 'map/random';
 import { map_terrain_add, map_terrain_count_directly_adjacent_with_type, map_terrain_exists_clear_tile_in_radius, map_terrain_exists_tile_in_radius_with_type, map_terrain_get, map_terrain_has_only_meadow_in_ring, map_terrain_has_only_rocks_trees_in_ring, map_terrain_is, map_terrain_remove, map_terrain_set, terrain } from 'map/terrain';
 import { scenario_map_entry, scenario_map_exit } from 'scenario/map';
+import { Ref } from '../../ext/crt';
 import DIR_0_TOP = direction_type.DIR_0_TOP;
 import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
 import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
@@ -62,6 +63,10 @@ import TERRAIN_NOT_CLEAR = terrain.TERRAIN_NOT_CLEAR;
 import TERRAIN_CLEARABLE = terrain.TERRAIN_CLEARABLE;
 import TERRAIN_ALL = terrain.TERRAIN_ALL;
 import { map_data_t } from './data';
+const FORBIDDEN_TERRAIN_MEADOW = TERRAIN_AQUEDUCT | TERRAIN_ELEVATION | TERRAIN_ACCESS_RAMP |
+    TERRAIN_RUBBLE | TERRAIN_ROAD | TERRAIN_BUILDING | TERRAIN_GARDEN;
+const FORBIDDEN_TERRAIN_RUBBLE = TERRAIN_AQUEDUCT | TERRAIN_ELEVATION | TERRAIN_ACCESS_RAMP |
+    TERRAIN_ROAD | TERRAIN_BUILDING | TERRAIN_GARDEN;
 let aqueduct_include_construction: number = 0;
 let elevation_recalculate_trees: number = 0;
 
@@ -96,14 +101,18 @@ function foreach_map_tile(callback: (x: number, y: number, grid_offset: number) 
     }
 }
 function foreach_region_tile(x_min: number, y_min: number, x_max: number, y_max: number, callback: (x: number, y: number, grid_offset: number) => void) {
-    map_grid_bound_area(x_min, y_min, x_max, y_max);
-    let grid_offset: number = map_grid_offset(x_min, y_min);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    let x_min_ref = new Ref<number>(x_min);
+    let y_min_ref = new Ref<number>(y_min);
+    let x_max_ref = new Ref<number>(x_max);
+    let y_max_ref = new Ref<number>(y_max);
+    map_grid_bound_area(x_min_ref, y_min_ref, x_max_ref, y_max_ref);
+    let grid_offset: number = map_grid_offset(x_min_ref.v, y_min_ref.v);
+    for (let yy: number = y_min_ref.v; yy <= y_max_ref.v; yy++) {
+        for (let xx: number = x_min_ref.v; xx <= x_max_ref.v; xx++) {
             callback(xx, yy, grid_offset);
             ++grid_offset;
         }
-        grid_offset += GRID_SIZE - (x_max - x_min + 1)
+        grid_offset += GRID_SIZE - (x_max_ref.v - x_min_ref.v + 1)
     }
 }
 function is_all_terrain_in_area(x: number, y: number, size: number, terrain: number) {
@@ -286,8 +295,7 @@ function is_tile_plaza(grid_offset: number) {
     return 0;
 }
 function is_two_tile_square_plaza(grid_offset: number) {
-    return
-    is_tile_plaza(grid_offset + map_grid_delta(1, 0)) &&
+    return is_tile_plaza(grid_offset + map_grid_delta(1, 0)) &&
         is_tile_plaza(grid_offset + map_grid_delta(0, 1)) &&
         is_tile_plaza(grid_offset + map_grid_delta(1, 1));
 }
@@ -1098,30 +1106,30 @@ export function map_tiles_add_entry_exit_flags() {
     }
     if (entry_orientation >= 0) {
         let grid_offset: number = map_grid_offset(entry_point.x, entry_point.y);
-        let x_tile: number
-        let y_tile: number;
+        let x_tile = new Ref<number>(0);
+        let y_tile = new Ref<number>(0);
         for (let i: number = 1; i < 10; i++) {
             if (map_terrain_exists_clear_tile_in_radius(entry_point.x, entry_point.y,
                 1, i, grid_offset, x_tile, y_tile)) {
                 break
             }
         }
-        let grid_offset_flag: number = city_map_set_entry_flag(x_tile, y_tile);
+        let grid_offset_flag: number = city_map_set_entry_flag(x_tile.v, y_tile.v);
         map_terrain_add(grid_offset_flag, TERRAIN_ROCK);
         let orientation: number = (city_view_orientation() + entry_orientation) % 8;
         map_image_set(grid_offset_flag, image_group(GROUP_TERRAIN_ENTRY_EXIT_FLAGS) + orientation / 2);
     }
     if (exit_orientation >= 0) {
         let grid_offset: number = map_grid_offset(exit_point.x, exit_point.y);
-        let x_tile: number
-        let y_tile: number;
+        let x_tile = new Ref<number>(0);
+        let y_tile = new Ref<number>(0);
         for (let i: number = 1; i < 10; i++) {
             if (map_terrain_exists_clear_tile_in_radius(exit_point.x, exit_point.y,
                 1, i, grid_offset, x_tile, y_tile)) {
                 break
             }
         }
-        let grid_offset_flag: number = city_map_set_exit_flag(x_tile, y_tile);
+        let grid_offset_flag: number = city_map_set_exit_flag(x_tile.v, y_tile.v);
         map_terrain_add(grid_offset_flag, TERRAIN_ROCK);
         let orientation: number = (city_view_orientation() + exit_orientation) % 8;
         map_image_set(grid_offset_flag, image_group(GROUP_TERRAIN_ENTRY_EXIT_FLAGS) + 4 + orientation / 2);

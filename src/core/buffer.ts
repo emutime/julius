@@ -72,7 +72,7 @@ export function buffer_write_i32(buf: buffer, value: number) {
         buf.data[buf.index++] = (value >> 24) & 0xff;
     }
 }
-export function buffer_write_raw(buf: buffer, value: Uint8Array, size: number) {
+export function buffer_write_raw(buf: buffer, value: ArrayBufferView, size: number) {
     if (check_size(buf, size)) {
         memcpy(buf.data[buf.index], value, size);
         buf.index += size
@@ -132,7 +132,7 @@ export function buffer_read_i32(buf: buffer) {
         return 0;
     }
 }
-export function buffer_read_raw(buf: buffer, value: Uint8Array, max_size: number) {
+export function buffer_read_raw(buf: buffer, value: ArrayBufferView, max_size: number) {
     let size: number = buf.size - buf.index;
     if (size > max_size) {
         size = max_size;

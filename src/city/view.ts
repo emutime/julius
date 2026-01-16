@@ -524,7 +524,7 @@ export function city_view_foreach_valid_map_tile(callback: map_callback) {
         y_view++;
     }
 }
-export function city_view_foreach_valid_map_tile_row(callback1: map_callback, callback2: map_callback, callback3: map_callback) {
+export function city_view_foreach_valid_map_tile_row(callback1: map_callback | null, callback2: map_callback | null, callback3: map_callback | null) {
     let odd: number = 0;
     let y_view: number = data.camera.tile.y - 8;
     let y_graphic: number = data.viewport.y - 9 * HALF_TILE_HEIGHT_PIXELS - data.camera.pixel.y;

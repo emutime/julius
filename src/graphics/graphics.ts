@@ -187,7 +187,7 @@ export function graphics_get_clip_info(x: number, y: number, width: number, heig
     }
     return clip;
 }
-export function graphics_save_to_buffer(x: number, y: number, width: number, height: number, buffer: color_t) {
+export function graphics_save_to_buffer(x: number, y: number, width: number, height: number, buffer: color_t[]) {
     let current_clip: clip_info = graphics_get_clip_info(x, y, width, height);
     if (!current_clip.is_visible) {
         return;
@@ -199,7 +199,7 @@ export function graphics_save_to_buffer(x: number, y: number, width: number, hei
         memcpy(buffer[dy * width], graphics_get_pixel(min_x, y + dy), current_clip.visible_pixels_x);
     }
 }
-export function graphics_draw_from_buffer(x: number, y: number, width: number, height: number, buffer: color_t) {
+export function graphics_draw_from_buffer(x: number, y: number, width: number, height: number, buffer: color_t[]) {
     let current_clip: clip_info = graphics_get_clip_info(x, y, width, height);
     if (!current_clip.is_visible) {
         return;

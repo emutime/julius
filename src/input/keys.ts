@@ -186,20 +186,20 @@ export function key_combination_from_name(name: string, key: key_type, modifiers
     let editable_name: string = name;
     key = KEY_TYPE_NONE;
     modifiers = KEY_MOD_NONE;
-    let token: string = strtok(editable_name, " ");
-    while (token) {
-        if (token[0]) {
-            let mod = parse_modifier(token);
-            if (mod != KEY_MOD_NONE) {
-                modifiers |= mod;
-            } else {
-                key = parse_key(token);
-                if (key == KEY_TYPE_NONE) {
-                    return 0;
-                }
+    let tokens: string[] = editable_name.split(" ");
+    for (let token of tokens) {
+        if (!token) {
+            continue;
+        }
+        let mod = parse_modifier(token);
+        if (mod != KEY_MOD_NONE) {
+            modifiers |= mod;
+        } else {
+            key = parse_key(token);
+            if (key == KEY_TYPE_NONE) {
+                return 0;
             }
         }
-        token = strtok(0, " ");
     }
     if (key == KEY_TYPE_NONE) {
         return 0;
@@ -207,7 +207,7 @@ export function key_combination_from_name(name: string, key: key_type, modifiers
     return 1;
 }
 function can_display(key_name: string) {
-    if (!encoding_can_display(key_name)) {
+    if (!encoding_can_display(key_name.charCodeAt(0))) {
         return 0;
     }
 

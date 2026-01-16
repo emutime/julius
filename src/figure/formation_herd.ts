@@ -43,13 +43,13 @@ function get_free_tile(x: number, y: number, allow_negative_desirability: number
     let tile_found: number = 0;
     let x_found: number = 0
     let y_found: number = 0;
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_get_area(x, y, 1, 4, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+        for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             let grid_offset: number = map_grid_offset(xx, yy);
             if (!map_terrain_is(grid_offset, disallowed_terrain)) {
                 if (map_soldier_strength_get(grid_offset)) {

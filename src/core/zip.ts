@@ -1,7 +1,7 @@
 import { log_error } from 'core/log';
 
-type pk_input_func = (buffer: number[], length: number, token: pk_token) => number;
-type pk_output_func = (buffer: number[], length: number, token: pk_token) => void;
+type pk_input_func = (buffer: ArrayLike<number> & { [index: number]: number }, length: number, token: pk_token) => number;
+type pk_output_func = (buffer: ArrayLike<number> & { [index: number]: number }, length: number, token: pk_token) => void;
 
 export const enum pk {
     PK_SUCCESS = 0,
@@ -12,12 +12,19 @@ export const enum pk {
     PK_ERROR_VALUE = 774,
     PK_EOF = 773,
 }
+import PK_SUCCESS = pk.PK_SUCCESS;
+import PK_INVALID_WINDOWSIZE = pk.PK_INVALID_WINDOWSIZE;
+import PK_LITERAL_ENCODING_UNSUPPORTED = pk.PK_LITERAL_ENCODING_UNSUPPORTED;
+import PK_TOO_FEW_INPUT_BYTES = pk.PK_TOO_FEW_INPUT_BYTES;
+import PK_ERROR_DECODING = pk.PK_ERROR_DECODING;
+import PK_ERROR_VALUE = pk.PK_ERROR_VALUE;
+import PK_EOF = pk.PK_EOF;
 export class pk_token {
     public stop: number = 0;
-    public input_data: number = 0;
+    public input_data: ArrayLike<number> & { [index: number]: number } = null;
     public input_ptr: number = 0;
     public input_length: number = 0;
-    public output_data: number = 0;
+    public output_data: ArrayLike<number> & { [index: number]: number } = null;
     public output_ptr: number = 0;
     public output_length: number = 0;
     public constructor(...args: any[]) {
@@ -39,7 +46,7 @@ export class pk_comp_buffer {
     public copy_offset_extra_mask: number = 0;
     public current_output_bits_used: number = 0;
     public input_data: number[] = new Array(8708).fill(0);
-    public output_data: number[][] = new Array(2050).fill(0);
+    public output_data: number[] = new Array(2050).fill(0);
     public output_ptr: number = 0;
     public analyze_offset_table: number[] = new Array(2304).fill(0);
     public analyze_index: number[] = new Array(8708).fill(0);
@@ -148,7 +155,11 @@ function pk_implode_fill_input_buffer(buf: pk_comp_buffer, bytes_to_read: number
     let used: number = 0;
     let read: number;
     do {
-        read = buf.input_func(buf.input_data[buf.dictionary_size + 516 + used], bytes_to_read, buf.token);
+        let temp: number[] = new Array(bytes_to_read).fill(0);
+        read = buf.input_func(temp, bytes_to_read, buf.token);
+        for (let i: number = 0; i < read; i++) {
+            buf.input_data[buf.dictionary_size + 516 + used + i] = temp[i];
+        }
         used += read;
         bytes_to_read -= read;
     } while (read && bytes_to_read > 0)
@@ -271,7 +282,7 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
     buf.long_matcher[0] = -1;
     buf.long_matcher[1] = 0;
     do {
-        if (input_ptr[input_ptr + long_index] != input_ptr[input_ptr + long_offset]) {
+        if (input_ptr[input_ptr_copy + long_index] != input_ptr[input_ptr_copy + long_offset]) {
             long_offset = buf.long_matcher[long_offset];
             if (long_offset != -1) {
                 continue;
@@ -299,7 +310,7 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
                 return;
             }
         } while (input_ptr[better_match_ptr + matched_bytes] < input_ptr[match_ptr]);
-        if (input_ptr[input_ptr + max_matched_bytes - 2] != input_ptr[better_match_ptr + max_matched_bytes - 2]) {
+        if (input_ptr[input_ptr_copy + max_matched_bytes - 2] != input_ptr[better_match_ptr + max_matched_bytes - 2]) {
             while (1) {
                 hash_analyze_index++;
                 better_match_ptr = buf.analyze_index[hash_analyze_index];
@@ -307,8 +318,8 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
                     copy.length = max_matched_bytes;
                     return;
                 }
-                if (input_ptr[better_match_ptr + max_matched_bytes - 2] == input_ptr[input_ptr + max_matched_bytes - 2]
-                    && input_ptr[better_match_ptr] == input_ptr[input_ptr]) {
+                if (input_ptr[better_match_ptr + max_matched_bytes - 2] == input_ptr[input_ptr_copy + max_matched_bytes - 2]
+                    && input_ptr[better_match_ptr] == input_ptr[input_ptr_copy]) {
                     matched_bytes = 2;
                     match_ptr = better_match_ptr + 2;
                     break;
@@ -318,7 +329,7 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
             matched_bytes = 0;
             match_ptr = buf.analyze_index[hash_analyze_index_ptr];
         }
-        while (input_ptr[input_ptr + matched_bytes] == input_ptr[match_ptr]) {
+        while (input_ptr[input_ptr_copy + matched_bytes] == input_ptr[match_ptr]) {
             matched_bytes++;
             if (matched_bytes >= 516) {
                 break;
@@ -334,7 +345,7 @@ function pk_implode_determine_copy(buf: pk_comp_buffer, input_index: number, cop
                     return;
                 }
                 do {
-                    if (input_ptr[input_ptr + long_index] != input_ptr[input_ptr + long_offset]) {
+                    if (input_ptr[input_ptr_copy + long_index] != input_ptr[input_ptr_copy + long_offset]) {
                         long_offset = buf.long_matcher[long_offset];
                         if (long_offset != -1) {
                             continue;
@@ -384,7 +395,9 @@ function pk_implode_data(buf: pk_comp_buffer) {
     buf.output_data[1] = buf.window_size;
     buf.output_ptr = 2;
     let input_ptr: number = buf.dictionary_size + 516;
-    pk_memset(buf.output_data[2], 0, 2048);
+    for (let i: number = 0; i < 2048; i++) {
+        buf.output_data[2 + i] = 0;
+    }
     buf.current_output_bits_used = 0;
     while (!eof) {
         let bytes_read: number = pk_implode_fill_input_buffer(buf, 4096);
@@ -450,7 +463,9 @@ function pk_implode_data(buf: pk_comp_buffer) {
 
         if (!eof) {
             input_ptr -= 4096;
-            pk_memcpy(buf.input_data, buf.input_data[4096], buf.dictionary_size + 516);
+            for (let i: number = 0; i < buf.dictionary_size + 516; i++) {
+                buf.input_data[i] = buf.input_data[4096 + i];
+            }
         }
     }
     pk_implode_write_bits(buf, buf.codeword_bits[PK_EOF], buf.codeword_values[PK_EOF]);
@@ -646,7 +661,7 @@ function pk_explode(input_func: pk_input_func, output_func: pk_output_func, buf:
     }
     return PK_SUCCESS;
 }
-function zip_input_func(buffer: number[], length: number, token: pk_token): number {
+function zip_input_func(buffer: ArrayLike<number> & { [index: number]: number }, length: number, token: pk_token): number {
     if (token.stop) {
         return 0;
     }
@@ -662,7 +677,7 @@ function zip_input_func(buffer: number[], length: number, token: pk_token): numb
     token.input_ptr += length
     return length;
 }
-function zip_output_func(buffer: number[], length: number, token: pk_token): void {
+function zip_output_func(buffer: ArrayLike<number> & { [index: number]: number }, length: number, token: pk_token): void {
     if (token.stop) {
         return;
     }
@@ -681,7 +696,7 @@ function zip_output_func(buffer: number[], length: number, token: pk_token): voi
         token.stop = 1;
     }
 }
-export function zip_compress(input_buffer: number[], input_length: number, output_buffer: number[], output_length: number): number {
+export function zip_compress(input_buffer: ArrayLike<number>, input_length: number, output_buffer: ArrayLike<number> & { [index: number]: number }, output_length: number): number {
     let token: pk_token = new pk_token();
     let buf: pk_comp_buffer = new pk_comp_buffer();
     if (!buf) {
@@ -701,7 +716,7 @@ export function zip_compress(input_buffer: number[], input_length: number, outpu
     }
     return ok;
 }
-export function zip_decompress(input_buffer: number[], input_length: number, output_buffer: number[], output_length: number): number {
+export function zip_decompress(input_buffer: ArrayLike<number>, input_length: number, output_buffer: ArrayLike<number> & { [index: number]: number }, output_length: number): number {
     let token: pk_token = new pk_token();
     let buf: pk_decomp_buffer = new pk_decomp_buffer();
     if (!buf) {

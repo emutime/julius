@@ -27,7 +27,7 @@ export class grid_u16 {
     }
 }
 export class grid_i16 {
-    public items: number[] = new Array(GRID_SIZE * GRID_SIZE).fill(0);
+    public items: Int16Array = new Int16Array(GRID_SIZE * GRID_SIZE);
     public constructor(...args: any[]) {
         args.length >= 1 && (this.items = args[0]);
     }
@@ -204,7 +204,7 @@ export function map_grid_copy_u16(src: number[], dst: number[]) {
 export function map_grid_save_state_u8(grid: Uint8Array, buf: buffer) {
     buffer_write_raw(buf, grid, GRID_SIZE * GRID_SIZE);
 }
-export function map_grid_save_state_i8(grid: Uint8Array, buf: buffer) {
+export function map_grid_save_state_i8(grid: Int8Array, buf: buffer) {
     buffer_write_raw(buf, grid, GRID_SIZE * GRID_SIZE);
 }
 export function map_grid_save_state_u16(grid: number[], buf: buffer) {
@@ -215,7 +215,7 @@ export function map_grid_save_state_u16(grid: number[], buf: buffer) {
 export function map_grid_load_state_u8(grid: Uint8Array, buf: buffer) {
     buffer_read_raw(buf, grid, GRID_SIZE * GRID_SIZE);
 }
-export function map_grid_load_state_i8(grid: Uint8Array, buf: buffer) {
+export function map_grid_load_state_i8(grid: Int8Array, buf: buffer) {
     buffer_read_raw(buf, grid, GRID_SIZE * GRID_SIZE);
 }
 export function map_grid_load_state_u16(grid: number[], buf: buffer) {

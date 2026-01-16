@@ -61,8 +61,8 @@ export class unnamed61_8 {
     public focus_toggle_button: number = 0;
     public selected_item: number = 0;
     public show_minimap: number = 0;
-    public selected_scenario_filename: char[] = new Array(FILE_NAME_MAX).fill(null);
-    public selected_scenario_display: number[] = new Array(FILE_NAME_MAX).fill(0);
+    public selected_scenario_filename: Uint8Array = new Uint8Array(FILE_NAME_MAX);
+    public selected_scenario_display: Uint8Array = new Uint8Array(FILE_NAME_MAX);
     public scenarios: dir_listing = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.focus_button_id = args[0]);
@@ -86,8 +86,6 @@ function init() {
 }
 function draw_scenario_list() {
     inner_panel_draw(16, 210, 16, 16);
-    let file: char[];
-    let displayable_file: number[];
     for (let i: number = 0; i < MAX_SCENARIOS; i++) {
         let font: font_t = FONT_NORMAL_GREEN;
         if (data.focus_button_id == i + 1) {
@@ -95,7 +93,8 @@ function draw_scenario_list() {
         } else if (!data.focus_button_id && data.selected_item == i + scrollbar.scroll_position) {
             font = FONT_NORMAL_WHITE;
         }
-        strcpy(file, data.scenarios.files[i + scrollbar.scroll_position]);
+        let file: string = data.scenarios.files[i + scrollbar.scroll_position];
+        let displayable_file = new Uint8Array(FILE_NAME_MAX);
         encoding_from_utf8(file, displayable_file, FILE_NAME_MAX);
         file_remove_extension(displayable_file);
         text_ellipsize(displayable_file, font, 240);
@@ -233,7 +232,7 @@ function handle_input(m: mouse, h: hotkeys) {
     if (image_buttons_handle_mouse(m_dialog, 0, 0, start_button, 1, null)) {
         return;
     }
-    if (generic_buttons_handle_mouse(m_dialog, 0, 0, toggle_minimap_button, 1, data.focus_toggle_button)) {
+    if (generic_buttons_handle_mouse(m_dialog, 0, 0, [toggle_minimap_button], 1, data.focus_toggle_button)) {
         return;
     }
     if (generic_buttons_handle_mouse(m_dialog, 0, 0, file_buttons, MAX_SCENARIOS, data.focus_button_id)) {
@@ -252,7 +251,7 @@ function button_select_item(index: number, param2: number) {
         return;
     }
     data.selected_item = scrollbar.scroll_position + index;
-    strcpy(data.selected_scenario_filename, data.scenarios.files[data.selected_item]);
+    encoding_from_utf8(data.scenarios.files[data.selected_item], data.selected_scenario_filename, FILE_NAME_MAX);
     game_file_load_scenario_data(data.selected_scenario_filename);
     encoding_from_utf8(data.selected_scenario_filename, data.selected_scenario_display, FILE_NAME_MAX);
     file_remove_extension(data.selected_scenario_display);
@@ -265,7 +264,7 @@ function button_start_scenario(param1: number, param2: number) {
     }
 }
 function button_toggle_minimap(param1: number, param2: number) {
-    data.show_minimap = !data.show_minimap;
+    data.show_minimap = data.show_minimap ? 0 : 1;
     window_invalidate();
 }
 function on_scroll() {

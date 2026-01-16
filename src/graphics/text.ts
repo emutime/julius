@@ -119,40 +119,41 @@ export function text_get_width(str: string | ArrayLike<number>, font: font_t): n
     }
     return width;
 }
-function get_letter_width(str: string, strIndex: number, def: font_definition, num_bytes: number): number {
-    num_bytes = 1;
+function get_letter_width(str: string, strIndex: number, def: font_definition, num_bytes: Ref<number>): number {
+    num_bytes.v = 1;
     if (str.charCodeAt(strIndex) === 32) { // ' ' (space)
         return def.space_width;
     }
-    let letter_id: number = font_letter_id(def, str, strIndex, num_bytes);
+    let letter_id: number = font_letter_id(def, str, num_bytes, strIndex);
     if (letter_id >= 0) {
         return def.letter_spacing + image_letter(letter_id).width;
     } else {
         return 0;
     }
 }
-export function text_get_max_length_for_width(str: string, length: number, font: font_t, requested_width: number, invert: number): number {
+export function text_get_max_length_for_width(str: string | ArrayLike<number>, length: number, font: font_t, requested_width: number, invert: number): number {
+    const text = to_text(str);
     let def: font_definition = font_definition_for(font);
     if (!length) {
-        length = string_length(str);
+        length = string_length(text);
     }
     if (invert) {
         let maxlen: number = length;
         let width: number = 0;
         let strIndex: number = 0;
         while (maxlen > 0) {
-            let num_bytes: number;
-            width += get_letter_width(str, strIndex, def, num_bytes);
-            strIndex += num_bytes;
-            maxlen -= num_bytes;
+            let num_bytes = new Ref<number>(1);
+            width += get_letter_width(text, strIndex, def, num_bytes);
+            strIndex += num_bytes.v;
+            maxlen -= num_bytes.v;
         }
         maxlen = length;
         strIndex = 0;
         while (maxlen > 0 && width > requested_width) {
-            let num_bytes: number;
-            width -= get_letter_width(str, strIndex, def, num_bytes);
-            strIndex += num_bytes;
-            maxlen -= num_bytes;
+            let num_bytes = new Ref<number>(1);
+            width -= get_letter_width(text, strIndex, def, num_bytes);
+            strIndex += num_bytes.v;
+            maxlen -= num_bytes.v;
         }
         return maxlen;
     } else {
@@ -160,13 +161,13 @@ export function text_get_max_length_for_width(str: string, length: number, font:
         let width: number = 0;
         let strIndex: number = 0;
         while (maxlen > 0) {
-            let num_bytes: number;
-            width += get_letter_width(str, strIndex, def, num_bytes);
+            let num_bytes = new Ref<number>(1);
+            width += get_letter_width(text, strIndex, def, num_bytes);
             if (width > requested_width) {
                 break;
             }
-            strIndex += num_bytes;
-            maxlen -= num_bytes;
+            strIndex += num_bytes.v;
+            maxlen -= num_bytes.v;
         }
         return length - maxlen;
     }
@@ -181,23 +182,23 @@ export function text_ellipsize(str: string | ArrayLike<number>, font: font_t, re
     let length_with_ellipsis: number = 0;
     let strIndex: number = 0;
     while (text.charCodeAt(strIndex) && maxlen > 0) {
-        let num_bytes: number = 1;
+        let num_bytes = new Ref<number>(1);
         if (text.charCodeAt(strIndex) === 32) { // ' ' (space)
             width += def.space_width;
         } else {
-            let letter_id: number = font_letter_id(def, text, strIndex, num_bytes);
+            let letter_id: number = font_letter_id(def, text, num_bytes, strIndex);
             if (letter_id >= 0) {
                 width += def.letter_spacing + image_letter(letter_id).width;
             }
         }
         if (ellipsis_width + width <= requested_width) {
-            length_with_ellipsis += num_bytes;
+            length_with_ellipsis += num_bytes.v;
         }
         if (width > requested_width) {
             break;
         }
-        strIndex += num_bytes;
-        maxlen -= num_bytes;
+        strIndex += num_bytes.v;
+        maxlen -= num_bytes.v;
     }
     if (10000 - maxlen < string_length(orig_str)) {
         if (typeof str !== "string") {
@@ -212,7 +213,7 @@ function get_word_width(str: string, strIndex: number, font: font_t, out_num_cha
     let word_char_seen: number = 0;
     let num_chars: number = 0;
     while (str.charCodeAt(strIndex) && ++guard < 200) {
-        let num_bytes: number = 1;
+        let num_bytes = new Ref<number>(1);
         if (str.charCodeAt(strIndex) === 32 || str.charCodeAt(strIndex) === 10) { // ' ' or '\n'
             if (word_char_seen) {
                 break;
@@ -224,18 +225,18 @@ function get_word_width(str: string, strIndex: number, font: font_t, out_num_cha
             }
         } else if (str.charCodeAt(strIndex) > 32) {
             // normal char
-            let letter_id: number = font_letter_id(def, str, strIndex, num_bytes);
+            let letter_id: number = font_letter_id(def, str, num_bytes, strIndex);
             if (letter_id >= 0) {
                 width += image_letter(letter_id).width + def.letter_spacing;
             }
             word_char_seen = 1;
-            if (num_bytes > 1) {
-                num_chars += num_bytes;
+            if (num_bytes.v > 1) {
+                num_chars += num_bytes.v;
                 break;
             }
         }
-        strIndex += num_bytes;
-        num_chars += num_bytes;
+        strIndex += num_bytes.v;
+        num_chars += num_bytes.v;
     }
     out_num_chars[0] = num_chars;
     return width;
@@ -266,10 +267,10 @@ export function text_draw(str: string | ArrayLike<number>, x: number, y: number,
     }
     let current_x: number = x;
     while (length > 0) {
-        let num_bytes: number = 1;
+        let num_bytes = new Ref<number>(1);
 
         if (text.charCodeAt(strIndex) >= 32) { // ' ' (space)
-            let letter_id: number = font_letter_id(def, text, strIndex, num_bytes);
+            let letter_id: number = font_letter_id(def, text, num_bytes, strIndex);
             let width: number;
             if (text.charCodeAt(strIndex) === 32 || text.charCodeAt(strIndex) === 95 || letter_id < 0) { // ' ' or '_'
                 width = def.space_width;
@@ -289,9 +290,9 @@ export function text_draw(str: string | ArrayLike<number>, x: number, y: number,
             current_x += width;
         }
 
-        strIndex += num_bytes;
-        length -= num_bytes;
-        input_cursor.position += num_bytes;
+        strIndex += num_bytes.v;
+        length -= num_bytes.v;
+        input_cursor.position += num_bytes.v;
     }
     if (input_cursor.capture && !input_cursor.seen) {
         input_cursor.width = 4;
@@ -301,12 +302,12 @@ export function text_draw(str: string | ArrayLike<number>, x: number, y: number,
     current_x += def.space_width;
     return current_x - x;
 }
-function number_to_string(str: string, value: number, prefix: string, postfix: string): number {
+function number_to_string(str: Uint8Array, value: number, prefix: string, postfix: string): number {
     let offset: number = 0;
     if (prefix) {
         str[offset++] = prefix.charCodeAt(0);
     }
-    offset += string_from_int(str, offset, value, 0);
+    offset += string_from_int(str.subarray(offset), value, 0);
     let postfixIndex: number = 0;
     while (postfix[postfixIndex]) {
         str[offset++] = postfix.charCodeAt(postfixIndex++);
@@ -315,19 +316,19 @@ function number_to_string(str: string, value: number, prefix: string, postfix: s
     return offset;
 }
 export function text_draw_number(value: number, prefix: string, postfix: string, x_offset: number, y_offset: number, font: font_t): number {
-    let str: string = new Array(NUMBER_BUFFER_LENGTH).fill(0);
+    let str: Uint8Array = new Uint8Array(NUMBER_BUFFER_LENGTH);
     number_to_string(str, value, prefix, postfix);
     return text_draw(str, x_offset, y_offset, font, 0);
 }
 export function text_draw_number_colored(value: number, prefix: string, postfix: string, x_offset: number, y_offset: number, font: font_t, color: color_t): number {
-    let str: string = new Array(NUMBER_BUFFER_LENGTH).fill(0);
+    let str: Uint8Array = new Uint8Array(NUMBER_BUFFER_LENGTH);
     number_to_string(str, value, prefix, postfix);
     return text_draw(str, x_offset, y_offset, font, color);
 }
 export function text_draw_money(value: number, x_offset: number, y_offset: number, font: font_t): number {
-    let str: string = new Array(NUMBER_BUFFER_LENGTH).fill(0);
+    let str: Uint8Array = new Uint8Array(NUMBER_BUFFER_LENGTH);
     let money_len: number = number_to_string(str, value, '@', " ");
-    let postfix: string;
+    let postfix: string | Uint8Array;
     if (locale_translate_money_dn()) {
         postfix = lang_get_string(6, 0);
     } else {
@@ -337,22 +338,22 @@ export function text_draw_money(value: number, x_offset: number, y_offset: numbe
     return text_draw(str, x_offset, y_offset, font, 0);
 }
 export function text_draw_percentage(value: number, x_offset: number, y_offset: number, font: font_t): number {
-    let str: string = new Array(NUMBER_BUFFER_LENGTH).fill(0);
+    let str: Uint8Array = new Uint8Array(NUMBER_BUFFER_LENGTH);
     number_to_string(str, value, '@', "%");
     return text_draw(str, x_offset, y_offset, font, 0);
 }
 export function text_draw_number_centered(value: number, x_offset: number, y_offset: number, box_width: number, font: font_t): void {
-    let str: string = new Array(NUMBER_BUFFER_LENGTH).fill(0);
+    let str: Uint8Array = new Uint8Array(NUMBER_BUFFER_LENGTH);
     number_to_string(str, value, '@', " ");
     text_draw_centered(str, x_offset, y_offset, box_width, font, 0);
 }
 export function text_draw_number_centered_prefix(value: number, prefix: string, x_offset: number, y_offset: number, box_width: number, font: font_t): void {
-    let str: string = new Array(NUMBER_BUFFER_LENGTH).fill(0);
+    let str: Uint8Array = new Uint8Array(NUMBER_BUFFER_LENGTH);
     number_to_string(str, value, prefix, " ");
     text_draw_centered(str, x_offset, y_offset, box_width, font, 0);
 }
 export function text_draw_number_centered_colored(value: number, x_offset: number, y_offset: number, box_width: number, font: font_t, color: color_t): void {
-    let str: string = new Array(NUMBER_BUFFER_LENGTH).fill(0);
+    let str: Uint8Array = new Uint8Array(NUMBER_BUFFER_LENGTH);
     number_to_string(str, value, '@', " ");
     text_draw_centered(str, x_offset, y_offset, box_width, font, color);
 }

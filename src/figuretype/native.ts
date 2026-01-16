@@ -69,14 +69,14 @@ export function figure_indigenous_native_action(f: figure) {
             if (f.wait_ticks > 10 + (f.id & 3)) {
                 f.wait_ticks = 0;
                 if (!city_military_is_native_attack_active()) {
-                    let x_tile: number
-                    let y_tile: number;
+                    let x_tile: Ref<number> = new Ref(0);
+                    let y_tile: Ref<number> = new Ref(0);
                     let meeting: building = building_get(b.subtype.native_meeting_center_id);
                     if (map_terrain_get_adjacent_road_or_clear_land(
                         meeting.x, meeting.y, meeting.size, x_tile, y_tile)) {
                         f.action_state = FIGURE_ACTION_156_NATIVE_GOING_TO_MEETING_CENTER;
-                        f.destination_x = x_tile;
-                        f.destination_y = y_tile;
+                        f.destination_x = x_tile.v;
+                        f.destination_y = y_tile.v;
                     }
                 } else {
                     let m: formation = formation_get(0);

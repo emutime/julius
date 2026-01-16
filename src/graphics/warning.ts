@@ -14,7 +14,7 @@ import FONT_NORMAL_WHITE = font_t.FONT_NORMAL_WHITE;
 import WINDOW_CITY = window_id.WINDOW_CITY;
 import WINDOW_EDITOR_MAP = window_id.WINDOW_EDITOR_MAP;
 let TOP_OFFSETS: number[] = [30, 55, 80, 105, 130];
-function determine_width(text: number) {
+function determine_width(text: string | ArrayLike<number>) {
     let width: number = text_get_width(text, FONT_NORMAL_BLACK);
     if (width <= 100) {
         return 200;
@@ -33,7 +33,7 @@ export function warning_draw() {
     }
     let center: number = (screen_width() - 180) / 2;
     for (let i: number = 0; i < 5; i++) {
-        let text = city_warning_get(i);
+        let text: string | ArrayLike<number> | null = city_warning_get(i);
         if (!text) {
             continue
         }

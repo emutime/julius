@@ -59,13 +59,13 @@ import INVENTORY_MAX_FOOD = inventory_type.INVENTORY_MAX_FOOD;
 import GRID_SIZE = GRID.GRID_SIZE;
 function provide_culture(x: number, y: number, callback: (b: building) => void) {
     let serviced: number = 0;
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_get_area(x, y, 1, 2, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+        for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             let grid_offset: number = map_grid_offset(xx, yy);
             let building_id: number = map_building_at(grid_offset);
             if (building_id) {
@@ -81,13 +81,13 @@ function provide_culture(x: number, y: number, callback: (b: building) => void) 
 }
 function provide_entertainment(x: number, y: number, shows: number, callback: (b: building, shows: number) => void) {
     let serviced: number = 0;
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_get_area(x, y, 1, 2, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+        for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             let grid_offset: number = map_grid_offset(xx, yy);
             let building_id: number = map_building_at(grid_offset);
             if (building_id) {
@@ -158,13 +158,13 @@ function hospital_coverage(b: building) {
     b.data.house.hospital = MAX_COVERAGE;
 }
 function provide_missionary_coverage(x: number, y: number) {
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_get_area(x, y, 1, 4, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+        for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             let building_id: number = map_building_at(map_grid_offset(xx, yy));
             if (building_id) {
                 let b: building = building_get(building_id);
@@ -178,13 +178,13 @@ function provide_missionary_coverage(x: number, y: number) {
 }
 function provide_service(x: number, y: number, data: any, callback: (b: building, data: any) => void): number {
     let serviced: number = 0;
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_get_area(x, y, 1, 2, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+        for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             let grid_offset: number = map_grid_offset(xx, yy);
             let building_id: number = map_building_at(grid_offset);
             if (building_id) {
@@ -286,13 +286,13 @@ function distribute_market_resources(b: building, market: building) {
 function provide_market_goods(market_building_id: number, x: number, y: number) {
     let serviced: number = 0;
     let market: building = building_get(market_building_id);
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_get_area(x, y, 1, 2, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+        for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             let grid_offset: number = map_grid_offset(xx, yy);
             let building_id: number = map_building_at(grid_offset);
             if (building_id) {

@@ -118,15 +118,16 @@ function draw_road(tile: map_tile, x: number, y: number) {
         draw_building_image(image_id, x, y);
     }
 }
-function draw_brush_tile(data: view_tile, dx: number, dy: number) {
-    let view: view_tile = data;
+function draw_brush_tile(data: map_tile, dx: number, dy: number) {
+    let view_x: number = data.x;
+    let view_y: number = data.y;
     let view_dx: Ref<number> = new Ref<number>(0);
     let view_dy: Ref<number> = new Ref<number>(0);
     offset_to_view_offset(dx, dy, view_dx, view_dy);
-    draw_flat_tile(view.x + view_dx, view.y + view_dy, COLOR_MASK_GREEN);
+    draw_flat_tile(view_x + view_dx.v, view_y + view_dy.v, COLOR_MASK_GREEN);
 }
 function draw_brush(tile: map_tile, x: number, y: number) {
-    let vt: view_tile = { x, y };
+    let vt: map_tile = new map_tile(x, y, 0);
     editor_tool_foreach_brush_tile(draw_brush_tile, vt);
 }
 function draw_access_ramp(tile: map_tile, x: number, y: number) {

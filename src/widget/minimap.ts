@@ -10,7 +10,7 @@ import { figure_type } from 'figure/type';
 import { COLOR_MINIMAP_DARK, COLOR_MINIMAP_ENEMY_CENTRAL, COLOR_MINIMAP_ENEMY_DESERT, COLOR_MINIMAP_ENEMY_NORTHERN, COLOR_MINIMAP_LIGHT, COLOR_MINIMAP_SELECTED_SOLDIER, COLOR_MINIMAP_SOLDIER, COLOR_MINIMAP_VIEWPORT, COLOR_MINIMAP_WOLF, color_t } from 'graphics/color';
 import { graphics_draw_from_buffer, graphics_draw_horizontal_line, graphics_draw_rect, graphics_draw_vertical_line, graphics_reset_clip_rectangle, graphics_save_to_buffer, graphics_set_clip_rectangle } from 'graphics/graphics';
 import { image_draw } from 'graphics/image';
-import { mouse } from 'input/mouse';
+import { mouse as input_mouse } from 'input/mouse';
 import { map_building_at } from 'map/building';
 import { map_figure_foreach_until } from 'map/figure';
 import { GRID, map_grid_height, map_grid_width } from 'map/grid';
@@ -18,7 +18,7 @@ import { map_property_is_draw_tile, map_property_multi_tile_size } from 'map/pro
 import { map_random_get } from 'map/random';
 import { map_terrain_get, terrain } from 'map/terrain';
 import { scenario_property_climate } from 'scenario/property';
-import { free } from '../../ext/crt';
+import { Ref, free } from '../../ext/crt';
 import BUILDING_FORT_GROUND = building_type.BUILDING_FORT_GROUND;
 import BUILDING_RESERVOIR = building_type.BUILDING_RESERVOIR;
 ;
@@ -77,7 +77,7 @@ let ENEMY_COLOR_BY_CLIMATE: color_t[] = new Array().fill({
     COLOR_MINIMAP_ENEMY_NORTHERN,
     COLOR_MINIMAP_ENEMY_DESERT
 });
-class mouse {
+class minimap_mouse {
     public x: number = 0;
     public y: number = 0;
     public grid_offset: number = 0;
@@ -98,7 +98,7 @@ export class unnamed39_8 {
     public height: number = 0;
     public enemy_color: color_t = null;
     public cache: color_t[] = null;
-    public mouse: mouse = null;
+    public mouse: minimap_mouse = null;
     public refresh_requested: number = 0;
     public camera_x: number = 0;
     public camera_y: number = 0;
@@ -120,6 +120,8 @@ export class unnamed39_8 {
     }
 }
 let data: unnamed39_8 = new unnamed39_8();
+data.mouse = new minimap_mouse();
+data.cache = [];
 export function widget_minimap_invalidate() {
     data.refresh_requested = 1;
 }
@@ -138,22 +140,26 @@ function set_bounds(x_offset: number, y_offset: number, width: number, height: n
     data.height = height;
     data.absolute_x = (VIEW_X_MAX - data.width_tiles) / 2;
     data.absolute_y = (VIEW_Y_MAX - data.height_tiles) / 2;
-    city_view_get_camera(data.camera_x, data.camera_y);
-    let view_width_tiles: number
-    let view_height_tiles: number;
+    let camera_x = new Ref<number>(0);
+    let camera_y = new Ref<number>(0);
+    city_view_get_camera(camera_x, camera_y);
+    data.camera_x = camera_x.v;
+    data.camera_y = camera_y.v;
+    let view_width_tiles = new Ref<number>(0);
+    let view_height_tiles = new Ref<number>(0);
     city_view_get_viewport_size_tiles(view_width_tiles, view_height_tiles);
     if ((map_grid_width() - data.width_tiles) / 2 > 0) {
         if (data.camera_x < data.absolute_x) {
             data.absolute_x = data.camera_x;
-        } else if (data.camera_x > data.width_tiles + data.absolute_x - view_width_tiles) {
-            data.absolute_x = view_width_tiles + data.camera_x - data.width_tiles;
+        } else if (data.camera_x > data.width_tiles + data.absolute_x - view_width_tiles.v) {
+            data.absolute_x = view_width_tiles.v + data.camera_x - data.width_tiles;
         }
     }
     if ((2 * map_grid_height() - data.height_tiles) / 2 > 0) {
         if (data.camera_y < data.absolute_y) {
             data.absolute_y = data.camera_y;
-        } else if (data.camera_y > data.height_tiles + data.absolute_y - view_height_tiles) {
-            data.absolute_y = view_height_tiles + data.camera_y - data.height_tiles;
+        } else if (data.camera_y > data.height_tiles + data.absolute_y - view_height_tiles.v) {
+            data.absolute_y = view_height_tiles.v + data.camera_y - data.height_tiles;
         }
     }
     data.absolute_y &= ~1
@@ -259,26 +265,26 @@ function draw_minimap_tile(x_view: number, y_view: number, grid_offset: number) 
     }
 }
 function draw_viewport_rectangle() {
-    let camera_x: number
-    let camera_y: number;
-    let camera_pixels_x: number
-    let camera_pixels_y: number;
+    let camera_x = new Ref<number>(0);
+    let camera_y = new Ref<number>(0);
+    let camera_pixels_x = new Ref<number>(0);
+    let camera_pixels_y = new Ref<number>(0);
     city_view_get_camera(camera_x, camera_y);
     city_view_get_pixel_offset(camera_pixels_x, camera_pixels_y);
-    let view_width_tiles: number
-    let view_height_tiles: number;
+    let view_width_tiles = new Ref<number>(0);
+    let view_height_tiles = new Ref<number>(0);
     city_view_get_viewport_size_tiles(view_width_tiles, view_height_tiles);
-    let x_offset: number = data.x_offset + 2 * (camera_x - data.absolute_x) - 2 + camera_pixels_x / 30;
+    let x_offset: number = data.x_offset + 2 * (camera_x.v - data.absolute_x) - 2 + camera_pixels_x.v / 30;
     if (x_offset < data.x_offset) {
         x_offset = data.x_offset;
     }
-    if (x_offset + 2 * view_width_tiles + 4 > data.x_offset + data.width_tiles) {
+    if (x_offset + 2 * view_width_tiles.v + 4 > data.x_offset + data.width_tiles) {
         x_offset -= 2
     }
-    let y_offset: number = data.y_offset + camera_y - data.absolute_y + 2;
+    let y_offset: number = data.y_offset + camera_y.v - data.absolute_y + 2;
     graphics_draw_rect(x_offset, y_offset,
-        view_width_tiles * 2 + 4,
-        view_height_tiles - 4,
+        view_width_tiles.v * 2 + 4,
+        view_height_tiles.v - 4,
         COLOR_MINIMAP_VIEWPORT);
 }
 function prepare_minimap_cache(width: number, height: number) {
@@ -325,10 +331,10 @@ function should_refresh(force: number) {
         data.refresh_requested = 0;
         return REFRESH_FULL;
     }
-    let new_x: number
-    let new_y: number;
+    let new_x = new Ref<number>(0);
+    let new_y = new Ref<number>(0);
     city_view_get_camera(new_x, new_y);
-    if (data.camera_x != new_x || data.camera_y != new_y) {
+    if (data.camera_x != new_x.v || data.camera_y != new_y.v) {
         return REFRESH_CAMERA_MOVED;
     }
     return REFRESH_NOT_NEEDED;
@@ -352,21 +358,21 @@ function update_mouse_grid_offset(x_view: number, y_view: number, grid_offset: n
         data.mouse.grid_offset = grid_offset < 0 ? 0 : grid_offset;
     }
 }
-function get_mouse_grid_offset(m: mouse) {
+function get_mouse_grid_offset(m: input_mouse) {
     data.mouse.x = m.x;
     data.mouse.y = m.y;
     data.mouse.grid_offset = 0;
     foreach_map_tile(update_mouse_grid_offset);
     return data.mouse.grid_offset;
 }
-function is_in_minimap(m: mouse) {
+function is_in_minimap(m: input_mouse) {
     if (m.x >= data.x_offset && m.x < data.x_offset + data.width &&
         m.y >= data.y_offset && m.y < data.y_offset + data.height) {
         return 1;
     }
     return 0;
 }
-export function widget_minimap_handle_mouse(m: mouse) {
+export function widget_minimap_handle_mouse(m: input_mouse) {
     if ((m.left.went_down || m.right.went_down) && is_in_minimap(m)) {
         let grid_offset: number = get_mouse_grid_offset(m);
         if (grid_offset > 0) {

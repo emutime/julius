@@ -26,7 +26,8 @@ import { map_terrain_get, map_terrain_is, terrain } from 'map/terrain';
 import { city_draw_bridge } from 'widget/city_bridge';
 import { city_building_ghost_draw, city_building_ghost_mark_deleting } from 'widget/city_building_ghost';
 import { city_draw_figure } from 'widget/city_figure';
-import { city_overlay, city_with_overlay_draw_building_footprint, city_with_overlay_draw_building_top, column_type, NO_COLUMN } from 'widget/city_overlay';
+import { Ref } from '../../ext/crt';
+import { city_overlay, column_type, NO_COLUMN } from 'widget/city_overlay';
 import { city_overlay_for_academy, city_overlay_for_education, city_overlay_for_library, city_overlay_for_school } from 'widget/city_overlay_education';
 import { city_overlay_for_amphitheater, city_overlay_for_colosseum, city_overlay_for_entertainment, city_overlay_for_hippodrome, city_overlay_for_theater } from 'widget/city_overlay_entertainment';
 import { city_overlay_for_barber, city_overlay_for_bathhouse, city_overlay_for_clinic, city_overlay_for_hospital } from 'widget/city_overlay_health';
@@ -90,7 +91,7 @@ import TERRAIN_AQUEDUCT = terrain.TERRAIN_AQUEDUCT;
 import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 import COLUMN_TYPE_RISK = column_type.COLUMN_TYPE_RISK;
-let overlay: city_overlay = 0;
+let overlay: city_overlay | null = null;
 function OFFSET(x: number, y: number) { return x + GRID_SIZE * y };
 
 let ADJACENT_OFFSETS: number[][][] = [
@@ -107,7 +108,7 @@ let ADJACENT_OFFSETS: number[][][] = [
         [OFFSET(0, 1), OFFSET(-1, 1), OFFSET(-2, 1), OFFSET(-3, 1), OFFSET(-3, 0), OFFSET(-3, -1), OFFSET(-3, -2)]
     ]
 ];
-function get_city_overlay() {
+function get_city_overlay(): city_overlay | null {
     switch (game_state_overlay()) {
         case OVERLAY_FIRE:
             return city_overlay_for_fire();
@@ -156,14 +157,14 @@ function get_city_overlay() {
         case OVERLAY_DESIRABILITY:
             return city_overlay_for_desirability();
         default:
-            return 0
+            return null
     }
 }
 function select_city_overlay() {
     if (!overlay || overlay.type != game_state_overlay()) {
         overlay = get_city_overlay();
     }
-    return overlay != 0;
+    return overlay != null;
 }
 export function city_with_overlay_update() {
     select_city_overlay();
@@ -217,7 +218,7 @@ function is_multi_tile_terrain(grid_offset: number) {
 function has_adjacent_deletion(grid_offset: number) {
     let size: number = map_property_multi_tile_size(grid_offset);
     let total_adjacent_offsets: number = size * 2 + 1;
-    let adjacent_offset: number = ADJACENT_OFFSETS[size - 2][city_view_orientation() / 2];
+    let adjacent_offset: number[] = ADJACENT_OFFSETS[size - 2][city_view_orientation() / 2];
     for (let i: number = 0; i < total_adjacent_offsets; ++i) {
         if (map_property_is_deleted(grid_offset + adjacent_offset[i]) ||
             draw_building_as_deleted(building_get(map_building_at(grid_offset + adjacent_offset[i])))) {
@@ -413,7 +414,7 @@ export function city_with_overlay_draw_building_top(x: number, y: number, grid_o
                 draw = is_drawable_farm_corner(grid_offset);
             }
             if (draw) {
-                draw_overlay_column(x, y, column_height, overlay.column_type == COLUMN_TYPE_RISK);
+                draw_overlay_column(x, y, column_height, overlay.column_type == COLUMN_TYPE_RISK ? 1 : 0);
             }
         }
     }
@@ -526,7 +527,9 @@ function draw_figures(x: number, y: number, grid_offset: number) {
     while (figure_id) {
         let f: figure = figure_get(figure_id);
         if (!f.is_ghost && overlay.show_figure(f)) {
-            city_draw_figure(f, x, y, 0);
+            let x_ref: Ref<number> = new Ref(x);
+            let y_ref: Ref<number> = new Ref(y);
+            city_draw_figure(f, x_ref, y_ref, 0);
         }
         figure_id = f.next_figure_id_on_same_tile;
     }
@@ -536,7 +539,9 @@ function draw_elevated_figures(x: number, y: number, grid_offset: number) {
     while (figure_id > 0) {
         let f: figure = figure_get(figure_id);
         if (((f.use_cross_country && !f.is_ghost) || f.height_adjusted_ticks) && overlay.show_figure(f)) {
-            city_draw_figure(f, x, y, 0);
+            let x_ref: Ref<number> = new Ref(x);
+            let y_ref: Ref<number> = new Ref(y);
+            city_draw_figure(f, x_ref, y_ref, 0);
         }
         figure_id = f.next_figure_id_on_same_tile;
     }
@@ -585,7 +590,7 @@ export function city_with_overlay_get_tooltip_text(c: tooltip_context, grid_offs
     if (overlay.get_tooltip_for_building && !building_id) {
         return 0;
     }
-    let overlay_requires_house: number = overlay_type != OVERLAY_WATER && overlay_type != OVERLAY_FIRE &&
+    let overlay_requires_house: boolean = overlay_type != OVERLAY_WATER && overlay_type != OVERLAY_FIRE &&
         overlay_type != OVERLAY_DAMAGE && overlay_type != OVERLAY_NATIVE && overlay_type != OVERLAY_DESIRABILITY;
     let b: building = building_get(building_id);
     if (overlay_requires_house && !b.house_size) {

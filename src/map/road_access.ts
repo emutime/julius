@@ -19,8 +19,9 @@ import TERRAIN_WALL = terrain.TERRAIN_WALL;
 import TERRAIN_GATEHOUSE = terrain.TERRAIN_GATEHOUSE;
 function find_minimum_road_tile(x: number, y: number, size: number, min_value: Ref<number>, min_grid_offset: Ref<number>) {
     let base_offset: number = map_grid_offset(x, y);
-    for (let tile_delta: number = map_grid_adjacent_offsets(size); tile_delta; tile_delta++) {
-        let grid_offset: number = base_offset + tile_delta;
+    let offsets = map_grid_adjacent_offsets(size);
+    for (let i: number = 0; i < offsets.length && offsets[i]; i++) {
+        let grid_offset: number = base_offset + offsets[i];
         if (!map_terrain_is(grid_offset, TERRAIN_BUILDING) ||
             building_get(map_building_at(grid_offset)).type != BUILDING_GATEHOUSE) {
             if (map_terrain_is(grid_offset, TERRAIN_ROAD)) {
@@ -84,13 +85,13 @@ export function map_has_road_access_granary(x: number, y: number, road: map_poin
     return 0;
 }
 function road_within_radius(x: number, y: number, size: number, radius: number, x_road: Ref<number>, y_road: Ref<number>) {
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min = new Ref<number>(0);
+    let y_min = new Ref<number>(0);
+    let x_max = new Ref<number>(0);
+    let y_max = new Ref<number>(0);
     map_grid_get_area(x, y, size, radius, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+        for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             if (map_terrain_is(map_grid_offset(xx, yy), TERRAIN_ROAD)) {
                 if (x_road && y_road) {
                     x_road.v = xx;
@@ -111,13 +112,13 @@ export function map_closest_road_within_radius(x: number, y: number, size: numbe
     return 0;
 }
 function reachable_road_within_radius(x: number, y: number, size: number, radius: number, x_road: Ref<number>, y_road: Ref<number>) {
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min = new Ref<number>(0);
+    let y_min = new Ref<number>(0);
+    let x_max = new Ref<number>(0);
+    let y_max = new Ref<number>(0);
     map_grid_get_area(x, y, size, radius, x_min, y_min, x_max, y_max);
-    for (let yy: number = y_min; yy <= y_max; yy++) {
-        for (let xx: number = x_min; xx <= x_max; xx++) {
+    for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+        for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
             let grid_offset: number = map_grid_offset(xx, yy);
             if (map_terrain_is(grid_offset, TERRAIN_ROAD)) {
                 if (map_routing_distance(grid_offset) > 0) {
@@ -144,8 +145,9 @@ export function map_road_to_largest_network(x: number, y: number, size: number, 
     let min_index: number = 12;
     let min_grid_offset: number = -1;
     let base_offset: number = map_grid_offset(x, y);
-    for (let tile_delta: number = map_grid_adjacent_offsets(size); tile_delta; tile_delta++) {
-        let grid_offset: number = base_offset + tile_delta;
+    let offsets = map_grid_adjacent_offsets(size);
+    for (let i: number = 0; i < offsets.length && offsets[i]; i++) {
+        let grid_offset: number = base_offset + offsets[i];
         if (map_terrain_is(grid_offset, TERRAIN_ROAD) && map_routing_distance(grid_offset) > 0) {
             let index: number = city_map_road_network_index(map_road_network_get(grid_offset));
             if (index < min_index) {
@@ -161,8 +163,9 @@ export function map_road_to_largest_network(x: number, y: number, size: number, 
     }
     let min_dist: number = 100000;
     min_grid_offset = -1;
-    for (let tile_delta: number = map_grid_adjacent_offsets(size); tile_delta; tile_delta++) {
-        let grid_offset: number = base_offset + tile_delta;
+    offsets = map_grid_adjacent_offsets(size);
+    for (let i: number = 0; i < offsets.length && offsets[i]; i++) {
+        let grid_offset: number = base_offset + offsets[i];
         let dist: number = map_routing_distance(grid_offset);
         if (dist > 0 && dist < min_dist) {
             min_dist = dist;
@@ -178,8 +181,9 @@ export function map_road_to_largest_network(x: number, y: number, size: number, 
 }
 function check_road_to_largest_network_hippodrome(x: number, y: number, min_index: Ref<number>, min_grid_offset: Ref<number>) {
     let base_offset: number = map_grid_offset(x, y);
-    for (let tile_delta: number = map_grid_adjacent_offsets(5); tile_delta; tile_delta++) {
-        let grid_offset: number = base_offset + tile_delta;
+    let offsets = map_grid_adjacent_offsets(5);
+    for (let i: number = 0; i < offsets.length && offsets[i]; i++) {
+        let grid_offset: number = base_offset + offsets[i];
         if (map_terrain_is(grid_offset, TERRAIN_ROAD) && map_routing_distance(grid_offset) > 0) {
             let index: number = city_map_road_network_index(map_road_network_get(grid_offset));
             if (index < min_index.v) {
@@ -190,8 +194,9 @@ function check_road_to_largest_network_hippodrome(x: number, y: number, min_inde
     }
 }
 function check_min_dist_hippodrome(base_offset: number, x_offset: number, min_dist: Ref<number>, min_grid_offset: Ref<number>, min_x_offset: Ref<number>) {
-    for (let tile_delta: number = map_grid_adjacent_offsets(5); tile_delta; tile_delta++) {
-        let grid_offset: number = base_offset + tile_delta;
+    let offsets = map_grid_adjacent_offsets(5);
+    for (let i: number = 0; i < offsets.length && offsets[i]; i++) {
+        let grid_offset: number = base_offset + offsets[i];
         let dist: number = map_routing_distance(grid_offset);
         if (dist > 0 && dist < min_dist.v) {
             min_dist.v = dist;

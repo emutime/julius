@@ -10,7 +10,7 @@ export class unnamed8_8 {
     public accepted: number = 0;
     public capture_numeric: number = 0;
     public capture_numeric_callback: (num: number) => void = null;
-    public text: number = 0;
+    public text: string | ArrayLike<number> = "";
     public cursor_position: number = 0;
     public length: number = 0;
     public max_length: number = 0;
@@ -39,7 +39,7 @@ export class unnamed8_8 {
     }
 }
 let data: unnamed8_8 = new unnamed8_8();
-function get_char_bytes(str: number) {
+function get_char_bytes(str: string | ArrayLike<number>) {
     return (str as any)[0] >= 0x80 && encoding_is_multibyte() ? 2 : 1;
 }
 function get_current_char_bytes() {
@@ -96,7 +96,7 @@ function update_viewport(has_changed: number) {
     }
     data.viewport_cursor_position = data.cursor_position;
 }
-export function keyboard_start_capture(text: number, max_length: number, allow_punctuation: number, box_width: number, font: font_t) {
+export function keyboard_start_capture(text: string | ArrayLike<number>, max_length: number, allow_punctuation: number, box_width: number, font: font_t) {
     data.capture = 1;
     data.text = text;
     data.length = string_length(text);
@@ -125,7 +125,7 @@ export function keyboard_pause_capture() {
 }
 export function keyboard_stop_capture() {
     data.capture = 0;
-    data.text = 0;
+    data.text = "";
     data.cursor_position = 0;
     data.length = 0;
     data.max_length = 0;

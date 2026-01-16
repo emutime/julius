@@ -350,13 +350,13 @@ export function formation_enemy_move_formation_to(m: formation, x: number, y: nu
     }
     map_routing_noncitizen_can_travel_over_land(x, y, -1, -1, 0, 600);
     for (let r: number = 0; r <= 10; r++) {
-        let x_min: number
-        let y_min: number
-        let x_max: number
-        let y_max: number;
+        let x_min = new Ref(0);
+        let y_min = new Ref(0);
+        let x_max = new Ref(0);
+        let y_max = new Ref(0);
         map_grid_get_area(x, y, 1, r, x_min, y_min, x_max, y_max);
-        for (let yy: number = y_min; yy <= y_max; yy++) {
-            for (let xx: number = x_min; xx <= x_max; xx++) {
+        for (let yy: number = y_min.v; yy <= y_max.v; yy++) {
+            for (let xx: number = x_min.v; xx <= x_max.v; xx++) {
                 let can_move: number = 1;
                 for (let fig: number = 0; fig < m.num_figures; fig++) {
                     let grid_offset: number = map_grid_offset(xx, yy) + figure_offsets[fig];
@@ -521,26 +521,30 @@ function update_enemy_movement(m: formation, roman_distance: number) {
         }
     } else if (regroup) {
         let layout: number = army.layout;
-        let x_offset: number = LAYOUT_ORIENTATION_OFFSETS[layout][m.orientation / 2][2 * m.enemy_legion_index] +
-            army.home_x;
-        let y_offset: number = LAYOUT_ORIENTATION_OFFSETS[layout][m.orientation / 2][2 * m.enemy_legion_index + 1] +
-            army.home_y;
+        let x_offset: Ref<number> = new Ref(
+            LAYOUT_ORIENTATION_OFFSETS[layout][m.orientation / 2][2 * m.enemy_legion_index] + army.home_x
+        );
+        let y_offset: Ref<number> = new Ref(
+            LAYOUT_ORIENTATION_OFFSETS[layout][m.orientation / 2][2 * m.enemy_legion_index + 1] + army.home_y
+        );
         map_grid_bound(x_offset, y_offset);
         let x_tile = new Ref(0);
         let y_tile = new Ref(0);
-        if (formation_enemy_move_formation_to(m, x_offset, y_offset, x_tile, y_tile)) {
+        if (formation_enemy_move_formation_to(m, x_offset.v, y_offset.v, x_tile, y_tile)) {
             formation_set_destination(m, x_tile.v, y_tile.v);
         }
     } else if (advance) {
         let layout: number = army.layout;
-        let x_offset: number = LAYOUT_ORIENTATION_OFFSETS[layout][m.orientation / 2][2 * m.enemy_legion_index] +
-            army.destination_x;
-        let y_offset: number = LAYOUT_ORIENTATION_OFFSETS[layout][m.orientation / 2][2 * m.enemy_legion_index + 1] +
-            army.destination_y;
+        let x_offset: Ref<number> = new Ref(
+            LAYOUT_ORIENTATION_OFFSETS[layout][m.orientation / 2][2 * m.enemy_legion_index] + army.destination_x
+        );
+        let y_offset: Ref<number> = new Ref(
+            LAYOUT_ORIENTATION_OFFSETS[layout][m.orientation / 2][2 * m.enemy_legion_index + 1] + army.destination_y
+        );
         map_grid_bound(x_offset, y_offset);
         let x_tile = new Ref(0);
         let y_tile = new Ref(0);
-        if (formation_enemy_move_formation_to(m, x_offset, y_offset, x_tile, y_tile)) {
+        if (formation_enemy_move_formation_to(m, x_offset.v, y_offset.v, x_tile, y_tile)) {
             formation_set_destination(m, x_tile.v, y_tile.v);
         }
     }

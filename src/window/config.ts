@@ -138,7 +138,7 @@ export class config_widget {
     public type: number = 0;
     public subtype: number = 0;
     public description: translation_key = null;
-    public get_display_text: number = 0;
+    public get_display_text: (() => string | ArrayLike<number>) | null = null;
     public enabled: number = 0;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.type = args[0]);
@@ -148,6 +148,8 @@ export class config_widget {
         args.length >= 5 && (this.enabled = args[4]);
     }
 }
+type config_values = unnamed152_5[];
+type config_string_values = unnamed157_5[];
 let all_widgets: config_widget[] = [
     new config_widget(TYPE_SELECT, SELECT_LANGUAGE, TR_CONFIG_LANGUAGE_LABEL, display_text_language, 0),
     new config_widget(TYPE_NUMERICAL_DESC, RANGE_DISPLAY_SCALE, TR_CONFIG_DISPLAY_SCALE, 0, 0),
@@ -202,8 +204,8 @@ class unnamed152_5 {
     }
 }
 class unnamed157_5 {
-    public original_value: number[] = new Array(CONFIG_STRING_VALUE_MAX).fill(null);
-    public new_value: number[] = new Array(CONFIG_STRING_VALUE_MAX).fill(null);
+    public original_value: Uint8Array = new Uint8Array(CONFIG_STRING_VALUE_MAX);
+    public new_value: Uint8Array = new Uint8Array(CONFIG_STRING_VALUE_MAX);
     public change_action: (key: config_key) => number = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.original_value = args[0]);
@@ -218,7 +220,7 @@ export class unnamed147_8 {
     public bottom_focus_button: number = 0;
     public config_values: config_values = new Array(CONFIG_MAX_ENTRIES).fill(null);
     public config_string_values: config_string_values = new Array(CONFIG_STRING_VALUE_MAX).fill(null);
-    public language_options_data: number[] = new Array(MAX_LANGUAGE_DIRS).fill(0);
+    public language_options_data: Uint8Array[] = new Array(MAX_LANGUAGE_DIRS).fill(null);
     public language_options: string[] = new Array(MAX_LANGUAGE_DIRS).fill('');
     public language_options_utf8: string[] = new Array(MAX_LANGUAGE_DIRS).fill('');
     public num_language_options: number = 0;
@@ -275,7 +277,25 @@ function install_widgets() {
         }
     }
 }
+function init_language_buffers() {
+    for (let i: number = 0; i < MAX_LANGUAGE_DIRS; i++) {
+        if (!data.language_options_data[i]) {
+            data.language_options_data[i] = new Uint8Array(CONFIG_STRING_VALUE_MAX);
+        }
+    }
+}
 function init() {
+    init_language_buffers();
+    for (let i: number = 0; i < CONFIG_MAX_ENTRIES; i++) {
+        if (!data.config_values[i]) {
+            data.config_values[i] = new unnamed152_5();
+        }
+    }
+    for (let i: number = 0; i < CONFIG_STRING_MAX_ENTRIES; i++) {
+        if (!data.config_string_values[i]) {
+            data.config_string_values[i] = new unnamed157_5();
+        }
+    }
     if (!data.config_values[0].change_action) {
         init_config_values();
     }
@@ -289,17 +309,17 @@ function init() {
         strncpy(data.config_string_values[i].new_value, value, CONFIG_STRING_VALUE_MAX - 1);
     }
     string_copy(translation_for(TR_CONFIG_LANGUAGE_DEFAULT), data.language_options_data[0], CONFIG_STRING_VALUE_MAX);
-    data.language_options[0] = data.language_options_data[0];
+    data.language_options[0] = translation_for(TR_CONFIG_LANGUAGE_DEFAULT);
     data.num_language_options = 1;
     data.selected_language_option = 0;
     let subdirs: dir_listing = dir_find_all_subdirectories();
-    let original_value: char = data.config_string_values[CONFIG_STRING_UI_LANGUAGE_DIR].original_value;
+    let original_value = data.config_string_values[CONFIG_STRING_UI_LANGUAGE_DIR].original_value;
     for (let i: number = 0; i < subdirs.num_files; i++) {
         if (data.num_language_options < MAX_LANGUAGE_DIRS && lang_dir_is_valid(subdirs.files[i])) {
             let opt_id: number = data.num_language_options;
-            strncpy(data.language_options_utf8[opt_id], subdirs.files[i], CONFIG_STRING_VALUE_MAX - 1);
+            data.language_options_utf8[opt_id] = subdirs.files[i].substring(0, CONFIG_STRING_VALUE_MAX - 1);
             encoding_from_utf8(subdirs.files[i], data.language_options_data[opt_id], CONFIG_STRING_VALUE_MAX);
-            data.language_options[opt_id] = data.language_options_data[opt_id];
+            data.language_options[opt_id] = subdirs.files[i];
             if (strcmp(original_value, subdirs.files[i]) == 0) {
                 data.selected_language_option = opt_id;
             }
@@ -307,7 +327,9 @@ function init() {
         }
     }
     enable_all_widgets();
-    if (!system_can_scale_display(0, 0)) {
+    let min_scale_ref = new Ref<number>(0);
+    let max_scale_ref = new Ref<number>(0);
+    if (!system_can_scale_display(min_scale_ref, max_scale_ref)) {
         disable_widget(TYPE_NUMERICAL_DESC, RANGE_DISPLAY_SCALE);
         disable_widget(TYPE_NUMERICAL_RANGE, RANGE_DISPLAY_SCALE);
     }
@@ -327,7 +349,7 @@ function checkbox_draw_text(x: number, y: number, value_key: number, description
 function checkbox_draw(x: number, y: number, has_focus: number) {
     button_border_draw(x, y, CHECKBOX_CHECK_SIZE, CHECKBOX_CHECK_SIZE, has_focus);
 }
-function numerical_range_draw(w: numerical_range_widget, x: number, y: number, value_text: number) {
+function numerical_range_draw(w: numerical_range_widget, x: number, y: number, value_text: string | ArrayLike<number>) {
     text_draw(value_text, x, y + 6, FONT_NORMAL_BLACK, 0);
     inner_panel_draw(x + NUMERICAL_SLIDER_X, y + 4, w.width_blocks, 1);
     let width: number = w.width_blocks * BLOCK_SIZE - NUMERICAL_SLIDER_PADDING * 2 - NUMERICAL_DOT_SIZE;
@@ -335,31 +357,31 @@ function numerical_range_draw(w: numerical_range_widget, x: number, y: number, v
     image_draw(image_group(GROUP_PANEL_BUTTON) + 37,
         x + NUMERICAL_SLIDER_X + NUMERICAL_SLIDER_PADDING + scroll_position, y + 2);
 }
-function percentage_string(string: number, percentage: number) {
-    let offset: number = string_from_int(string, percentage, 0);
-    string[offset] = '%';
-    string[offset + 1] = 0;
-    return string;
+function percentage_string(value: Uint8Array, percentage: number) {
+    let offset: number = string_from_int(value, percentage, 0);
+    value[offset] = '%'.charCodeAt(0);
+    value[offset + 1] = 0;
+    return value;
 }
 function display_text_language() {
     return data.language_options[data.selected_language_option];
 }
 function display_text_display_scale() {
-    let value: number[];
+    let value: Uint8Array = new Uint8Array(CONFIG_STRING_VALUE_MAX);
     return percentage_string(value, data.config_values[CONFIG_SCREEN_DISPLAY_SCALE].new_value);
 }
 function display_text_cursor_scale() {
-    let value: number[];
+    let value: Uint8Array = new Uint8Array(CONFIG_STRING_VALUE_MAX);
     return percentage_string(value, data.config_values[CONFIG_SCREEN_CURSOR_SCALE].new_value);
 }
 function update_scale() {
-    let min_scale: number = 0;
-    let max_scale: number = 0;
+    let min_scale = new Ref<number>(0);
+    let max_scale = new Ref<number>(0);
     if (system_can_scale_display(min_scale, max_scale)) {
-        scale_ranges[RANGE_DISPLAY_SCALE].min = min_scale;
-        scale_ranges[RANGE_DISPLAY_SCALE].max = max_scale;
-        if (scale_ranges[RANGE_DISPLAY_SCALE].value > max_scale) {
-            scale_ranges[RANGE_DISPLAY_SCALE].value = max_scale;
+        scale_ranges[RANGE_DISPLAY_SCALE].min = min_scale.v;
+        scale_ranges[RANGE_DISPLAY_SCALE].max = max_scale.v;
+        if (scale_ranges[RANGE_DISPLAY_SCALE].value > max_scale.v) {
+            scale_ranges[RANGE_DISPLAY_SCALE].value = max_scale.v;
         }
     }
 }
@@ -380,9 +402,11 @@ function draw_background() {
         } else if (w.type == TYPE_SELECT) {
             text_draw(translation_for(w.description), 20, y + 6, FONT_NORMAL_BLACK, 0);
             let btn: generic_button = select_buttons[w.subtype];
-            text_draw_centered(w.get_display_text(), btn.x, y + btn.y + 6, btn.width, FONT_NORMAL_BLACK, 0);
+            let display_text = w.get_display_text ? w.get_display_text() : "";
+            text_draw_centered(display_text, btn.x, y + btn.y + 6, btn.width, FONT_NORMAL_BLACK, 0);
         } else if (w.type == TYPE_NUMERICAL_RANGE) {
-            numerical_range_draw(scale_ranges[w.subtype], NUMERICAL_RANGE_X, y, w.get_display_text());
+            let display_text = w.get_display_text ? w.get_display_text() : "";
+            numerical_range_draw(scale_ranges[w.subtype], NUMERICAL_RANGE_X, y, display_text);
         } else if (w.type == TYPE_NUMERICAL_DESC) {
             text_draw(translation_for(w.description), 20, y + 10, FONT_NORMAL_BLACK, 0);
         }
@@ -399,7 +423,7 @@ function draw_foreground() {
         let w: config_widget = data.widgets[i + scrollbar.scroll_position];
         let y: number = ITEM_Y_OFFSET + ITEM_HEIGHT * i;
         if (w.type == TYPE_CHECKBOX) {
-            checkbox_draw(20, y, data.focus_button == i + 1);
+            checkbox_draw(20, y, data.focus_button == i + 1 ? 1 : 0);
         } else if (w.type == TYPE_SELECT) {
             let btn: generic_button = select_buttons[w.subtype];
             button_border_draw(btn.x, y + btn.y,
@@ -485,16 +509,16 @@ function handle_input(m: mouse, h: hotkeys) {
         let w: config_widget = data.widgets[i + scrollbar.scroll_position];
         let y: number = ITEM_Y_OFFSET + ITEM_HEIGHT * i;
         if (w.type == TYPE_CHECKBOX) {
-            let focus: boolean = false;
+            let focus = new Ref<boolean>(false);
             handled ||= checkbox_handle_mouse(m_dialog, 20, y, w.subtype, focus);
-            if (focus) {
+            if (focus.v) {
                 data.focus_button = i + 1;
             }
         } else if (w.type == TYPE_SELECT) {
             let btn: generic_button = select_buttons[w.subtype];
-            let focus: number = 0;
-            handled ||= generic_buttons_handle_mouse(m_dialog, 0, y, btn, 1, focus)
-            if (focus) {
+            let focus = new Ref<number>(0);
+            handled ||= generic_buttons_handle_mouse(m_dialog, 0, y, [btn], 1, focus)
+            if (focus.v) {
                 data.focus_button = i + 1;
             }
         } else if (w.type == TYPE_NUMERICAL_RANGE) {
@@ -515,7 +539,7 @@ function toggle_switch(key: number) {
     window_invalidate();
 }
 function set_language(index: number) {
-    let dir: char = index == 0 ? "" : data.language_options_utf8[index];
+    let dir: string = index == 0 ? "" : data.language_options_utf8[index];
     strncpy(data.config_string_values[CONFIG_STRING_UI_LANGUAGE_DIR].new_value, dir, CONFIG_STRING_VALUE_MAX - 1);
     data.selected_language_option = index;
 }

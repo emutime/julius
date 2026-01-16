@@ -294,7 +294,11 @@ export function figure_movement_init_roaming(f: figure) {
             x -= 8
             break
     }
-    map_grid_bound(x, y);
+    let x_ref: Ref<number> = new Ref(x);
+    let y_ref: Ref<number> = new Ref(y);
+    map_grid_bound(x_ref, y_ref);
+    x = x_ref.v;
+    y = y_ref.v;
     let x_road: Ref<number> = new Ref<number>(0);
     let y_road: Ref<number> = new Ref<number>(0);
     if (map_closest_road_within_radius(x, y, 1, 6, x_road, y_road)) {

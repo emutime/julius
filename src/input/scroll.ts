@@ -24,6 +24,7 @@ import { touch_get_earliest } from 'input/touch';
 import { mouse_button } from 'input/mouse';
 import { scroll_state } from 'input/mouse';
 import { mouse } from 'input/mouse';
+import { Ref } from '../../ext/crt';
 export const enum scroll_type {
     SCROLL_TYPE_CITY = 0,
     SCROLL_TYPE_EMPIRE = 1,
@@ -32,29 +33,26 @@ export const enum scroll_type {
 import SCROLL_TYPE_CITY = scroll_type.SCROLL_TYPE_CITY;
 import SCROLL_TYPE_MAX = scroll_type.SCROLL_TYPE_MAX;
 import { direction_type } from 'core/direction';
-import DIR_0_TOP = direction_type.DIR_0_TOP;
-import DIR_1_TOP_RIGHT = direction_type.DIR_1_TOP_RIGHT;
-import DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
-import DIR_3_BOTTOM_RIGHT = direction_type.DIR_3_BOTTOM_RIGHT;
-import DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
-import DIR_5_BOTTOM_LEFT = direction_type.DIR_5_BOTTOM_LEFT;
-import DIR_6_LEFT = direction_type.DIR_6_LEFT;
-import DIR_7_TOP_LEFT = direction_type.DIR_7_TOP_LEFT;
-import DIR_8_NONE = direction_type.DIR_8_NONE;
-import { direction_type } from 'core/direction';
+const DIR_0_TOP = direction_type.DIR_0_TOP;
+const DIR_1_TOP_RIGHT = direction_type.DIR_1_TOP_RIGHT;
+const DIR_2_RIGHT = direction_type.DIR_2_RIGHT;
+const DIR_3_BOTTOM_RIGHT = direction_type.DIR_3_BOTTOM_RIGHT;
+const DIR_4_BOTTOM = direction_type.DIR_4_BOTTOM;
+const DIR_5_BOTTOM_LEFT = direction_type.DIR_5_BOTTOM_LEFT;
+const DIR_6_LEFT = direction_type.DIR_6_LEFT;
+const DIR_7_TOP_LEFT = direction_type.DIR_7_TOP_LEFT;
+const DIR_8_NONE = direction_type.DIR_8_NONE;
 import { calc_bound } from 'core/calc';
 import { config_key } from 'core/config';
-import CONFIG_UI_SMOOTH_SCROLLING = config_key.CONFIG_UI_SMOOTH_SCROLLING;
-import CONFIG_UI_DISABLE_MOUSE_EDGE_SCROLLING = config_key.CONFIG_UI_DISABLE_MOUSE_EDGE_SCROLLING;
-import CONFIG_UI_DISABLE_RIGHT_CLICK_MAP_DRAG = config_key.CONFIG_UI_DISABLE_RIGHT_CLICK_MAP_DRAG;
-import { config_key } from 'core/config';
+const CONFIG_UI_SMOOTH_SCROLLING = config_key.CONFIG_UI_SMOOTH_SCROLLING;
+const CONFIG_UI_DISABLE_MOUSE_EDGE_SCROLLING = config_key.CONFIG_UI_DISABLE_MOUSE_EDGE_SCROLLING;
+const CONFIG_UI_DISABLE_RIGHT_CLICK_MAP_DRAG = config_key.CONFIG_UI_DISABLE_RIGHT_CLICK_MAP_DRAG;
 import { config_string_key } from 'core/config';
 import { config_get } from 'core/config';
 import { speed_direction } from 'core/speed';
-import SPEED_DIRECTION_NEGATIVE = speed_direction.SPEED_DIRECTION_NEGATIVE;
-import SPEED_DIRECTION_STOPPED = speed_direction.SPEED_DIRECTION_STOPPED;
-import SPEED_DIRECTION_POSITIVE = speed_direction.SPEED_DIRECTION_POSITIVE;
-import { speed_direction } from 'core/speed';
+const SPEED_DIRECTION_NEGATIVE = speed_direction.SPEED_DIRECTION_NEGATIVE;
+const SPEED_DIRECTION_STOPPED = speed_direction.SPEED_DIRECTION_STOPPED;
+const SPEED_DIRECTION_POSITIVE = speed_direction.SPEED_DIRECTION_POSITIVE;
 import { speed_type } from 'core/speed';
 import { speed_clear } from 'core/speed';
 import { speed_set_target } from 'core/speed';
@@ -185,12 +183,12 @@ function clear_scroll_speed() {
     data.x_align_direction = SPEED_DIRECTION_STOPPED;
     data.y_align_direction = SPEED_DIRECTION_STOPPED;
 }
-function get_arrow_key_value(arrow: key) {
+function get_arrow_key_value(arrow: key): number {
     if (arrow.state == KEY_STATE_AXIS) {
         return arrow.value;
     }
     if (config_get(CONFIG_UI_SMOOTH_SCROLLING)) {
-        return arrow.state != KEY_STATE_UNPRESSED;
+        return arrow.state != KEY_STATE_UNPRESSED ? 1 : 0;
     }
     if (arrow.state == KEY_STATE_PRESSED) {
         arrow.state = KEY_STATE_HELD;
@@ -315,7 +313,9 @@ export function scroll_drag_start(is_touch: number) {
     data.drag.delta.x = 0;
     data.drag.delta.y = 0;
     if (!is_touch) {
-        system_mouse_get_relative_state(0, 0);
+        let unused_x = new Ref<number>(0);
+        let unused_y = new Ref<number>(0);
+        system_mouse_get_relative_state(unused_x, unused_y);
     }
     clear_scroll_speed();
 }
@@ -326,10 +326,11 @@ function set_scroll_speed_from_drag() {
     let delta_x: number = 0;
     let delta_y: number = 0;
     if (!data.drag.is_touch) {
-        let relative_state: pixel_offset = new pixel_offset();
-        system_mouse_get_relative_state(relative_state);
-        delta_x = relative_state.x;
-        delta_y = relative_state.y;
+        let relative_x = new Ref<number>(0);
+        let relative_y = new Ref<number>(0);
+        system_mouse_get_relative_state(relative_x, relative_y);
+        delta_x = relative_x.v;
+        delta_y = relative_y.v;
     } else {
         let t: touch = touch_get_earliest();
         delta_x = -t.frame_movement.x;
@@ -342,8 +343,8 @@ function set_scroll_speed_from_drag() {
             system_mouse_set_relative_mode(1);
         }
         if (!data.drag.has_started) {
-            data.drag.has_started = Math.abs(data.drag.delta.x) > SCROLL_DRAG_MIN_DELTA
-                || Math.abs(data.drag.delta.y) > SCROLL_DRAG_MIN_DELTA;
+            data.drag.has_started = (Math.abs(data.drag.delta.x) > SCROLL_DRAG_MIN_DELTA
+                || Math.abs(data.drag.delta.y) > SCROLL_DRAG_MIN_DELTA) ? 1 : 0;
         }
     }
     if (data.drag.has_started) {
@@ -374,7 +375,7 @@ export function scroll_drag_end() {
     speed_set_target(data.speed.y, 0, SCROLL_DRAG_DECAY_TIME, 1);
     return has_scrolled;
 }
-function set_arrow_input(arrow: key, opposite_arrow: key, modifier: number): number {
+function set_arrow_input(arrow: key, opposite_arrow: key | null, modifier: number): number {
     if (get_arrow_key_value(arrow) && (!opposite_arrow || !is_arrow_active(opposite_arrow))) {
         if (arrow.state == KEY_STATE_AXIS) {
             data.constant_input = 1;
@@ -386,7 +387,7 @@ function set_arrow_input(arrow: key, opposite_arrow: key, modifier: number): num
     return 0;
 }
 function get_direction(m: mouse) {
-    let is_inside_window: number = m.is_inside_window;
+    let is_inside_window: number = m.is_inside_window ? 1 : 0;
     let width: number = screen_width();
     let height: number = screen_height();
     if (setting_fullscreen() && m.x < width && m.y < height) {
@@ -430,9 +431,9 @@ function get_direction(m: mouse) {
             data.speed.modifier_y = 1 - (height - y) / border;
         }
     }
-    left = set_arrow_input(data.arrow_key.left, 0, data.speed.modifier_x);
+    left = set_arrow_input(data.arrow_key.left, null, data.speed.modifier_x);
     right = set_arrow_input(data.arrow_key.right, data.arrow_key.left, data.speed.modifier_x);
-    top = set_arrow_input(data.arrow_key.up, 0, data.speed.modifier_y);
+    top = set_arrow_input(data.arrow_key.up, null, data.speed.modifier_y);
     bottom = set_arrow_input(data.arrow_key.down, data.arrow_key.up, data.speed.modifier_y);
     if (data.constant_input) {
         if (!data.speed.modifier_x) {
@@ -489,10 +490,11 @@ function set_scroll_speed_from_input(m: mouse, type: scroll_type) {
         let align_x: number = 0;
         let align_y: number = 0;
         if (type == SCROLL_TYPE_CITY) {
-            let camera_offset: pixel_offset;
-            city_view_get_pixel_offset(camera_offset.x, camera_offset.y);
-            align_x = get_alignment_delta(dir_x, TILE_X_PIXELS, camera_offset.x);
-            align_y = get_alignment_delta(dir_y, TILE_Y_PIXELS, camera_offset.y);
+            let camera_x = new Ref<number>(0);
+            let camera_y = new Ref<number>(0);
+            city_view_get_pixel_offset(camera_x, camera_y);
+            align_x = get_alignment_delta(dir_x, TILE_X_PIXELS, camera_x.v);
+            align_y = get_alignment_delta(dir_y, TILE_Y_PIXELS, camera_y.v);
         }
         speed_set_target(data.speed.x, (step + align_x) * dir_x * do_scroll, SPEED_CHANGE_IMMEDIATE, 0);
         speed_set_target(data.speed.y, ((step / y_fraction) + align_y) * dir_y * do_scroll,
@@ -524,7 +526,7 @@ export function scroll_get_delta(m: mouse, delta: pixel_offset, type: scroll_typ
     delta.x = speed_get_delta(data.speed.x);
     delta.y = speed_get_delta(data.speed.y);
     if (!data.is_scrolling) {
-        data.speed.decaying = speed_is_changing(data.speed.x) || speed_is_changing(data.speed.y);
+        data.speed.decaying = (speed_is_changing(data.speed.x) || speed_is_changing(data.speed.y)) ? 1 : 0;
         data.is_scrolling = data.speed.decaying;
     }
     return delta.x != 0 || delta.y != 0;

@@ -364,7 +364,7 @@ function load_external_fonts(base_offset: number) {
     }
     buffer_init(buf, data.tmp_data, data_size);
     convert_images(data.font, EXTERNAL_FONT_ENTRIES, buf, data.font_data);
-    data.fonts_enabled = FULL_CHARSET_IN_FONT;
+    data.fonts_enabled = font.FULL_CHARSET_IN_FONT;
     data.font_base_offset = base_offset;
     return 1;
 }
@@ -464,7 +464,7 @@ function load_traditional_chinese_fonts() {
         offset = parse_chinese_font(num_chars, input, pixels[offset], offset, 20, num_chars * 2);
     }
     log_info("Done parsing Traditional Chinese font", 0, 0);
-    data.fonts_enabled = MULTIBYTE_IN_FONT;
+    data.fonts_enabled = font.MULTIBYTE_IN_FONT;
     data.font_base_offset = 0;
     return 1;
 }
@@ -498,7 +498,7 @@ function load_simplified_chinese_fonts() {
         offset = parse_chinese_font(num_chars, input, pixels[offset], offset, 19, num_chars * 2);
     }
     log_info("Done parsing Simplified Chinese font", 0, 0);
-    data.fonts_enabled = MULTIBYTE_IN_FONT;
+    data.fonts_enabled = font.MULTIBYTE_IN_FONT;
     data.font_base_offset = 0;
     return 1;
 }
@@ -564,7 +564,7 @@ function load_korean_fonts() {
         offset = parse_korean_font(input, pixels[offset], offset, 20, num_chars * 2);
     }
     log_info("Done parsing Korean font", 0, 0);
-    data.fonts_enabled = MULTIBYTE_IN_FONT;
+    data.fonts_enabled = font.MULTIBYTE_IN_FONT;
     data.font_base_offset = 0;
     return 1;
 }
@@ -592,7 +592,7 @@ function load_japanese_fonts() {
     offset = parse_multibyte_font(num_half_width, input, pixels[offset], offset, 20, -9, num_chars * 2);
     offset = parse_multibyte_font(num_full_width, input, pixels[offset], offset, 20, 1, num_chars * 2 + num_half_width);
     log_info("Done parsing Japanese font", 0, offset);
-    data.fonts_enabled = MULTIBYTE_IN_FONT;
+    data.fonts_enabled = font.MULTIBYTE_IN_FONT;
     data.font_base_offset = 0;
     return 1;
 }
@@ -673,9 +673,9 @@ export function image_get(id: number) {
     }
 }
 export function image_letter(letter_id: number) {
-    if (data.fonts_enabled == FULL_CHARSET_IN_FONT) {
+    if (data.fonts_enabled == font.FULL_CHARSET_IN_FONT) {
         return data.font[data.font_base_offset + letter_id];
-    } else if (data.fonts_enabled == MULTIBYTE_IN_FONT && letter_id >= IMAGE_FONT_MULTIBYTE_OFFSET) {
+    } else if (data.fonts_enabled == font.MULTIBYTE_IN_FONT && letter_id >= IMAGE_FONT_MULTIBYTE_OFFSET) {
         return data.font[data.font_base_offset + letter_id - IMAGE_FONT_MULTIBYTE_OFFSET];
     } else if (letter_id < IMAGE_FONT_MULTIBYTE_OFFSET) {
         return data.main[data.group_image_ids[GROUP_FONT] + letter_id];
@@ -687,12 +687,12 @@ export function image_get_enemy(id: number) {
     if (id >= 0 && id < ENEMY_ENTRIES) {
         return data.enemy[id];
     } else {
-        return NULL;
+        return null;
     }
 }
 export function image_data(id: number) {
     if (id < 0 || id >= MAIN_ENTRIES) {
-        return NULL;
+        return null;
     }
     if (!data.main[id].draw.is_external) {
         return data.main_data[data.main[id].draw.offset];
@@ -703,20 +703,20 @@ export function image_data(id: number) {
     }
 }
 export function image_data_letter(letter_id: number) {
-    if (data.fonts_enabled == FULL_CHARSET_IN_FONT) {
+    if (data.fonts_enabled == font.FULL_CHARSET_IN_FONT) {
         return data.font_data[data.font[data.font_base_offset + letter_id].draw.offset];
-    } else if (data.fonts_enabled == MULTIBYTE_IN_FONT && letter_id >= IMAGE_FONT_MULTIBYTE_OFFSET) {
+    } else if (data.fonts_enabled == font.MULTIBYTE_IN_FONT && letter_id >= IMAGE_FONT_MULTIBYTE_OFFSET) {
         return data.font_data[data.font[data.font_base_offset + letter_id - IMAGE_FONT_MULTIBYTE_OFFSET].draw.offset];
     } else if (letter_id < IMAGE_FONT_MULTIBYTE_OFFSET) {
         let image_id: number = data.group_image_ids[GROUP_FONT] + letter_id;
         return data.main_data[data.main[image_id].draw.offset];
     } else {
-        return NULL;
+        return null;
     }
 }
 export function image_data_enemy(id: number) {
     if (data.enemy[id].draw.offset > 0) {
         return data.enemy_data[data.enemy[id].draw.offset];
     }
-    return NULL;
+    return null;
 }

@@ -5,27 +5,27 @@ import { dir_listing } from 'core/dir';
 import { dir_get_file } from 'core/dir';
 import { file_open } from 'core/file';
 import { file_close } from 'core/file';
-import { Ptr, Ref } from '../../ext/crt';
+import { Ref } from '../../ext/crt';
 
-const SEEK_SET = 0;
-const SEEK_END = 2;
+export const SEEK_SET = 0;
+export const SEEK_END = 2;
 
-function fseek(fp: FILE, offset: number, whence: number): number {
+export function fseek(fp: FILE, offset: number, whence: number): number {
     // Stub implementation
     return 0;
 }
 
-function ftell(fp: FILE): number {
+export function ftell(fp: FILE): number {
     // Stub implementation
     return 0;
 }
 
-function fread(buffer: any, size: number, count: number, fp: FILE): number {
+export function fread(buffer: any, size: number, count: number, fp: FILE): number {
     // Stub implementation
     return 0;
 }
 
-function fwrite(buffer: any, size: number, count: number, fp: FILE): number {
+export function fwrite(buffer: any, size: number, count: number, fp: FILE): number {
     // Stub implementation
     return 0;
 }

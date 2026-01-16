@@ -271,8 +271,8 @@ class settings {
     public is_custom: number = 0;
     public starting_favor: number = 0;
     public starting_personal_savings: number = 0;
-    public player_name: string = "";
-    public campaign_player_name: number[] = new Array(MAX_PLAYER_NAME).fill(0);
+    public player_name: Uint8Array = new Uint8Array(MAX_PLAYER_NAME);
+    public campaign_player_name: Uint8Array = new Uint8Array(MAX_PLAYER_NAME);
     public constructor(...args: any[]) {
         args.length >= 1 && (this.campaign_rank = args[0]);
         args.length >= 2 && (this.campaign_mission = args[1]);

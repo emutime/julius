@@ -1,4 +1,6 @@
 export const COMPOSED_TOOLTIP_TEXT_MAX = 1000;
+export const TOOLTIP_MAX_EXTRA_VALUES = 5;
+import { lang_get_string } from 'core/lang';
 import { advisor_type } from 'city/constants';
 import { city_labor_unemployment_percentage, city_labor_workers_needed, city_labor_workers_unemployed } from 'city/labor';
 import { city_rating_culture, city_rating_favor, city_rating_peace, city_rating_prosperity } from 'city/ratings';
@@ -72,7 +74,7 @@ import ADVISOR_POPULATION = advisor_type.ADVISOR_POPULATION;
 let DEFAULT_TEXT_GROUP: number = 68;
 let TOOLTIP_DELAY_MILLIS: time_millis = 150;
 let last_update: time_millis = 0;
-let composed_tooltip_text: number[] = new Array(COMPOSED_TOOLTIP_TEXT_MAX);
+let composed_tooltip_text: string = "";
 export class unnamed27_8 {
     public is_active: number = 0;
     public x: number = 0;
@@ -142,39 +144,28 @@ function save_window_under_tooltip_to_buffer(x: number, y: number, width: number
     }
     graphics_save_to_buffer(x, y, width, height, button_tooltip_info.buffer);
 }
-function get_tooltip_text(c: tooltip_context) {
-    // let text: number = lang_get_string(c.text_group, c.text_id);
-    // if (c.has_numeric_prefix) {
-    //     let offset: number = string_from_int(composed_tooltip_text, c.numeric_prefix, 0);
-    //     string_copy(text, composed_tooltip_text[offset], COMPOSED_TOOLTIP_TEXT_MAX - offset);
-    //     text = composed_tooltip_text;
-    // } else if (c.num_extra_texts > 0) {
-    //     string_copy(text, composed_tooltip_text, COMPOSED_TOOLTIP_TEXT_MAX);
-    //     let offset: number = string_length(composed_tooltip_text);
-    //     let is_comma_separated: number = c.extra_text_type == TOOLTIP_EXTRA_TEXT_COMMA_SEPARATED;
-    //     if (is_comma_separated) {
-    //         composed_tooltip_text[offset++] = ':';
-    //         composed_tooltip_text[offset++] = '\n';
-    //     } else {
-    //         composed_tooltip_text[offset++] = ' ';
-    //     }
-    //     for (let i: number = 0; i < c.num_extra_texts; i++) {
-    //         if (i) {
-    //             if (is_comma_separated) {
-    //                 composed_tooltip_text[offset++] = ',';
-    //             }
-    //             composed_tooltip_text[offset++] = ' ';
-    //         }
-    //         let extra_value: number = lang_get_string(c.extra_text_groups[i], c.extra_text_ids[i]);
-    //         string_copy(extra_value, composed_tooltip_text[offset], COMPOSED_TOOLTIP_TEXT_MAX - offset);
-    //         offset += string_length(extra_value)
-    //     }
-    //     text = composed_tooltip_text;
-    // }
-    // return text;
+function get_tooltip_text(c: tooltip_context): string {
+    let text: string = lang_get_string(c.text_group, c.text_id);
+    if (c.has_numeric_prefix) {
+        composed_tooltip_text = `${c.numeric_prefix}${text}`;
+        return composed_tooltip_text;
+    }
+    if (c.num_extra_texts > 0) {
+        const is_comma_separated: boolean = c.extra_text_type == TOOLTIP_EXTRA_TEXT_COMMA_SEPARATED;
+        let composed = text + (is_comma_separated ? ":\n" : " ");
+        for (let i: number = 0; i < c.num_extra_texts; i++) {
+            if (i) {
+                composed += is_comma_separated ? ", " : " ";
+            }
+            composed += lang_get_string(c.extra_text_groups[i], c.extra_text_ids[i]);
+        }
+        composed_tooltip_text = composed;
+        return composed_tooltip_text;
+    }
+    return text;
 }
 function draw_button_tooltip(c: tooltip_context) {
-    let text: number = get_tooltip_text(c);
+    let text: string = get_tooltip_text(c);
     let width: number = 200;
     let lines: number = text_measure_multiline(text, width - 5, FONT_SMALL_PLAIN);
     if (lines > 2) {
@@ -242,7 +233,7 @@ function draw_button_tooltip(c: tooltip_context) {
     text_draw_multiline(text, x + 5, y + 7, width - 5, FONT_SMALL_PLAIN, COLOR_TOOLTIP);
 }
 function draw_overlay_tooltip(c: tooltip_context) {
-    let text: number = get_tooltip_text(c);
+    let text: string = get_tooltip_text(c);
     let width: number = 200;
     let lines: number = text_measure_multiline(text, width - 5, FONT_SMALL_PLAIN);
     if (lines > 2) {

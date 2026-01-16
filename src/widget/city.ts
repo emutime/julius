@@ -81,19 +81,19 @@ export class unnamed33_8 {
 }
 let data: unnamed33_8 = new unnamed33_8();
 function set_city_clip_rectangle() {
-    let x: number
-    let y: number
-    let width: number
-    let height: number;
+    let x = new Ref<number>(0);
+    let y = new Ref<number>(0);
+    let width = new Ref<number>(0);
+    let height = new Ref<number>(0);
     city_view_get_viewport(x, y, width, height);
-    graphics_set_clip_rectangle(x, y, width, height);
+    graphics_set_clip_rectangle(x.v, y.v, width.v, height.v);
 }
 export function widget_city_draw() {
     set_city_clip_rectangle();
     if (game_state_overlay()) {
         city_with_overlay_draw(data.current_tile);
     } else {
-        city_without_overlay_draw(0, 0, data.current_tile);
+        city_without_overlay_draw(0, new pixel_coordinate(0, 0), data.current_tile);
     }
     graphics_reset_clip_rectangle();
 }
@@ -106,16 +106,16 @@ export function widget_city_draw_construction_cost_and_size() {
     if (scroll_in_progress()) {
         return;
     }
-    let size_x: number
-    let size_y: number;
+    let size_x = new Ref<number>(0);
+    let size_y = new Ref<number>(0);
     let cost: number = building_construction_cost();
     let has_size: number = building_construction_size(size_x, size_y);
     if (!cost && !has_size) {
         return;
     }
     set_city_clip_rectangle();
-    let x: number
-    let y: number;
+    let x = new Ref<number>(0);
+    let y = new Ref<number>(0);
     city_view_get_selected_tile_pixels(x, y);
     if (cost) {
         let color: color_t;
@@ -124,15 +124,15 @@ export function widget_city_draw_construction_cost_and_size() {
         } else {
             color = COLOR_FONT_RED;
         }
-        text_draw_number_colored(cost, '@', " ", x + 58 + 1, y + 1, FONT_NORMAL_PLAIN, COLOR_BLACK);
-        text_draw_number_colored(cost, '@', " ", x + 58, y, FONT_NORMAL_PLAIN, color);
+        text_draw_number_colored(cost, '@', " ", x.v + 58 + 1, y.v + 1, FONT_NORMAL_PLAIN, COLOR_BLACK);
+        text_draw_number_colored(cost, '@', " ", x.v + 58, y.v, FONT_NORMAL_PLAIN, color);
     }
     if (has_size) {
         let width: number = -text_get_width(string_from_ascii("  "), FONT_SMALL_PLAIN);
-        width += text_draw_number_colored(size_x, '@', "x", x - 15 + 1, y + 25 + 1, FONT_SMALL_PLAIN, COLOR_BLACK)
-        text_draw_number_colored(size_x, '@', "x", x - 15, y + 25, FONT_SMALL_PLAIN, COLOR_FONT_YELLOW);
-        text_draw_number_colored(size_y, '@', " ", x - 15 + width + 1, y + 25 + 1, FONT_SMALL_PLAIN, COLOR_BLACK);
-        text_draw_number_colored(size_y, '@', " ", x - 15 + width, y + 25, FONT_SMALL_PLAIN, COLOR_FONT_YELLOW);
+        width += text_draw_number_colored(size_x.v, '@', "x", x.v - 15 + 1, y.v + 25 + 1, FONT_SMALL_PLAIN, COLOR_BLACK)
+        text_draw_number_colored(size_x.v, '@', "x", x.v - 15, y.v + 25, FONT_SMALL_PLAIN, COLOR_FONT_YELLOW);
+        text_draw_number_colored(size_y.v, '@', " ", x.v - 15 + width + 1, y.v + 25 + 1, FONT_SMALL_PLAIN, COLOR_BLACK);
+        text_draw_number_colored(size_y.v, '@', " ", x.v - 15 + width, y.v + 25, FONT_SMALL_PLAIN, COLOR_FONT_YELLOW);
     }
     graphics_reset_clip_rectangle();
 }
@@ -182,19 +182,19 @@ function is_cancel_construction_button(x: number, y: number) {
     if (!building_construction_type()) {
         return 0;
     }
-    let city_x: number
-    let city_y: number
-    let width: number
-    let height: number;
+    let city_x = new Ref<number>(0);
+    let city_y = new Ref<number>(0);
+    let width = new Ref<number>(0);
+    let height = new Ref<number>(0);
     city_view_get_viewport(city_x, city_y, width, height);
     let touch_width: number = 5 * BLOCK_SIZE;
     let touch_height: number = 4 * BLOCK_SIZE;
-    let x_offset: number = width - touch_width;
+    let x_offset: number = width.v - touch_width;
     let y_offset: number = 24;
     return x >= x_offset && x < x_offset + touch_width && y >= y_offset && y < y_offset + touch_height;
 }
 function update_city_view_coords(x: number, y: number, tile: map_tile) {
-    let view: view_tile;
+    let view: view_tile = new pixel_offset();
     if (city_view_pixels_to_view_tile(x, y, view)) {
         tile.grid_offset = city_view_tile_to_grid_offset(view);
         city_view_set_selected_view_tile(view);
@@ -288,24 +288,24 @@ function input_coords_in_city(x: number, y: number) {
     if (is_pause_button(x, y) || is_cancel_construction_button(x, y)) {
         return 0;
     }
-    let x_offset: number
-    let y_offset: number
-    let width: number
-    let height: number;
+    let x_offset = new Ref<number>(0);
+    let y_offset = new Ref<number>(0);
+    let width = new Ref<number>(0);
+    let height = new Ref<number>(0);
     city_view_get_viewport(x_offset, y_offset, width, height);
-    x -= x_offset
-    y -= y_offset
-    return (x >= 0 && x < width && y >= 0 && y < height);
+    x -= x_offset.v
+    y -= y_offset.v
+    return (x >= 0 && x < width.v && y >= 0 && y < height.v);
 }
 function handle_touch_scroll(t: touch) {
     if (building_construction_type()) {
         if (t.has_started) {
-            let x_offset: number
-            let y_offset: number
-            let width: number
-            let height: number;
+            let x_offset = new Ref<number>(0);
+            let y_offset = new Ref<number>(0);
+            let width = new Ref<number>(0);
+            let height = new Ref<number>(0);
             city_view_get_viewport(x_offset, y_offset, width, height);
-            scroll_set_custom_margins(x_offset, y_offset, width, height);
+            scroll_set_custom_margins(x_offset.v, y_offset.v, width.v, height.v);
         }
         if (t.has_ended) {
             scroll_restore_margins();

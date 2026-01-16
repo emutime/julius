@@ -63,7 +63,7 @@ export class unnamed36_8 {
 }
 let data: unnamed36_8 = new unnamed36_8();
 function determine_language() {
-    let new_game_string: number = lang_get_string(1, 1);
+    let new_game_string: string = lang_get_string(1, 1);
     if (string_equals(NEW_GAME_ENGLISH, new_game_string)) {
         return LANGUAGE_ENGLISH;
     } else if (string_equals(NEW_GAME_FRENCH, new_game_string)) {
@@ -99,7 +99,7 @@ function determine_language() {
     }
 }
 function log_language() {
-    let desc: char;
+    let desc: string;
     switch (data.last_determined_language) {
         case LANGUAGE_ENGLISH:
             desc = "English";
@@ -186,6 +186,4 @@ export function locale_translate_rank_autosaves() {
             return 0
     }
 }
-
-export { language_type };
 
