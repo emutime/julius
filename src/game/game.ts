@@ -62,10 +62,10 @@ export function game_pre_init() {
     return 1;
 }
 function is_unpatched() {
-    let delete_game: number = lang_get_string(1, 6).byteOffset;
-    let option_menu: number = lang_get_string(2, 0).byteOffset;
-    let difficulty_option: number = lang_get_string(2, 6).byteOffset;
-    let help_menu: number = lang_get_string(3, 0).byteOffset;
+    let delete_game: string = lang_get_string(1, 6);
+    let option_menu: string = lang_get_string(2, 0);
+    let difficulty_option: string = lang_get_string(2, 6);
+    let help_menu: string = lang_get_string(3, 0);
     return difficulty_option == help_menu || delete_game == option_menu;
 }
 export function game_init() {

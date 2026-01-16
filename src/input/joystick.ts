@@ -19,15 +19,32 @@ import { time_get_millis, time_millis } from 'core/time';
 import { system_keyboard_show, system_move_mouse_cursor } from 'game/system';
 import { window_id, window_is } from 'graphics/window';
 import { hotkey_set_value_for_action } from 'input/hotkey';
-import { joystick_axis_position, joystick_element, joystick_hat_position } from 'input/joystick';
 import { keyboard_is_capturing } from 'input/keyboard';
-import { mouse, mouse_remove_touch, mouse_set_left_down, mouse_set_right_down, mouse_set_scroll, scroll_state } from 'input/mouse';
+import { mouse_remove_touch, mouse_set_left_down, mouse_set_right_down, mouse_set_scroll, scroll_state } from 'input/mouse';
 import { scroll_arrow_down, scroll_arrow_left, scroll_arrow_right, scroll_arrow_up } from 'input/scroll';
 import { touch_cycle_mode } from 'input/touch';
 export const MAX_HOTKEYS = 6;
 import SCROLL_NONE = scroll_state.SCROLL_NONE;
 import SCROLL_UP = scroll_state.SCROLL_UP;
 import SCROLL_DOWN = scroll_state.SCROLL_DOWN;
+export const enum joystick_element {
+    JOYSTICK_ELEMENT_NONE = 0,
+    JOYSTICK_ELEMENT_AXIS = 1,
+    JOYSTICK_ELEMENT_TRACKBALL = 2,
+    JOYSTICK_ELEMENT_BUTTON = 3,
+    JOYSTICK_ELEMENT_HAT = 4
+}
+export const enum joystick_axis_position {
+    JOYSTICK_AXIS_POSITIVE = 0,
+    JOYSTICK_AXIS_NEGATIVE = 1
+}
+export const enum joystick_hat_position {
+    JOYSTICK_HAT_CENTERED = 0,
+    JOYSTICK_HAT_UP = 1,
+    JOYSTICK_HAT_LEFT = 2,
+    JOYSTICK_HAT_DOWN = 4,
+    JOYSTICK_HAT_RIGHT = 8
+}
 import JOYSTICK_ELEMENT_NONE = joystick_element.JOYSTICK_ELEMENT_NONE;
 import JOYSTICK_ELEMENT_AXIS = joystick_element.JOYSTICK_ELEMENT_AXIS;
 import JOYSTICK_ELEMENT_TRACKBALL = joystick_element.JOYSTICK_ELEMENT_TRACKBALL;
@@ -65,6 +82,7 @@ export const enum mapping_action {
     MAPPING_ACTION_RESET_MAPPING,
     MAPPING_ACTION_MAX
 };
+export const MAX_JOYSTICK_MAPPINGS = mapping_action.MAPPING_ACTION_MAX * 2;
 import MAPPING_ACTION_MOUSE_CURSOR_UP = mapping_action.MAPPING_ACTION_MOUSE_CURSOR_UP;
 import MAPPING_ACTION_MOUSE_CURSOR_LEFT = mapping_action.MAPPING_ACTION_MOUSE_CURSOR_LEFT;
 import MAPPING_ACTION_MOUSE_CURSOR_DOWN = mapping_action.MAPPING_ACTION_MOUSE_CURSOR_DOWN;
@@ -220,7 +238,11 @@ export const enum cursor_slowdown {
     CURSOR_SLOWDOWN_NORMAL = 4096,
     CURSOR_SLOWDOWN_SLOWER = 8192,
 }
-class mouse {
+import CURSOR_SLOWDOWN_FASTER = cursor_slowdown.CURSOR_SLOWDOWN_FASTER;
+import CURSOR_SLOWDOWN_NORMAL = cursor_slowdown.CURSOR_SLOWDOWN_NORMAL;
+import CURSOR_SLOWDOWN_SLOWER = cursor_slowdown.CURSOR_SLOWDOWN_SLOWER;
+const DEADZONE = 2000;
+class joystick_mouse_state {
     public x_speed: speed_type = null;
     public y_speed: speed_type = null;
     public left_button: number = 0;
@@ -242,7 +264,7 @@ export class unnamed91_8 {
     public connected_models: joystick_model[] = new Array(MAX_CONTROLLERS).fill(null);
     public joystick: joystick_info[] = new Array(MAX_CONTROLLERS).fill(null);
     public connected_joysticks: number = 0;
-    public mouse: mouse = null;
+    public mouse: joystick_mouse_state = null;
     public map_scroll: mapped_input[] = new Array(NUM_DIRECTIONS).fill(null);
     public joystick_hotkey: mapped_input[] = new Array(MAX_HOTKEYS).fill(null);
     public virtual_keyboard: mapped_input = null;
@@ -291,13 +313,13 @@ function reset_joystick_state(joystick: joystick_info): void {
         joystick.hat[i] = null;
     }
 }
-function get_free_joystick() {
+function get_free_joystick(): joystick_info | null {
     for (let i: number = 0; i < MAX_CONTROLLERS; ++i) {
         if (!data.joystick[i].connected) {
             return data.joystick[i];
         }
     }
-    return 0;
+    return null;
 }
 function get_model_by_guid(guid: string): joystick_model {
     for (let i: number = 0; i < MAX_CONTROLLERS; ++i) {
@@ -320,7 +342,7 @@ export function joystick_add_model(model: joystick_model): void {
     }
 }
 export function joystick_add(joystick_id: number, guid: string) {
-    let joystick: joystick_info = get_free_joystick();
+    let joystick: joystick_info | null = get_free_joystick();
     let model: joystick_model = get_model_by_guid(guid);
     if (!joystick || !model) {
         return 0;
@@ -333,19 +355,19 @@ export function joystick_add(joystick_id: number, guid: string) {
     log_info("Joystick added with name", model.name, 0);
     return 1;
 }
-function get_joystick_by_id(joystick_id: number) {
+function get_joystick_by_id(joystick_id: number): joystick_info | null {
     for (let i: number = 0; i < MAX_CONTROLLERS; ++i) {
         if (data.joystick[i].id == joystick_id && data.joystick[i].connected) {
             return data.joystick[i];
         }
     }
-    return 0;
+    return null;
 }
 export function joystick_is_active(joystick_id: number) {
-    return get_joystick_by_id(joystick_id) != 0;
+    return get_joystick_by_id(joystick_id) != null;
 }
 export function joystick_remove(joystick_id: number): number {
-    let joystick: joystick_info = get_joystick_by_id(joystick_id);
+    let joystick: joystick_info | null = get_joystick_by_id(joystick_id);
     if (!joystick) {
         return 0;
     }
@@ -359,7 +381,7 @@ export function joystick_remove(joystick_id: number): number {
     return 1;
 }
 export function joystick_update_element(joystick_id: number, element: joystick_element, element_id: number, value1: number, value2: number): void {
-    let joystick: joystick_info = get_joystick_by_id(joystick_id);
+    let joystick: joystick_info | null = get_joystick_by_id(joystick_id);
     if (!joystick) {
         return;
     }
@@ -475,7 +497,7 @@ function set_input_state(input: mapped_input) {
         }
     }
 }
-function get_joystick_input_for_action(action: mapping_action, input: mapped_input) {
+function get_joystick_input_for_action(action: mapping_action, input: mapped_input | null) {
     let dummy_input: mapped_input = new mapped_input();
     if (!input) {
         input = dummy_input;
@@ -525,7 +547,7 @@ function translate_input_for_element(input: mapped_input, translated_element: jo
     }
     input.element = translated_element;
 }
-function rescale_axis(inputs: mapped_input) {
+function rescale_axis(inputs: mapped_input[]) {
     let analog_x: number = inputs[DIRECTION_RIGHT].value - inputs[DIRECTION_LEFT].value;
     let analog_y: number = inputs[DIRECTION_DOWN].value - inputs[DIRECTION_UP].value;
     inputs[DIRECTION_UP].value = 0;
@@ -579,7 +601,7 @@ function rescale_axis(inputs: mapped_input) {
     }
     return 1;
 }
-function get_highest_priority_element(inputs: mapped_input, total_inputs: number) {
+function get_highest_priority_element(inputs: mapped_input[], total_inputs: number) {
     let highest_priority: joystick_element = inputs[0].element;
     for (let i: number = 1; i < total_inputs; ++i) {
         if (inputs[i].element < highest_priority && inputs[i].element != JOYSTICK_ELEMENT_NONE) {
@@ -589,7 +611,7 @@ function get_highest_priority_element(inputs: mapped_input, total_inputs: number
     return highest_priority;
 }
 function translate_mapping_reset() {
-    return get_joystick_input_for_action(MAPPING_ACTION_RESET_MAPPING, 0);
+    return get_joystick_input_for_action(MAPPING_ACTION_RESET_MAPPING, null);
 }
 function translate_mouse_cursor_position() {
     let cursor_input: mapped_input[] = new Array(NUM_DIRECTIONS).fill(null);
@@ -612,9 +634,9 @@ function translate_mouse_cursor_position() {
         return 0;
     }
     let slowdown: number = CURSOR_SLOWDOWN_NORMAL;
-    if (get_joystick_input_for_action(MAPPING_ACTION_FASTER_MOUSE_CURSOR_SPEED, 0)) {
+    if (get_joystick_input_for_action(MAPPING_ACTION_FASTER_MOUSE_CURSOR_SPEED, null)) {
         slowdown = CURSOR_SLOWDOWN_FASTER;
-    } else if (get_joystick_input_for_action(MAPPING_ACTION_SLOWER_MOUSE_CURSOR_SPEED, 0)) {
+    } else if (get_joystick_input_for_action(MAPPING_ACTION_SLOWER_MOUSE_CURSOR_SPEED, null)) {
         slowdown = CURSOR_SLOWDOWN_SLOWER;
     }
     let delta_x: number = cursor_input[DIRECTION_RIGHT].value - cursor_input[DIRECTION_LEFT].value;
@@ -631,13 +653,13 @@ function translate_mouse_cursor_position() {
 }
 function translate_mouse_button_presses() {
     let handled: number = 0;
-    let button: number = get_joystick_input_for_action(MAPPING_ACTION_LEFT_MOUSE_BUTTON, 0);
+    let button: number = get_joystick_input_for_action(MAPPING_ACTION_LEFT_MOUSE_BUTTON, null);
     if (button != data.mouse.left_button) {
         data.mouse.left_button = button;
-        mouse_set_left_down(button);
+        mouse_set_left_down(button != 0);
         handled = 1;
     }
-    button = get_joystick_input_for_action(MAPPING_ACTION_RIGHT_MOUSE_BUTTON, 0);
+    button = get_joystick_input_for_action(MAPPING_ACTION_RIGHT_MOUSE_BUTTON, null);
     if (button != data.mouse.right_button) {
         data.mouse.right_button = button;
         mouse_set_right_down(button);

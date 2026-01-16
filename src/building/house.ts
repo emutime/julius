@@ -8,6 +8,7 @@ import { game_undo_disable } from 'game/undo';
 import { map_building_at } from 'map/building';
 import { map_building_tiles_add, map_building_tiles_remove } from 'map/building_tiles';
 import { GRID, map_grid_offset, map_grid_offset_to_x, map_grid_offset_to_y, map_grid_size } from 'map/grid';
+import { Ref } from '../../ext/crt';
 import { map_image_set } from 'map/image';
 import { map_random_get } from 'map/random';
 import { map_terrain_is, terrain } from 'map/terrain';
@@ -497,11 +498,11 @@ export function building_house_check_for_corruption(house: building) {
     let calc_grid_offset: number = map_grid_offset(house.x, house.y);
     house.data.house.no_space_to_expand = 0;
     if (house.grid_offset != calc_grid_offset || map_building_at(house.grid_offset) != house.id) {
-        let map_width: number
-        let map_height: number;
+        let map_width: Ref<number> = new Ref(0);
+        let map_height: Ref<number> = new Ref(0);
         map_grid_size(map_width, map_height);
-        for (let y: number = 0; y < map_height; y++) {
-            for (let x: number = 0; x < map_width; x++) {
+        for (let y: number = 0; y < map_height.v; y++) {
+            for (let x: number = 0; x < map_width.v; x++) {
                 let grid_offset: number = map_grid_offset(x, y);
                 if (map_building_at(grid_offset) == house.id) {
                     house.grid_offset = grid_offset;

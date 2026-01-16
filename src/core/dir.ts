@@ -15,11 +15,8 @@ export class dir_listing {
         args.length >= 2 && (this.num_files = args[1]);
     }
 }
-import { config_key } from 'core/config';
-import { config_string_key } from 'core/config';
+import { config_key, config_get_string, config_string_key } from 'core/config';
 import CONFIG_STRING_UI_LANGUAGE_DIR = config_string_key.CONFIG_STRING_UI_LANGUAGE_DIR;
-import { config_string_key } from 'core/config';
-import { config_get_string } from 'core/config';
 import { file_open } from 'core/file';
 import { string_from_bytes } from 'core/string';
 import { file_close } from 'core/file';
@@ -165,8 +162,9 @@ function get_case_corrected_file(dir: string, filepath: string): string | null {
 }
 export function dir_get_file(filepath: string, localizable: number): string | null {
     if (localizable != NOT_LOCALIZED) {
-        let custom_dir: string | null = config_get_string(CONFIG_STRING_UI_LANGUAGE_DIR);
-        if (custom_dir) {
+        const custom_dir_bytes = config_get_string(CONFIG_STRING_UI_LANGUAGE_DIR);
+        let custom_dir: string | null = custom_dir_bytes ? string_from_bytes(custom_dir_bytes) : null;
+        if (custom_dir && custom_dir.length > 0) {
             let path = get_case_corrected_file(custom_dir, filepath);
             if (path) {
                 return path;

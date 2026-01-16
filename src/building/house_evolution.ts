@@ -10,6 +10,7 @@ import { game_time_day } from 'game/time';
 import { game_undo_disable } from 'game/undo';
 import { map_building_at } from 'map/building';
 import { map_grid_get_area, map_grid_offset } from 'map/grid';
+import { Ref } from '../../ext/crt';
 import { map_routing_update_land } from 'map/routing_terrain';
 import { map_tiles_update_all_gardens } from 'map/tiles';
 import BUILDING_HOUSE_VACANT_LOT = building_type.BUILDING_HOUSE_VACANT_LOT;
@@ -746,13 +747,13 @@ export function building_house_determine_evolve_text(house: building, worst_desi
 export function building_house_determine_worst_desirability_building(house: building) {
     let lowest_desirability: number = 0;
     let lowest_building_id: number = 0;
-    let x_min: number
-    let y_min: number
-    let x_max: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_get_area(house.x, house.y, 1, 6, x_min, y_min, x_max, y_max);
-    for (let y: number = y_min; y <= y_max; y++) {
-        for (let x: number = x_min; x <= x_max; x++) {
+    for (let y: number = y_min.v; y <= y_max.v; y++) {
+        for (let x: number = x_min.v; x <= x_max.v; x++) {
             let building_id: number = map_building_at(map_grid_offset(x, y));
             if (building_id <= 0) {
                 continue

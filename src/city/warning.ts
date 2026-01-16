@@ -82,7 +82,7 @@ function new_warning() {
     return null;
 }
 export function city_warning_show(type: warning_type) {
-    let text: Uint8Array;
+    let text: string;
     if (type == WARNING_ORIENTATION) {
         text = lang_get_string(17, city_view_orientation());
     } else {
@@ -90,7 +90,7 @@ export function city_warning_show(type: warning_type) {
     }
     city_warning_show_custom(text);
 }
-export function city_warning_show_custom(text: Uint8Array) {
+export function city_warning_show_custom(text: string | ArrayLike<number>) {
     if (!setting_warnings()) {
         return;
     }

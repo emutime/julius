@@ -96,7 +96,7 @@ export function config_load() {
     if (!fp) {
         return;
     }
-    let line_buffer: char[];
+    let line_buffer: Uint8Array = new Uint8Array(MAX_LINE);
     let line: string;
     while ((line = fgets(line_buffer, MAX_LINE, fp))) {
         // Remove newline from string

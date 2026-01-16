@@ -1114,14 +1114,14 @@ function spawn_figure_native_hut(b: building) {
     if (has_figure_of_type(b, FIGURE_INDIGENOUS_NATIVE)) {
         return;
     }
-    let x_out: number
-    let y_out: number;
+    let x_out: Ref<number> = new Ref(0);
+    let y_out: Ref<number> = new Ref(0);
     if (b.subtype.native_meeting_center_id > 0
         && map_terrain_get_adjacent_road_or_clear_land(b.x, b.y, b.size, x_out, y_out)) {
         b.figure_spawn_delay++;
         if (b.figure_spawn_delay > 4) {
             b.figure_spawn_delay = 0;
-            let f: figure = figure_create(FIGURE_INDIGENOUS_NATIVE, x_out, y_out, DIR_0_TOP);
+            let f: figure = figure_create(FIGURE_INDIGENOUS_NATIVE, x_out.v, y_out.v, DIR_0_TOP);
             f.action_state = FIGURE_ACTION_158_NATIVE_CREATED;
             f.building_id = b.id;
             b.figure_id = f.id;
@@ -1131,13 +1131,13 @@ function spawn_figure_native_hut(b: building) {
 function spawn_figure_native_meeting(b: building) {
     map_building_tiles_add(b.id, b.x, b.y, 2, image_group(GROUP_BUILDING_NATIVE) + 2, TERRAIN_BUILDING);
     if (city_buildings_is_mission_post_operational() && !has_figure_of_type(b, FIGURE_NATIVE_TRADER)) {
-        let x_out: number
-        let y_out: number;
+        let x_out: Ref<number> = new Ref(0);
+        let y_out: Ref<number> = new Ref(0);
         if (map_terrain_get_adjacent_road_or_clear_land(b.x, b.y, b.size, x_out, y_out)) {
             b.figure_spawn_delay++;
             if (b.figure_spawn_delay > 8) {
                 b.figure_spawn_delay = 0;
-                let f: figure = figure_create(FIGURE_NATIVE_TRADER, x_out, y_out, DIR_0_TOP);
+                let f: figure = figure_create(FIGURE_NATIVE_TRADER, x_out.v, y_out.v, DIR_0_TOP);
                 f.action_state = FIGURE_ACTION_162_NATIVE_TRADER_CREATED;
                 f.building_id = b.id;
                 b.figure_id = f.id;

@@ -127,8 +127,9 @@ function clear_scenario_data() {
     map_image_context_init();
     map_random_init();
 }
-function initialize_scenario_data(scenario_name: number) {
-    scenario_set_name(scenario_name);
+function initialize_scenario_data(scenario_name: string | ArrayLike<number>) {
+    const scenario_name_str = typeof scenario_name === "string" ? scenario_name : string_from_bytes(scenario_name);
+    scenario_set_name(scenario_name_str);
     scenario_map_init();
     map_tiles_update_all_elevation();
     map_tiles_update_all_water();
@@ -170,7 +171,7 @@ function initialize_scenario_data(scenario_name: number) {
     city_data_init_scenario();
     game_state_unpause();
 }
-function load_custom_scenario(scenario_name: number, scenario_file: string) {
+function load_custom_scenario(scenario_name: string | ArrayLike<number>, scenario_file: string) {
     if (!file_exists(scenario_file, NOT_LOCALIZED)) {
         return 0;
     }
@@ -210,8 +211,8 @@ function initialize_saved_game() {
     game_state_unpause();
 }
 function get_campaign_mission_offset(mission_id: number) {
-    let offset_data: number[];
-    let buf: buffer;
+    let offset_data: Uint8Array = new Uint8Array(4);
+    let buf: buffer = new buffer();
     buffer_init(buf, offset_data, 4);
     if (!io_read_file_part_into_buffer(MISSION_PACK_FILE, NOT_LOCALIZED, offset_data, 4, 4 * mission_id)) {
         return 0;
@@ -227,7 +228,8 @@ function load_campaign_mission(mission_id: number) {
         return 0;
     }
     if (mission_id == 0) {
-        scenario_set_player_name(setting_player_name());
+        const player_name = setting_player_name();
+        scenario_set_player_name(typeof player_name === "string" ? player_name : string_from_bytes(player_name));
     } else {
         scenario_restore_campaign_player_name();
     }
@@ -235,7 +237,7 @@ function load_campaign_mission(mission_id: number) {
     city_data_init_campaign_mission();
     return 1;
 }
-function start_scenario(scenario_name: number[], scenario_file: string) {
+function start_scenario(scenario_name: string | ArrayLike<number>, scenario_file: string) {
     let mission: number = scenario_campaign_mission();
     let rank: number = scenario_campaign_rank();
     map_bookmarks_clear();
@@ -243,7 +245,8 @@ function start_scenario(scenario_name: number[], scenario_file: string) {
         if (!load_custom_scenario(scenario_name, scenario_file)) {
             return 0;
         }
-        scenario_set_player_name(setting_player_name());
+        const player_name = setting_player_name();
+        scenario_set_player_name(typeof player_name === "string" ? player_name : string_from_bytes(player_name));
     } else {
         if (!load_campaign_mission(mission)) {
             return 0;
@@ -262,10 +265,9 @@ function start_scenario(scenario_name: number[], scenario_file: string) {
     return 1;
 }
 function get_scenario_filename(scenario_name: string | ArrayLike<number>, decomposed: number) {
-    let filename: char[];
-    encoding_to_utf8(scenario_name, filename, FILE_NAME_MAX, decomposed);
+    let filename = encoding_to_utf8(scenario_name, FILE_NAME_MAX, undefined, decomposed) as string;
     if (!file_has_extension(filename, "map")) {
-        file_append_extension(filename, "map");
+        filename = file_append_extension(filename, "map") as string;
     }
     return filename;
 }
@@ -293,7 +295,7 @@ export function game_file_load_scenario_data(scenario_file: string | ArrayLike<n
     city_view_reset_orientation();
     return 1;
 }
-export function game_file_load_saved_game(filename: char) {
+export function game_file_load_saved_game(filename: string) {
     if (!game_file_io_read_saved_game(filename, 0)) {
         return 0;
     }
@@ -302,10 +304,10 @@ export function game_file_load_saved_game(filename: char) {
     sound_music_update(1);
     return 1;
 }
-export function game_file_write_saved_game(filename: char) {
+export function game_file_write_saved_game(filename: string) {
     return game_file_io_write_saved_game(filename);
 }
-export function game_file_delete_saved_game(filename: char) {
+export function game_file_delete_saved_game(filename: string) {
     return game_file_io_delete_saved_game(filename);
 }
 export function game_file_write_mission_saved_game() {
@@ -315,13 +317,16 @@ export function game_file_write_mission_saved_game() {
     } else if (rank > 11) {
         rank = 11;
     }
-    let filename: char = MISSION_SAVED_GAMES[rank];
-    let localized_filename: char[];
+    let filename: string = MISSION_SAVED_GAMES[rank];
+    let localized_filename: string;
     if (locale_translate_rank_autosaves()) {
-        encoding_to_utf8(lang_get_string(32, rank), localized_filename, FILE_NAME_MAX,
-            encoding_system_uses_decomposed());
-        strcat(localized_filename, ".sav");
-        filename = localized_filename;
+        localized_filename = encoding_to_utf8(
+            lang_get_string(32, rank),
+            FILE_NAME_MAX,
+            undefined,
+            encoding_system_uses_decomposed()
+        ) as string;
+        filename = file_append_extension(localized_filename, "sav") as string;
     }
     if (city_mission_should_save_start() && !file_exists(filename, NOT_LOCALIZED)) {
         game_file_io_write_saved_game(filename);

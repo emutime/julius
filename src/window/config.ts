@@ -206,7 +206,7 @@ class unnamed152_5 {
 class unnamed157_5 {
     public original_value: Uint8Array = new Uint8Array(CONFIG_STRING_VALUE_MAX);
     public new_value: Uint8Array = new Uint8Array(CONFIG_STRING_VALUE_MAX);
-    public change_action: (key: config_key) => number = null;
+    public change_action: (key: config_string_key) => number = null;
     public constructor(...args: any[]) {
         args.length >= 1 && (this.original_value = args[0]);
         args.length >= 2 && (this.new_value = args[1]);

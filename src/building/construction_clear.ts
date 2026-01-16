@@ -74,14 +74,14 @@ function clear_land_confirmed(measure_only: number, x_start: number, y_start: nu
     let items_placed: number = 0;
     game_undo_restore_building_state();
     game_undo_restore_map(0);
-    let x_min: number
-    let x_max: number
-    let y_min: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_start_end_to_area(x_start, y_start, x_end, y_end, x_min, y_min, x_max, y_max);
     let visual_feedback_on_delete: number = config_get(CONFIG_UI_VISUAL_FEEDBACK_ON_DELETE);
-    for (let y: number = y_min; y <= y_max; y++) {
-        for (let x: number = x_min; x <= x_max; x++) {
+    for (let y: number = y_min.v; y <= y_max.v; y++) {
+        for (let x: number = x_min.v; x <= x_max.v; x++) {
             let grid_offset: number = map_grid_offset(x, y);
             if (measure_only && visual_feedback_on_delete) {
                 let b: building = get_deletable_building(grid_offset);
@@ -213,15 +213,15 @@ export function building_construction_clear_land(measure_only: number, x_start: 
     if (measure_only) {
         return clear_land_confirmed(measure_only, x_start, y_start, x_end, y_end);
     }
-    let x_min: number
-    let x_max: number
-    let y_min: number
-    let y_max: number;
+    let x_min: Ref<number> = new Ref(0);
+    let x_max: Ref<number> = new Ref(0);
+    let y_min: Ref<number> = new Ref(0);
+    let y_max: Ref<number> = new Ref(0);
     map_grid_start_end_to_area(x_start, y_start, x_end, y_end, x_min, y_min, x_max, y_max);
     let ask_confirm_bridge: number = 0;
     let ask_confirm_fort: number = 0;
-    for (let y: number = y_min; y <= y_max; y++) {
-        for (let x: number = x_min; x <= x_max; x++) {
+    for (let y: number = y_min.v; y <= y_max.v; y++) {
+        for (let x: number = x_min.v; x <= x_max.v; x++) {
             let grid_offset: number = map_grid_offset(x, y);
             let building_id: number = map_building_at(grid_offset);
             if (building_id) {

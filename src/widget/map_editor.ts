@@ -164,7 +164,7 @@ function handle_touch_scroll(t: touch) {
     if (!data.capture_input) {
         return;
     }
-    let was_click: number = touch_was_click(touch_get_latest());
+    let was_click: boolean = touch_was_click(touch_get_latest());
     if (t.has_started || was_click) {
         scroll_drag_start(1);
         return;

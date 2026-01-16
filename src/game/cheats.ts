@@ -18,7 +18,7 @@ export class unnamed10_8 {
 let data: unnamed10_8 = new unnamed10_8();
 export function game_cheat_activate() {
     if (window_is(WINDOW_BUILDING_INFO)) {
-        data.is_cheating = window_building_info_get_building_type() == BUILDING_WELL;
+        data.is_cheating = window_building_info_get_building_type() == BUILDING_WELL ? 1 : 0;
     } else if (data.is_cheating && window_is(WINDOW_MESSAGE_DIALOG)) {
         data.is_cheating = 2;
         scenario_invasion_start_from_cheat();

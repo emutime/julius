@@ -234,8 +234,8 @@ export function building_maintenance_check_rome_access() {
             continue
         }
         if (b.house_size) {
-            let x_road: number
-            let y_road: number;
+            let x_road: Ref<number> = new Ref(0);
+            let y_road: Ref<number> = new Ref(0);
             if (!map_closest_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
                 b.distance_from_entry = 0;
                 b.house_unreachable_ticks++;
@@ -247,11 +247,11 @@ export function building_maintenance_check_rome_access() {
                     }
                     b.state = BUILDING_STATE_UNDO;
                 }
-            } else if (map_routing_distance(map_grid_offset(x_road, y_road))) {
-                b.distance_from_entry = map_routing_distance(map_grid_offset(x_road, y_road));
+            } else if (map_routing_distance(map_grid_offset(x_road.v, y_road.v))) {
+                b.distance_from_entry = map_routing_distance(map_grid_offset(x_road.v, y_road.v));
                 b.house_unreachable_ticks = 0;
             } else if (map_closest_reachable_road_within_radius(b.x, b.y, b.size, 2, x_road, y_road)) {
-                b.distance_from_entry = map_routing_distance(map_grid_offset(x_road, y_road));
+                b.distance_from_entry = map_routing_distance(map_grid_offset(x_road.v, y_road.v));
                 b.house_unreachable_ticks = 0;
             } else {
                 if (!b.house_unreachable_ticks) {
@@ -269,14 +269,14 @@ export function building_maintenance_check_rome_access() {
                 city_buildings_set_trade_center(i);
             }
             b.distance_from_entry = 0;
-            let x_road: number
-            let y_road: number;
+            let x_road: Ref<number> = new Ref(0);
+            let y_road: Ref<number> = new Ref(0);
             let road_grid_offset: number = map_road_to_largest_network(b.x, b.y, 3, x_road, y_road);
             if (road_grid_offset >= 0) {
                 b.road_network_id = map_road_network_get(road_grid_offset);
                 b.distance_from_entry = map_routing_distance(road_grid_offset);
-                b.road_access_x = x_road;
-                b.road_access_y = y_road;
+                b.road_access_x = x_road.v;
+                b.road_access_y = y_road.v;
             }
         } else if (b.type == BUILDING_WAREHOUSE_SPACE) {
             b.distance_from_entry = 0;
@@ -287,25 +287,25 @@ export function building_maintenance_check_rome_access() {
             b.road_access_y = main_building.road_access_y;
         } else if (b.type == BUILDING_HIPPODROME) {
             b.distance_from_entry = 0;
-            let x_road: number
-            let y_road: number;
+            let x_road: Ref<number> = new Ref(0);
+            let y_road: Ref<number> = new Ref(0);
             let road_grid_offset: number = map_road_to_largest_network_hippodrome(b.x, b.y, x_road, y_road);
             if (road_grid_offset >= 0) {
                 b.road_network_id = map_road_network_get(road_grid_offset);
                 b.distance_from_entry = map_routing_distance(road_grid_offset);
-                b.road_access_x = x_road;
-                b.road_access_y = y_road;
+                b.road_access_x = x_road.v;
+                b.road_access_y = y_road.v;
             }
         } else {
             b.distance_from_entry = 0;
-            let x_road: number
-            let y_road: number;
+            let x_road: Ref<number> = new Ref(0);
+            let y_road: Ref<number> = new Ref(0);
             let road_grid_offset: number = map_road_to_largest_network(b.x, b.y, b.size, x_road, y_road);
             if (road_grid_offset >= 0) {
                 b.road_network_id = map_road_network_get(road_grid_offset);
                 b.distance_from_entry = map_routing_distance(road_grid_offset);
-                b.road_access_x = x_road;
-                b.road_access_y = y_road;
+                b.road_access_x = x_road.v;
+                b.road_access_y = y_road.v;
             }
         }
     }

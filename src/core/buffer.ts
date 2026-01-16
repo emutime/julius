@@ -89,7 +89,7 @@ export function buffer_read_u16(buf: buffer) {
     if (check_size(buf, 2)) {
         let b0: number = buf.data[buf.index++];
         let b1: number = buf.data[buf.index++];
-        return (uint16_t)(b0 | (b1 << 8));
+        return (b0 | (b1 << 8)) & 0xffff;
     } else {
         return 0;
     }
@@ -100,7 +100,7 @@ export function buffer_read_u32(buf: buffer) {
         let b1: number = buf.data[buf.index++];
         let b2: number = buf.data[buf.index++];
         let b3: number = buf.data[buf.index++];
-        return (uint32_t)(b0 | (b1 << 8) | (b2 << 16) | (b3 << 24));
+        return (b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)) >>> 0;
     } else {
         return 0;
     }
@@ -116,7 +116,7 @@ export function buffer_read_i16(buf: buffer) {
     if (check_size(buf, 2)) {
         let b0: number = buf.data[buf.index++];
         let b1: number = buf.data[buf.index++];
-        return (int16_t)(b0 | (b1 << 8));
+        return ((b0 | (b1 << 8)) << 16) >> 16;
     } else {
         return 0;
     }
@@ -127,7 +127,7 @@ export function buffer_read_i32(buf: buffer) {
         let b1: number = buf.data[buf.index++];
         let b2: number = buf.data[buf.index++];
         let b3: number = buf.data[buf.index++];
-        return (int32_t)(b0 | (b1 << 8) | (b2 << 16) | (b3 << 24));
+        return (b0 | (b1 << 8) | (b2 << 16) | (b3 << 24)) | 0;
     } else {
         return 0;
     }

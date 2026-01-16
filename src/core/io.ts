@@ -49,7 +49,7 @@ export function io_read_file_into_buffer(filepath: string, localizable: number, 
     file_close(fp);
     return bytes_read;
 }
-export function io_read_file_part_into_buffer(filepath: string, localizable: number, buffer: Ref<ArrayBufferView>, size: number, offset_in_file: number) {
+export function io_read_file_part_into_buffer(filepath: string, localizable: number, buffer: ArrayBufferView, size: number, offset_in_file: number) {
     let cased_file: string = dir_get_file(filepath, localizable);
     if (!cased_file) {
         return 0;

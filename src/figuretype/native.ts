@@ -13,6 +13,7 @@ import { figure_movement_move_ticks } from 'figure/movement';
 import { figure_route_remove } from 'figure/route';
 import { figure_state, terrain_usage } from 'figure/type';
 import { map_terrain_get_adjacent_road_or_clear_land, terrain } from 'map/terrain';
+import { Ref } from '../../ext/crt';
 import DIR_FIGURE_AT_DESTINATION = direction_type.DIR_FIGURE_AT_DESTINATION;
 import DIR_FIGURE_REROUTE = direction_type.DIR_FIGURE_REROUTE;
 import DIR_FIGURE_LOST = direction_type.DIR_FIGURE_LOST;

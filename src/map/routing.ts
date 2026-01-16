@@ -375,13 +375,13 @@ export function map_routing_delete_first_wall_or_aqueduct(x: number, y: number) 
     route_queue_until(map_grid_offset(x, y), callback_delete_wall_aqueduct);
 }
 function is_fighting_friendly(f: figure) {
-    return f.is_friendly && f.action_state == FIGURE_ACTION_150_ATTACK;
+    return (f.is_friendly && f.action_state == FIGURE_ACTION_150_ATTACK) ? 1 : 0;
 }
 function has_fighting_friendly(grid_offset: number) {
     return map_figure_foreach_until(grid_offset, is_fighting_friendly);
 }
 function is_fighting_enemy(f: figure) {
-    return !f.is_friendly && f.action_state == FIGURE_ACTION_150_ATTACK;
+    return (!f.is_friendly && f.action_state == FIGURE_ACTION_150_ATTACK) ? 1 : 0;
 }
 function has_fighting_enemy(grid_offset: number) {
     return map_figure_foreach_until(grid_offset, is_fighting_enemy);

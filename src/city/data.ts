@@ -48,7 +48,7 @@ export function city_data_init_campaign_mission() {
     city_data.finance.treasury = difficulty_adjust_money(city_data.finance.treasury);
 }
 function save_main_data(main: buffer) {
-    buffer_write_raw(main, city_data.unused.other_player, 18068);
+    buffer_write_raw(main, new Uint8Array(city_data.unused.other_player), 18068);
     buffer_write_i8(main, city_data.unused.unknown_00a0);
     buffer_write_i8(main, city_data.unused.unknown_00a1);
     buffer_write_i8(main, city_data.unused.unknown_00a2);
@@ -523,7 +523,7 @@ function save_main_data(main: buffer) {
     }
 }
 function load_main_data(main: buffer) {
-    buffer_read_raw(main, city_data.unused.other_player, 18068);
+    buffer_read_raw(main, new Uint8Array(city_data.unused.other_player), 18068);
     city_data.unused.unknown_00a0 = buffer_read_i8(main);
     city_data.unused.unknown_00a1 = buffer_read_i8(main);
     city_data.unused.unknown_00a2 = buffer_read_i8(main);

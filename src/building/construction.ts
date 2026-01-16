@@ -608,11 +608,15 @@ export function building_construction_update(x: number, y: number, grid_offset: 
             mark_construction(x + 10, y, 5, TERRAIN_ALL, 0);
         }
     } else if (type == BUILDING_SHIPYARD || type == BUILDING_WHARF) {
-        if (!map_water_determine_orientation_size2(x, y, 1, 0, 0)) {
+        let orientation_abs: Ref<number> = new Ref(0);
+        let orientation_rel: Ref<number> = new Ref(0);
+        if (!map_water_determine_orientation_size2(x, y, 1, orientation_abs, orientation_rel)) {
             data.draw_as_constructing = 1;
         }
     } else if (type == BUILDING_DOCK) {
-        if (!map_water_determine_orientation_size3(x, y, 1, 0, 0)) {
+        let orientation_abs: Ref<number> = new Ref(0);
+        let orientation_rel: Ref<number> = new Ref(0);
+        if (!map_water_determine_orientation_size3(x, y, 1, orientation_abs, orientation_rel)) {
             data.draw_as_constructing = 1;
         }
     } else if (data.required_terrain.meadow || data.required_terrain.rock || data.required_terrain.tree ||
@@ -705,14 +709,14 @@ export function building_construction_place() {
         placement_cost *= place_garden(x_start, y_start, x_end, y_end)
         map_routing_update_land();
     } else if (type == BUILDING_LOW_BRIDGE) {
-        let length: number = map_bridge_add(x_end, y_end, 0);
+        let length: number = map_bridge_add(x_end, y_end, false);
         if (length <= 1) {
             city_warning_show(WARNING_SHORE_NEEDED);
             return;
         }
         placement_cost *= length
     } else if (type == BUILDING_SHIP_BRIDGE) {
-        let length: number = map_bridge_add(x_end, y_end, 1);
+        let length: number = map_bridge_add(x_end, y_end, true);
         if (length <= 1) {
             city_warning_show(WARNING_SHORE_NEEDED);
             return;

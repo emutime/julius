@@ -248,7 +248,7 @@ function read_index_entry(buf: buffer, img: image) {
     img.animation_speed_id = buffer_read_u8(buf);
     buffer_skip(buf, 5);
 }
-function read_index(buf: buffer, images: image, size: number) {
+function read_index(buf: buffer, images: image[], size: number) {
     for (let i: number = 0; i < size; i++) {
         read_index_entry(buf, images[i]);
     }
@@ -259,23 +259,23 @@ function read_header(buf: buffer) {
     for (let i: number = 0; i < 300; i++) {
         data.group_image_ids[i] = buffer_read_u16(buf);
     }
-    buffer_read_raw(buf, data.bitmaps, 20000);
+    buffer_read_raw(buf, data.bitmaps as any, 20000);
 }
 function to_32_bit(c: number) {
     return ((c & 0x7c00) << 9) | ((c & 0x7000) << 4) |
         ((c & 0x3e0) << 6) | ((c & 0x380) << 1) |
         ((c & 0x1f) << 3) | ((c & 0x1c) >> 2);
 }
-function convert_uncompressed(buf: buffer, buf_length: number, dst: color_t) {
+function convert_uncompressed(buf: buffer, buf_length: number, dst: any) {
 
     return buf_length / 2;
 }
-function convert_compressed(buf: buffer, buf_length: number, dst: color_t[]) {
+function convert_compressed(buf: buffer, buf_length: number, dst: any) {
     let dst_length: number = 0;
     return dst_length;
 }
-function convert_images(images: image, size: number, buf: buffer, dst: color_t) {
-    let start_dst: color_t = dst;
+function convert_images(images: image[], size: number, buf: buffer, dst: any) {
+    let start_dst: any = dst;
     dst++;
     for (let i: number = 0; i < size; i++) {
         let img: image = images[i];
@@ -318,7 +318,7 @@ export function image_load_climate(climate_id: number, is_editor: number, force_
     let buf: buffer;
     buffer_init(buf, data.tmp_data, HEADER_SIZE);
     read_header(buf);
-    buffer_init(buf, data.tmp_data[HEADER_SIZE], ENTRY_SIZE * MAIN_ENTRIES);
+    buffer_init(buf, data.tmp_data.subarray(HEADER_SIZE), ENTRY_SIZE * MAIN_ENTRIES);
     read_index(buf, data.main, MAIN_ENTRIES);
     let data_size: number = io_read_file_into_buffer(filename_bmp, MAY_BE_LOCALIZED, data.tmp_data, SCRATCH_DATA_SIZE);
     if (!data_size) {
@@ -334,7 +334,7 @@ export function image_load_climate(climate_id: number, is_editor: number, force_
 function free_font_memory() {
     data.font = null;
     data.font_data = null;
-    data.fonts_enabled = NO_EXTRA_FONT;
+    data.fonts_enabled = font.NO_EXTRA_FONT;
 }
 function alloc_font_memory(font_entries: number, font_data_size: number) {
     free_font_memory();
@@ -450,18 +450,18 @@ function load_traditional_chinese_fonts() {
     }
     let input: buffer;
     buffer_init(input, data.tmp_data, data_size);
-    let pixels: color_t = data.font_data;
+    let pixels: color_t[] = data.font_data;
     let offset: number = 0;
     let num_chars: number = IMAGE_FONT_MULTIBYTE_TRAD_CHINESE_MAX_CHARS;
     log_info("Parsing Traditional Chinese font", 0, 0);
     if (file_version == 2) {
-        offset = parse_multibyte_font(num_chars, input, pixels[offset], offset, 12, 1, 0);
-        offset = parse_multibyte_font(num_chars, input, pixels[offset], offset, 15, 1, num_chars);
-        offset = parse_multibyte_font(num_chars, input, pixels[offset], offset, 20, 1, num_chars * 2);
+        offset = parse_multibyte_font(num_chars, input, pixels, offset, 12, 1, 0);
+        offset = parse_multibyte_font(num_chars, input, pixels, offset, 15, 1, num_chars);
+        offset = parse_multibyte_font(num_chars, input, pixels, offset, 20, 1, num_chars * 2);
     } else if (file_version == 1) {
-        offset = parse_chinese_font(num_chars, input, pixels[offset], offset, 12, 0);
-        offset = parse_chinese_font(num_chars, input, pixels[offset], offset, 16, num_chars);
-        offset = parse_chinese_font(num_chars, input, pixels[offset], offset, 20, num_chars * 2);
+        offset = parse_chinese_font(num_chars, input, pixels, offset, 12, 0);
+        offset = parse_chinese_font(num_chars, input, pixels, offset, 16, num_chars);
+        offset = parse_chinese_font(num_chars, input, pixels, offset, 20, num_chars * 2);
     }
     log_info("Done parsing Traditional Chinese font", 0, 0);
     data.fonts_enabled = font.MULTIBYTE_IN_FONT;
@@ -484,18 +484,18 @@ function load_simplified_chinese_fonts() {
     }
     let input: buffer;
     buffer_init(input, data.tmp_data, data_size);
-    let pixels: color_t = data.font_data;
+    let pixels: color_t[] = data.font_data;
     let offset: number = 0;
     let num_chars: number = IMAGE_FONT_MULTIBYTE_SIMP_CHINESE_MAX_CHARS;
     log_info("Parsing Simplified Chinese font", 0, 0);
     if (file_version == 2) {
-        offset = parse_multibyte_font(num_chars, input, pixels[offset], offset, 12, 1, 0);
-        offset = parse_multibyte_font(num_chars, input, pixels[offset], offset, 15, 1, num_chars);
-        offset = parse_multibyte_font(num_chars, input, pixels[offset], offset, 20, 1, num_chars * 2);
+        offset = parse_multibyte_font(num_chars, input, pixels, offset, 12, 1, 0);
+        offset = parse_multibyte_font(num_chars, input, pixels, offset, 15, 1, num_chars);
+        offset = parse_multibyte_font(num_chars, input, pixels, offset, 20, 1, num_chars * 2);
     } else if (file_version == 1) {
-        offset = parse_chinese_font(num_chars, input, pixels[offset], offset, 12, 0);
-        offset = parse_chinese_font(num_chars, input, pixels[offset], offset, 16, num_chars);
-        offset = parse_chinese_font(num_chars, input, pixels[offset], offset, 19, num_chars * 2);
+        offset = parse_chinese_font(num_chars, input, pixels, offset, 12, 0);
+        offset = parse_chinese_font(num_chars, input, pixels, offset, 16, num_chars);
+        offset = parse_chinese_font(num_chars, input, pixels, offset, 19, num_chars * 2);
     }
     log_info("Done parsing Simplified Chinese font", 0, 0);
     data.fonts_enabled = font.MULTIBYTE_IN_FONT;
@@ -550,18 +550,18 @@ function load_korean_fonts() {
     }
     let input: buffer;
     buffer_init(input, data.tmp_data, data_size);
-    let pixels: color_t = data.font_data;
+    let pixels: color_t[] = data.font_data;
     let offset: number = 0;
     let num_chars: number = IMAGE_FONT_MULTIBYTE_KOREAN_MAX_CHARS;
     log_info("Parsing Korean font", 0, 0);
     if (file_version == 2) {
-        offset = parse_multibyte_font(num_chars, input, pixels[offset], offset, 12, 0, 0);
-        offset = parse_multibyte_font(num_chars, input, pixels[offset], offset, 15, 0, num_chars);
-        offset = parse_multibyte_font(num_chars, input, pixels[offset], offset, 20, 0, num_chars * 2);
+        offset = parse_multibyte_font(num_chars, input, pixels, offset, 12, 0, 0);
+        offset = parse_multibyte_font(num_chars, input, pixels, offset, 15, 0, num_chars);
+        offset = parse_multibyte_font(num_chars, input, pixels, offset, 20, 0, num_chars * 2);
     } else if (file_version == 1) {
-        offset = parse_korean_font(input, pixels[offset], offset, 12, 0);
-        offset = parse_korean_font(input, pixels[offset], offset, 15, num_chars);
-        offset = parse_korean_font(input, pixels[offset], offset, 20, num_chars * 2);
+        offset = parse_korean_font(input, pixels, offset, 12, 0);
+        offset = parse_korean_font(input, pixels, offset, 15, num_chars);
+        offset = parse_korean_font(input, pixels, offset, 20, num_chars * 2);
     }
     log_info("Done parsing Korean font", 0, 0);
     data.fonts_enabled = font.MULTIBYTE_IN_FONT;
@@ -579,18 +579,18 @@ function load_japanese_fonts() {
     }
     let input: buffer;
     buffer_init(input, data.tmp_data, data_size);
-    let pixels: color_t = data.font_data;
+    let pixels: color_t[] = data.font_data;
     let offset: number = 0;
     let num_chars: number = IMAGE_FONT_MULTIBYTE_JAPANESE_MAX_CHARS;
     let num_half_width: number = 63;
     let num_full_width: number = num_chars - num_half_width;
     log_info("Parsing Japanese font", 0, 0);
-    offset = parse_multibyte_font(num_half_width, input, pixels[offset], offset, 12, -5, 0);
-    offset = parse_multibyte_font(num_full_width, input, pixels[offset], offset, 12, 1, num_half_width);
-    offset = parse_multibyte_font(num_half_width, input, pixels[offset], offset, 15, -6, num_chars);
-    offset = parse_multibyte_font(num_full_width, input, pixels[offset], offset, 15, 1, num_chars + num_half_width);
-    offset = parse_multibyte_font(num_half_width, input, pixels[offset], offset, 20, -9, num_chars * 2);
-    offset = parse_multibyte_font(num_full_width, input, pixels[offset], offset, 20, 1, num_chars * 2 + num_half_width);
+    offset = parse_multibyte_font(num_half_width, input, pixels, offset, 12, -5, 0);
+    offset = parse_multibyte_font(num_full_width, input, pixels, offset, 12, 1, num_half_width);
+    offset = parse_multibyte_font(num_half_width, input, pixels, offset, 15, -6, num_chars);
+    offset = parse_multibyte_font(num_full_width, input, pixels, offset, 15, 1, num_chars + num_half_width);
+    offset = parse_multibyte_font(num_half_width, input, pixels, offset, 20, -9, num_chars * 2);
+    offset = parse_multibyte_font(num_full_width, input, pixels, offset, 20, 1, num_chars * 2 + num_half_width);
     log_info("Done parsing Japanese font", 0, offset);
     data.fonts_enabled = font.MULTIBYTE_IN_FONT;
     data.font_base_offset = 0;
@@ -615,8 +615,8 @@ export function image_load_fonts(encoding: encoding_type) {
     }
 }
 export function image_load_enemy(enemy_id: number) {
-    let filename_bmp: char = ENEMY_GRAPHICS_555[enemy_id];
-    let filename_idx: char = ENEMY_GRAPHICS_SG2[enemy_id];
+    let filename_bmp: string = ENEMY_GRAPHICS_555[enemy_id];
+    let filename_idx: string = ENEMY_GRAPHICS_SG2[enemy_id];
     if (ENEMY_INDEX_SIZE != io_read_file_part_into_buffer(
         filename_idx, MAY_BE_LOCALIZED, data.tmp_data, ENEMY_INDEX_SIZE, ENEMY_INDEX_OFFSET)) {
         return 0;
@@ -634,16 +634,21 @@ export function image_load_enemy(enemy_id: number) {
 }
 function load_external_data(image_id: number) {
     let img: image = data.main[image_id];
-    let filename = "555/";
-    strcpy(filename[4], data.bitmaps[img.draw.bitmap_id]);
-    file_change_extension(filename, "555");
+    let filename_no_prefix: string = file_change_extension(
+        data.bitmaps[img.draw.bitmap_id],
+        "555"
+    ) as string;
+    let filename_with_prefix: string = file_change_extension(
+        "555/" + data.bitmaps[img.draw.bitmap_id],
+        "555"
+    ) as string;
     let size: number = io_read_file_part_into_buffer(
-        filename[4], MAY_BE_LOCALIZED, data.tmp_data,
+        filename_no_prefix, MAY_BE_LOCALIZED, data.tmp_data,
         img.draw.data_length, img.draw.offset - 1
     );
     if (!size) {
         size = io_read_file_part_into_buffer(
-            filename, MAY_BE_LOCALIZED, data.tmp_data,
+            filename_with_prefix, MAY_BE_LOCALIZED, data.tmp_data,
             img.draw.data_length, img.draw.offset - 1
         );
         if (!size) {
@@ -669,7 +674,7 @@ export function image_get(id: number) {
     if (id >= 0 && id < MAIN_ENTRIES) {
         return data.main[id];
     } else {
-        return NULL;
+        return null;
     }
 }
 export function image_letter(letter_id: number) {

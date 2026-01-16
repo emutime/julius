@@ -7,6 +7,7 @@ import { image_group } from 'core/image';
 import { group_terrain } from 'core/image_group';
 import { figure_action } from 'figure/action';
 import { figure_combat_get_missile_target_for_soldier, figure_combat_handle_attack, figure_combat_handle_corpse } from 'figure/combat';
+import { Ref } from '../../ext/crt';
 import { enemy_army_total_enemy_formations } from 'figure/enemy_army';
 import { MAX_FIGURES, figure, figure_get, figure_is_dead } from 'figure/figure';
 import { figure_image_corpse_offset, figure_image_direction, figure_image_increase_offset } from 'figure/image';

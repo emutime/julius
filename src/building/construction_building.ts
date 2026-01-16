@@ -706,8 +706,8 @@ export function building_construction_place_building(type: building_type, x: num
             }
         }
     }
-    let waterside_orientation_abs: number = 0
-    let waterside_orientation_rel: number = 0;
+    let waterside_orientation_abs: Ref<number> = new Ref(0);
+    let waterside_orientation_rel: Ref<number> = new Ref(0);
     if (type == BUILDING_SHIPYARD || type == BUILDING_WHARF) {
         if (map_water_determine_orientation_size2(
             x, y, 0, waterside_orientation_abs, waterside_orientation_rel)) {

@@ -318,7 +318,7 @@ function has_video(text_id: number) {
         return 0;
     }
     
-    let video_file: string = encoding_to_utf8(msg.video.text, FILE_NAME_MAX, 0);
+    let video_file: string = encoding_to_utf8(msg.video.text, FILE_NAME_MAX) as string;
     return file_exists(video_file, MAY_BE_LOCALIZED);
 }
 function enqueue_message(sequence: number) {

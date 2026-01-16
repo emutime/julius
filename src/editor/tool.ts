@@ -389,7 +389,8 @@ function place_building(tile: map_tile) {
         default:
             return
     }
-    if (editor_tool_can_place_building(tile, size * size, { value: [] })) {
+    let blocked_tiles: boolean[] = new Array(size * size).fill(false);
+    if (editor_tool_can_place_building(tile, size * size, blocked_tiles)) {
         let b: building = building_create(type, tile.x, tile.y);
         map_building_tiles_add(b.id, tile.x, tile.y, size, image_id, TERRAIN_BUILDING);
         scenario_editor_updated_terrain();
